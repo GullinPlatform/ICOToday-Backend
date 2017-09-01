@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser, FileUploadParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from .models import Post, PostTag
+from .models import Post, PostTag, CommentsField
 from ..accounts.models import Account
 
 from .serializers import PostSerializer, PostTagSerializer, BasicPostSerializer
@@ -139,6 +139,13 @@ class PostViewSet(viewsets.ViewSet):
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
 			return Response(status=status.HTTP_404_NOT_FOUND)
+
+	def add_comment(self, request, pk):
+		question = get_object_or_404(self.queryset, pk=pk)
+		for field in request.data:
+			question_field = CommentField(comment=field[0], author=request.user, question=question)
+			question_field.save()
+		return Response(status=status.HTTP_201_CREATED)
 
 	def get_tag_list(self, request):
 		tags = PostTag.objects.all()

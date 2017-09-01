@@ -46,7 +46,18 @@ class Post(models.Model):
 		return self.up_votes - self.down_votes
 
 
+class CommentsField(models.Model):
+	post = models.ForeignKey('posts.Post', related_name='comments')
+	author = models.ForeignKey('accounts.Account', related_name='author_questions')
+	comment = models.TextField()
+	timestamp = models.DateTimeField(auto_now_add=True)
+
+
+
 class PostTag(models.Model):
+	TYPE_CHOICE = (
+		(0, 'Industry'), (1, 'Tech')
+	)
 	tag = models.CharField(max_length=40)
 
 	def __str__(self):

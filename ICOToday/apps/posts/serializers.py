@@ -1,8 +1,12 @@
 from rest_framework import serializers
 
-from .models import Post, PostTag
+from .models import Post, PostTag, CommentsField
 from ..accounts.serializers import BasicAccountSerializer
 
+class CommentsFieldSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = CommentsField
+		fields = '__all__'
 
 class PostTagSerializer(serializers.ModelSerializer):
 	class Meta:

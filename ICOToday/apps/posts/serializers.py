@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Question, QuestionFile, QuestionField, QuestionTag
+from .models import Post, QuestionFile, QuestionField, QuestionTag
 
 
 class QuestionFileSerializer(serializers.ModelSerializer):
@@ -28,7 +28,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 	tech_tags = QuestionTagSerializer(required=False, allow_null=True, many=True)
 
 	class Meta:
-		model = Question
+		model = Post
 		fields = '__all__'
 		read_only_fields = ('created', 'updated', 'status')
 

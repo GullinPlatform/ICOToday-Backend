@@ -20,14 +20,14 @@ import debug_toolbar
 from django.conf import settings
 
 from .apps.accounts import urls as account_urls
-from .apps.questions import urls as question_urls
+from .apps.posts import urls as post_urls
 from .apps.discussions import urls as discussion_urls
 
 urlpatterns = [
 	url(r'^admin/', admin.site.urls),
 	url(r'^account/', include(account_urls)),
 	url(r'^discussion/', include(discussion_urls)),
-	url(r'^question/', include(question_urls)),
+	url(r'^question/', include(post_urls)),
 ]
 
 if settings.DEBUG:

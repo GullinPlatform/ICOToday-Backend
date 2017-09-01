@@ -6,14 +6,14 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser, FileUploadParser
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
-from .models import Question, QuestionField, QuestionFile
+from .models import Post, QuestionField, QuestionFile
 from .serializers import QuestionSerializer
 
 from ..discussions.serializers import DiscussionSerializer
 
 
 class QuestionViewSet(viewsets.ViewSet):
-	queryset = Question.objects.filter(status=1)
+	queryset = Post.objects.filter(status=1)
 	parser_classes = (MultiPartParser, FormParser, JSONParser, FileUploadParser)
 	permission_classes = (IsAuthenticatedOrReadOnly,)
 

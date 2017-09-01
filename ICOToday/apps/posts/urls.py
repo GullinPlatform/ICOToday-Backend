@@ -28,9 +28,11 @@ question_mark = QuestionViewSet.as_view({
 created_question_list = QuestionViewSet.as_view({
 	'post': 'created_question_list'
 })
+
 applied_question_list = QuestionViewSet.as_view({
 	'post': 'applied_question_list'
 })
+
 marked_question_list = QuestionViewSet.as_view({
 	'post': 'marked_question_list'
 })

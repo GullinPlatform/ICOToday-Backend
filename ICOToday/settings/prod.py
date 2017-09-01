@@ -38,7 +38,7 @@ INSTALLED_APPS = [
 	'corsheaders',
 
 	'ICOToday.apps.accounts',
-	'ICOToday.apps.questions',
+	'ICOToday.apps.posts',
 	'ICOToday.apps.discussions'
 
 ]

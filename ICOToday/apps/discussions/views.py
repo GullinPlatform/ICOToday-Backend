@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from ..questions.models import Question
+from ..posts.models import Post
 from .models import Discussion, Reply
 from .serializers import ReplySerializer, DiscussionSerializer
 

@@ -34,7 +34,7 @@ class Post(models.Model):
 
 
 class QuestionField(models.Model):
-	question = models.ForeignKey('Question', related_name='fields')
+	question = models.ForeignKey('Post', related_name='fields')
 	title = models.CharField(max_length=20)
 	content = models.TextField()
 
@@ -43,7 +43,7 @@ class QuestionField(models.Model):
 
 
 class QuestionFile(models.Model):
-	question = models.ForeignKey('Question', related_name='files')
+	question = models.ForeignKey('Post', related_name='files')
 	file = models.FileField(upload_to='question_files/')
 	file_name = models.CharField(max_length=40)
 	file_size = models.IntegerField(default=0)

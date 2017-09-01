@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Discussion(models.Model):
-	question = models.ForeignKey('questions.Question', related_name='discussions')
+	question = models.ForeignKey('posts.Post', related_name='discussions')
 	account = models.ForeignKey('accounts.Account', related_name='discussions')
 	title = models.CharField(max_length=200)
 	content = models.TextField()

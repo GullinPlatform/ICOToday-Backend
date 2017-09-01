@@ -32,3 +32,12 @@ class TeamSerializer(serializers.ModelSerializer):
 		fields = ['name', 'description']
 		read_only_fields = ('created', 'updated',)
 
+
+class BasicAccountSerializer(serializers.ModelSerializer):
+	team = TeamSerializer(allow_null=True)
+
+	class Meta:
+		model = Account
+		fields = ['id', 'email', 'phone', 'avatar', 'type',
+		          'first_name', 'last_name', 'description',
+		          'team', 'linkedin', 'twitter', 'slack', 'telegram']

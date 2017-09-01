@@ -1,4 +1,4 @@
-from .production import *
+from .prod import *
 
 # Add tmp path
 # TMP_PATH = os.path.abspath(os.path.join(BASE_DIR, 'local'))

@@ -27,7 +27,7 @@ def send_verify_token(email=None, phone=None):
 			token_instance.token = random.randint(0, 10 ** 6 - 1)
 			token_instance.save()
 		token = token_instance.token
-	# email = EmailMessage(subject, render_to_string('email/%s.html' % template, ctx), 'no-reply@deepcomputing.com', [to])
+	# email = EmailMessage(subject, render_to_string('email/%s.html' % template, ctx), 'no-reply@icotoday.io', [to])
 	# email.content_subtype = 'html'
 	# email.send()
 	if phone:

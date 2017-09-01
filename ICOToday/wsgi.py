@@ -1,5 +1,5 @@
 """
-WSGI config for DeepComp project.
+WSGI config for ICOToday project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

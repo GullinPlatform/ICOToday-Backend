@@ -15,6 +15,7 @@ class PostAdmin(admin.ModelAdmin):
 	fieldsets = (
 		('Question Info', {'fields': ('title', 'creator', 'status', 'due_date', 'appliers')}),
 		('Details', {'fields': ('description_short', 'prize', 'difficulty', 'industry_tags', 'tech_tags')}),
+		('ICO Details', {'fields': ('website', 'start_date', 'end_date', 'white_paper', 'upvotes', 'downvotes', 'video_link', 'team_members')}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	inlines = [QuestionFieldInline, QuestionFileInline]

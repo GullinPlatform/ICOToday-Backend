@@ -114,3 +114,16 @@ class QuestionViewSet(viewsets.ViewSet):
 		question.marked.add(request.user)
 		question.save()
 		return Response(status=status.HTTP_200_OK)
+
+	def add_team_member(self, request, pk):
+		question = get_object_or_404(self.queryset, pk=pk)
+		if request.method == 'POST':
+			question.add(request.user)
+			question.save()
+			return Response(status=status.HTTP_200_OK)
+		elif request.method == 'DELETE':
+			question.remove(request.user)
+			question.save()
+			return Response(status=status.HTTP_200_OK)
+
+		return Response(status=status.HTTP_403_FORBIDDEN)

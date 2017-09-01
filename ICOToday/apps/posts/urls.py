@@ -37,6 +37,11 @@ marked_question_list = QuestionViewSet.as_view({
 	'post': 'marked_question_list'
 })
 
+add_team_member = QuestionViewSet.as_view({
+	'post': 'add_team_member',
+	'delete': 'add_team_member'
+})
+
 urlpatterns = [
 	url(r'^$', question_list, name='question_list'),
 	url(r'^p/(?P<p>[0-9]+)$', question_list, name='question_list'),
@@ -49,5 +54,7 @@ urlpatterns = [
 	url(r'^(?P<pk>[0-9]+)/discussions/$', question_discussions, name='question'),
 	url(r'^(?P<pk>[0-9]+)/apply/$', question_apply, name='question_apply'),
 	url(r'^(?P<pk>[0-9]+)/mark/$', question_mark, name='question_mark'),
+	url(r'^(?P<pk>[0-9]+)/add_team_member/$', add_team_member, name='add_team_member'),
+
 
 ]

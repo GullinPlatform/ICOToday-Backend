@@ -8,8 +8,8 @@ class Post(models.Model):
 		(2, 'Completed'),
 	)
 	creator = models.ForeignKey('accounts.Account', related_name='created_questions')
-	appliers = models.ManyToManyField('accounts.Account', related_name='applied_questions')
-	marked = models.ManyToManyField('accounts.Account', related_name='marked_questions')
+	appliers = models.ManyToManyField('accounts.Account', blank=True, related_name='applied_questions')
+	marked = models.ManyToManyField('accounts.Account', blank=True, related_name='marked_questions')
 
 	title = models.CharField(max_length=200)
 	description_short = models.TextField()
@@ -21,6 +21,16 @@ class Post(models.Model):
 	industry_tags = models.ManyToManyField('QuestionTag', related_name='industry_questions')
 	tech_tags = models.ManyToManyField('QuestionTag', related_name='tech_questions')
 
+	#ICO fields
+	website = models.CharField(max_length=100, null=True)
+	start_date = models.DateTimeField(null=True)
+	end_date = models.DateTimeField(null=True)
+	white_paper = models.FileField(upload_to='white_papers/', null=True)
+	upvotes = models.IntegerField(default=0)
+	downvotes = models.IntegerField(default=0)
+	video_link = models.CharField(max_length=100, null=True)
+	team_members = models.ManyToManyField('accounts.Account', blank=True, related_name='team_members')
+
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
@@ -31,6 +41,10 @@ class Post(models.Model):
 
 	def __str__(self):
 		return self.title
+
+	def num_votes(self):
+		votes = self.upvotes.count() - self.downvotes.count()
+		return  votes
 
 
 class QuestionField(models.Model):

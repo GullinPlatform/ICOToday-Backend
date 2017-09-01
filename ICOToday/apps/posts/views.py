@@ -4,15 +4,16 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser, FileUploadParser
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .models import Post, PostTag
-from .serializers import PostSerializer, PostTagSerializer
+from ..accounts.models import Account
 
+from .serializers import PostSerializer, PostTagSerializer, BasicPostSerializer
 from ..discussions.serializers import DiscussionSerializer
 
 
-class QuestionViewSet(viewsets.ViewSet):
+class PostViewSet(viewsets.ViewSet):
 	queryset = Post.objects.filter(status=1)
 	parser_classes = (MultiPartParser, FormParser, JSONParser, FileUploadParser)
 	permission_classes = (IsAuthenticatedOrReadOnly,)
@@ -20,31 +21,31 @@ class QuestionViewSet(viewsets.ViewSet):
 	def list(self, request, p=None):
 		paginator = Paginator(self.queryset, 10)
 		try:
-			questions = paginator.page(p)
+			posts = paginator.page(p)
 		except PageNotAnInteger:
 			# If page is not an integer, deliver first page.
-			questions = paginator.page(1)
+			posts = paginator.page(1)
 		except EmptyPage:
 			# If page is out of range (e.g. 9999), deliver last page of results.
-			questions = paginator.page(paginator.num_pages)
+			posts = paginator.page(paginator.num_pages)
 
-		serializer = PostSerializer(questions, many=True)
+		serializer = BasicPostSerializer(posts, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	# TODO:
 	def filtered_list(self, request):
 		pass
 
-	def created_question_list(self, request, pk):
-		serializer = PostSerializer(request.user.created_questions, many=True)
+	def created_post_list(self, request, pk):
+		serializer = PostSerializer(request.user.created_posts, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
-	def applied_question_list(self, request, pk):
-		serializer = PostSerializer(request.user.applied_questions, many=True)
+	def applied_post_list(self, request, pk):
+		serializer = PostSerializer(request.user.applied_posts, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
-	def marked_question_list(self, request, pk):
-		serializer = PostSerializer(request.user.marked_questions, many=True)
+	def marked_post_list(self, request, pk):
+		serializer = PostSerializer(request.user.marked_posts, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def create(self, request):
@@ -57,11 +58,11 @@ class QuestionViewSet(viewsets.ViewSet):
 		new_post.save()
 
 		# for file in request.FILES.values():
-		# 	new_question_file = QuestionFile(file=file,
+		# 	new_post_file = PostFile(file=file,
 		# 	                                 file_name=file.name,
 		# 	                                 file_size=file.size,
-		# 	                                 question_id=new_question.id)
-		# 	new_question_file.save()
+		# 	                                 post_id=new_post.id)
+		# 	new_post_file.save()
 
 		# 'industry_tags'
 		# 'tech_tags'
@@ -69,13 +70,13 @@ class QuestionViewSet(viewsets.ViewSet):
 		return Response(status=status.HTTP_201_CREATED)
 
 	def retrieve(self, request, pk):
-		question = get_object_or_404(self.queryset, pk=pk)
-		serializer = PostSerializer(question)
+		post = get_object_or_404(self.queryset, pk=pk)
+		serializer = PostSerializer(post)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def update(self, request, pk):
-		question = get_object_or_404(self.queryset, pk=pk)
-		serializer = PostSerializer(question, data=request.data)
+		post = get_object_or_404(self.queryset, pk=pk)
+		serializer = PostSerializer(post, data=request.data)
 
 		if serializer.is_valid():
 			serializer.save()
@@ -84,49 +85,52 @@ class QuestionViewSet(viewsets.ViewSet):
 			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 	def delete(self, request, pk):
-		question = get_object_or_404(self.queryset, pk=pk)
-		if request.user.is_staff or question.account_id == request.user.id:
-			question.delete()
+		post = get_object_or_404(self.queryset, pk=pk)
+		if request.user.is_staff or post.account_id == request.user.id:
+			post.delete()
 		else:
 			return Response(status=status.HTTP_403_FORBIDDEN)
 
 	# def add_fields(self, request, pk):
-	# 	question = get_object_or_404(self.queryset, pk=pk)
+	# 	post = get_object_or_404(self.queryset, pk=pk)
 	# 	for field in request.data:
-	# 		question_field = QuestionField(title=field[0], description=field[1], question=question)
-	# 		question_field.save()
+	# 		post_field = PostField(title=field[0], description=field[1], post=post)
+	# 		post_field.save()
 	# 	return Response(status=status.HTTP_201_CREATED)
 
 	def discussion_list(self, request, pk):
-		question = get_object_or_404(Post.objects.all(), pk=pk)
-		discussions = question.discussions
+		post = get_object_or_404(Post.objects.all(), pk=pk)
+		discussions = post.discussions
 		serializer = DiscussionSerializer(discussions, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
-	def apply_question(self, request, pk):
-		question = get_object_or_404(self.queryset, pk=pk)
-		question.appliers.add(request.user)
-		question.save()
+	def apply_post(self, request, pk):
+		post = get_object_or_404(self.queryset, pk=pk)
+		post.appliers.add(request.user)
+		post.save()
 		return Response(status=status.HTTP_200_OK)
 
-	def mark_question(self, request, pk):
-		question = get_object_or_404(self.queryset, pk=pk)
-		question.marked.add(request.user)
-		question.save()
+	def mark_post(self, request, pk):
+		post = get_object_or_404(self.queryset, pk=pk)
+		post.marked.add(request.user)
+		post.save()
 		return Response(status=status.HTTP_200_OK)
 
 	def add_team_member(self, request, pk):
-		question = get_object_or_404(self.queryset, pk=pk)
+		post = get_object_or_404(self.queryset, pk=pk)
 		if request.method == 'POST':
-			question.add(request.user)
-			question.save()
-			return Response(status=status.HTTP_200_OK)
-		elif request.method == 'DELETE':
-			question.remove(request.user)
-			question.save()
-			return Response(status=status.HTTP_200_OK)
+			if request.data.get('member_id'):
+				member = get_object_or_404(Account.objects.all(), id=int(request.data.get('member_id')))
+				post.add(member)
+				post.save()
+				return Response(status=status.HTTP_200_OK)
+			else:
+				return Response(status=status.HTTP_400_BAD_REQUEST)
 
-		return Response(status=status.HTTP_403_FORBIDDEN)
+		elif request.method == 'DELETE':
+			post.remove(request.user)
+			post.save()
+			return Response(status=status.HTTP_200_OK)
 
 	def search_by_tag(self, request, tag):
 		tag = PostTag.objects.get(tag=tag)

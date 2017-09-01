@@ -18,7 +18,7 @@ class PostTagSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
 	tags = PostTagSerializer(required=False, allow_null=True, many=True)
-	team_members = BasicAccountSerializer(required=False, allow_null=True, many=True)
+	team = BasicTeamSerializer(required=False, allow_null=True)
 
 	class Meta:
 		model = Post
@@ -32,5 +32,8 @@ class BasicPostSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Post
-		fields = ['id', 'team', 'description_short', 'logo_image', 'promote_image', 'title', 'status', 'tags', 'website', 'start_datetime', 'end_datetime']
+		fields = ['id', 'team', 'description_short',
+		          'logo_image', 'promote_image', 'title',
+		          'status', 'tags', 'website', 'goal', 'coin_type',
+		          'start_datetime', 'end_datetime']
 		read_only_fields = ('created', 'updated', 'status')

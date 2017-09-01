@@ -1,6 +1,5 @@
 from django.contrib import admin
 
-from .models import Post, PostTag
 from .models import Post, PostTag, CommentsField
 
 
@@ -13,8 +12,8 @@ class PostAdmin(admin.ModelAdmin):
 
 	fieldsets = (
 		('Question Info', {'fields': ('title', 'status', 'creator')}),
-		('Details', {'fields': ('description_short', 'promote_image', 'logo_image')}),
-		('ICO Details', {'fields': ('start_datetime', 'end_datetime', 'website', 'video_link', 'up_votes', 'down_votes', 'white_paper',)}),
+		('Details', {'fields': ('team', 'description_short', 'promote_image', 'logo_image')}),
+		('ICO Details', {'fields': ('start_datetime', 'end_datetime', 'website', 'video_link', 'up_votes', 'down_votes', 'white_paper')}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	inlines = [CommentsFieldInline]

@@ -34,7 +34,7 @@ class Post(models.Model):
 	up_votes = models.IntegerField(default=0)
 	down_votes = models.IntegerField(default=0)
 	video_link = models.CharField(max_length=100, null=True, blank=True)
-	team_members = models.ManyToManyField('accounts.Account', blank=True, related_name='posts')
+	team = models.ForeignKey('accounts.Team', blank=True, related_name='posts')
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)

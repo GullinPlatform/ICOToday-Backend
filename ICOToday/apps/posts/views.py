@@ -14,12 +14,13 @@ from ..discussions.serializers import DiscussionSerializer
 
 
 class PostViewSet(viewsets.ViewSet):
-	queryset = Post.objects.filter(status=1)
+	queryset = Post.objects.all()
 	parser_classes = (MultiPartParser, FormParser, JSONParser, FileUploadParser)
 	permission_classes = (IsAuthenticatedOrReadOnly,)
 
 	def list(self, request, p=None):
-		paginator = Paginator(self.queryset, 10)
+		queryset = self.queryset.filter(status=1)
+		paginator = Paginator(queryset, 10)
 		try:
 			posts = paginator.page(p)
 		except PageNotAnInteger:
@@ -31,6 +32,18 @@ class PostViewSet(viewsets.ViewSet):
 
 		serializer = BasicPostSerializer(posts, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
+
+	def promo_list(self, request):
+		queryset = self.queryset.filter(status=3)
+		serializer = BasicPostSerializer(queryset, many=True)
+		return Response(serializer.data, status=status.HTTP_200_OK)
+
+	def close(self, request):
+		for post in self.queryset:
+			if post.time_passed():
+				post.status = 4
+				post.save()
+		return Response(status=status.HTTP_200_OK)
 
 	# TODO:
 	def filtered_list(self, request):

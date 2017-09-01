@@ -13,6 +13,14 @@ post_list = PostViewSet.as_view({
 	'post': 'create'
 })
 
+post_promo_list = PostViewSet.as_view({
+	'get' : 'promo_list',
+})
+
+post_close = PostViewSet.as_view({
+	'get' : 'close',
+})
+
 post_discussions = PostViewSet.as_view({
 	'get': 'discussion_list'
 })
@@ -52,7 +60,9 @@ get_post_tags = PostViewSet.as_view({
 
 urlpatterns = [
 	url(r'^$', post_list, name='post_list'),
-	url(r'^p/(?P<p>[0-9]+)$', post_list, name='post_list'),
+	url(r'^p/(?P<p>[0-9]+)$', post_list, name='post_list_page'),
+	url(r'^promo/$', post_promo_list, name='post_promo_list'),
+	url(r'^close/$', post_close, name='post_close'),
 
 	url(r'^applied/$', applied_post_list, name='applied_post_list'),
 	url(r'^marked/$', marked_post_list, name='marked_post_list'),

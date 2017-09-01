@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.db import models
 
 
@@ -7,6 +8,7 @@ class Post(models.Model):
 		(1, 'Verified'),
 		(2, 'Completed'),
 		(3, 'Promoting'),
+		(4, 'Closed'),
 	)
 	creator = models.ForeignKey('accounts.Account', related_name='created_posts')
 	appliers = models.ManyToManyField('accounts.Account', blank=True, related_name='applied_posts')
@@ -23,8 +25,11 @@ class Post(models.Model):
 
 	# ICO fields
 	website = models.CharField(max_length=100, null=True, blank=True)
-	start_date = models.DateTimeField(null=True)
-	end_date = models.DateTimeField(null=True)
+
+	start_datetime = models.DateTimeField(null=True)
+	end_datetime = models.DateTimeField(null=True)
+	timezone = models.CharField(max_length=10, default='EST')
+
 	white_paper = models.FileField(upload_to='white_papers/', null=True, blank=True)
 	up_votes = models.IntegerField(default=0)
 	down_votes = models.IntegerField(default=0)
@@ -38,12 +43,17 @@ class Post(models.Model):
 	# relation
 	# fields
 	# files
+	class Meta:
+		ordering = ['-start_datetime']
 
 	def __str__(self):
-		return self.title if self.title else ' '
+		return self.title
 
 	def num_votes(self):
 		return self.up_votes - self.down_votes
+
+	def time_passed(self):
+		return True if self.end_date > timezone.now() else False
 
 
 class CommentsField(models.Model):
@@ -53,11 +63,7 @@ class CommentsField(models.Model):
 	timestamp = models.DateTimeField(auto_now_add=True)
 
 
-
 class PostTag(models.Model):
-	TYPE_CHOICE = (
-		(0, 'Industry'), (1, 'Tech')
-	)
 	tag = models.CharField(max_length=40)
 
 	def __str__(self):

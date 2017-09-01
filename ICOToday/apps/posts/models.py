@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Question(models.Model):
+class Post(models.Model):
 	STATUS_CHOICES = (
 		(0, 'Processing'),
 		(1, 'Verified'),

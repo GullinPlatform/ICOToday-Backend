@@ -10,7 +10,7 @@ class AccountAdmin(UserAdmin):
 	# The forms to add and change user instances
 	form = AccountChangeForm
 	add_form = AccountCreationForm
-	list_display = ('id', 'email', 'username', 'is_staff')
+	list_display = ('id', 'email', 'is_staff')
 	list_filter = ['is_staff']
 	fieldsets = (
 		(None, {'fields': ('email', 'username', 'password')}),

@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
 
-from .views import AccountViewSet, AccountRegisterViewSet, TeamSerializer
+from .views import AccountViewSet, AccountRegisterViewSet, TeamViewSet
 
 account_change_password = AccountViewSet.as_view({
 	'post': 'change_password'
@@ -33,11 +33,11 @@ account_verify_info = AccountViewSet.as_view({
 	'post': 'verify_info'
 })
 
-team_list = TeamSerializer.as_view({
+team_list = TeamViewSet.as_view({
 	'get': 'retrieve'
 })
 
-team_detail = TeamSerializer.as_view({
+team_detail = TeamViewSet.as_view({
 	'post': 'create',
 	'get' : 'list'
 })

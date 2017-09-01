@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser, FileUploadParser
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
-from .models import Post, QuestionField, QuestionFile, PostTag
+from .models import Post, PostTag
 from .serializers import PostSerializer, PostTagSerializer
 
 from ..discussions.serializers import DiscussionSerializer
@@ -48,20 +48,20 @@ class QuestionViewSet(viewsets.ViewSet):
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def create(self, request):
-		new_question = Question(
+		new_post = Post(
 			creator_id=request.user.id,
 			title=request.data['title'],
 			description_short=request.data['description_short'],
 			prize=request.data['prize']
 		)
-		new_question.save()
+		new_post.save()
 
-		for file in request.FILES.values():
-			new_question_file = QuestionFile(file=file,
-			                                 file_name=file.name,
-			                                 file_size=file.size,
-			                                 question_id=new_question.id)
-			new_question_file.save()
+		# for file in request.FILES.values():
+		# 	new_question_file = QuestionFile(file=file,
+		# 	                                 file_name=file.name,
+		# 	                                 file_size=file.size,
+		# 	                                 question_id=new_question.id)
+		# 	new_question_file.save()
 
 		# 'industry_tags'
 		# 'tech_tags'
@@ -90,15 +90,15 @@ class QuestionViewSet(viewsets.ViewSet):
 		else:
 			return Response(status=status.HTTP_403_FORBIDDEN)
 
-	def add_fields(self, request, pk):
-		question = get_object_or_404(self.queryset, pk=pk)
-		for field in request.data:
-			question_field = QuestionField(title=field[0], description=field[1], question=question)
-			question_field.save()
-		return Response(status=status.HTTP_201_CREATED)
+	# def add_fields(self, request, pk):
+	# 	question = get_object_or_404(self.queryset, pk=pk)
+	# 	for field in request.data:
+	# 		question_field = QuestionField(title=field[0], description=field[1], question=question)
+	# 		question_field.save()
+	# 	return Response(status=status.HTTP_201_CREATED)
 
 	def discussion_list(self, request, pk):
-		question = get_object_or_404(Question.objects.all(), pk=pk)
+		question = get_object_or_404(Post.objects.all(), pk=pk)
 		discussions = question.discussions
 		serializer = DiscussionSerializer(discussions, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
@@ -132,7 +132,7 @@ class QuestionViewSet(viewsets.ViewSet):
 		tag = PostTag.objects.get(tag=tag)
 		if tag:
 			serializer = PostSerializer(tag.posts.all(), many=True)
-			return Response(serializer.data,status=status.HTTP_200_OK)
+			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
 			return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -141,7 +141,3 @@ class QuestionViewSet(viewsets.ViewSet):
 		serializer = PostTagSerializer(tags, many=True)
 
 		return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-
-

@@ -11,10 +11,10 @@ from rest_framework_jwt.settings import api_settings
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 
-from .models import Account, VerifyToken, AccountVerifyInfo
-from .serializers import AccountSerializer
+from .models import Account, VerifyToken, AccountVerifyInfo, Team
+from .serializers import AccountSerializer, TeamSerializer
 
 
 def send_verify_token(email=None, phone=None):
@@ -108,7 +108,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 class AccountViewSet(viewsets.ViewSet):
 	queryset = Account.objects.exclude(is_staff=1)
 	parser_classes = (MultiPartParser, FormParser, JSONParser)
-	permission_classes = (IsAuthenticated,)
+	permission_classes = (IsAuthenticatedOrReadOnly,)
 
 	def retrieve(self, request, pk):
 		user = get_object_or_404(self.queryset, pk=pk)
@@ -212,3 +212,24 @@ class AccountViewSet(viewsets.ViewSet):
 	# 	elif request.method == 'GET':
 	# 		serializer = AvatarSerializer(request.user.avatar)
 	# 		return Response(serializer.data)
+
+
+class TeamViewSet(viewsets.ViewSet):
+	queryset = Team.objects.all()
+	parser_classes = (MultiPartParser, FormParser, JSONParser)
+	permission_classes = (IsAuthenticatedOrReadOnly,)
+
+	def list(self, request):
+		serializer = TeamSerializer(self.queryset, many=True)
+		return Response(serializer.data)
+
+	def retrieve(self, request, pk=None):
+		team = get_object_or_404(self.queryset, pk=pk)
+		serializer = TeamSerializer(team)
+		return Response(serializer.data)
+
+	def create(self, request):
+		serializer = TeamSerializer(data=request.data)
+		serializer.is_valid(raise_exception=True)
+		serializer.save()
+		return Response(status=status.HTTP_201_CREATED)

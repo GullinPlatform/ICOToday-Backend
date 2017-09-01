@@ -36,6 +36,7 @@ INSTALLED_APPS = [
 	'rest_framework',
 	'rest_framework_jwt',
 	'corsheaders',
+	'storages',
 
 	'ICOToday.apps.accounts',
 	'ICOToday.apps.posts',
@@ -172,3 +173,24 @@ JWT_AUTH = {
 
 # Account customization
 AUTH_USER_MODEL = 'accounts.Account'
+
+# ------ Amazon S3 ------
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+# Amazon Web Services storage bucket name, as a string.
+AWS_STORAGE_BUCKET_NAME = 'icotoday'
+
+# ------ SES email settings ------
+
+EMAIL_BACKEND = 'django_ses.SESBackend'
+
+# These are optional -- if they're set as environment variables they won't
+# need to be set here as well
+AWS_ACCESS_KEY_ID = ''
+AWS_SECRET_ACCESS_KEY = ''
+
+# Additionally, if you are not using the default AWS region of us-east-1,
+# you need to specify a region, like so:
+AWS_SES_REGION_NAME = 'us-east-1'
+AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
+AWS_SES_AUTO_THROTTLE = 0.5  # (default; safety factor applied to rate limit)
+

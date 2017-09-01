@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Post, QuestionFile, QuestionField, QuestionTag
+from .models import Post, QuestionFile, QuestionField, PostTag
 
 
 class QuestionFileSerializer(serializers.ModelSerializer):
@@ -15,17 +15,16 @@ class QuestionFieldSerializer(serializers.ModelSerializer):
 		fields = '__all__'
 
 
-class QuestionTagSerializer(serializers.ModelSerializer):
+class PostTagSerializer(serializers.ModelSerializer):
 	class Meta:
-		model = QuestionTag
+		model = PostTag
 		fields = '__all__'
 
 
-class QuestionSerializer(serializers.ModelSerializer):
+class PostSerializer(serializers.ModelSerializer):
 	files = QuestionFileSerializer(required=False, allow_null=True, many=True)
 	fields = QuestionFieldSerializer(required=False, allow_null=True, many=True)
-	industry_tags = QuestionTagSerializer(required=False, allow_null=True, many=True)
-	tech_tags = QuestionTagSerializer(required=False, allow_null=True, many=True)
+	tags = PostTagSerializer(required=False, allow_null=True, many=True)
 
 	class Meta:
 		model = Post

@@ -42,6 +42,14 @@ add_team_member = QuestionViewSet.as_view({
 	'delete': 'add_team_member'
 })
 
+search_posts_by_tag = QuestionViewSet.as_view({
+	'get': 'search_by_tag'
+})
+
+get_post_tags = QuestionViewSet.as_view({
+	'get': 'get_tag_list'
+})
+
 urlpatterns = [
 	url(r'^$', question_list, name='question_list'),
 	url(r'^p/(?P<p>[0-9]+)$', question_list, name='question_list'),
@@ -49,6 +57,9 @@ urlpatterns = [
 	url(r'^applied/$', applied_question_list, name='applied_question_list'),
 	url(r'^marked/$', marked_question_list, name='marked_question_list'),
 	url(r'^created/$', created_question_list, name='created_question_list'),
+
+	url(r'^search/t/(?P<tag>[A-z0-9]+)/$', search_posts_by_tag, name='search_posts_by_tag'),
+	url(r'^tags/$', get_post_tags, name='get_post_tags'),
 
 	url(r'^(?P<pk>[0-9]+)/$', question, name='question'),
 	url(r'^(?P<pk>[0-9]+)/discussions/$', question_discussions, name='question'),

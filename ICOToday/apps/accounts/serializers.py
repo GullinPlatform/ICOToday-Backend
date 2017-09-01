@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Account
+from .models import Account, Team
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -24,3 +24,11 @@ class AccountSerializer(serializers.ModelSerializer):
 			return account
 		else:
 			return False
+
+
+class TeamSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Team
+		fields = ['name', 'description']
+		read_only_fields = ('created', 'updated',)
+

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Post, QuestionField, QuestionFile, QuestionTag
+from .models import Post, QuestionField, QuestionFile, PostTag
 
 
 class QuestionFieldInline(admin.TabularInline):
@@ -28,9 +28,9 @@ class QuestionFieldAdmin(admin.ModelAdmin):
 	)
 
 
-class QuestionTagAdmin(admin.ModelAdmin):
-	fieldsets = (('Tag', {'fields': ('type', 'tag')}),)
-	list_display = ('tag', 'type')
+class PostTagAdmin(admin.ModelAdmin):
+	fieldsets = (('Tag', {'fields': ('tag',)}),)
+	list_display = ('tag',)
 
 
 class QuestionFileAdmin(admin.ModelAdmin):
@@ -42,4 +42,4 @@ class QuestionFileAdmin(admin.ModelAdmin):
 admin.site.register(Post, PostAdmin)
 admin.site.register(QuestionField, QuestionFieldAdmin)
 admin.site.register(QuestionFile, QuestionFileAdmin)
-admin.site.register(QuestionTag, QuestionTagAdmin)
+admin.site.register(PostTag, PostTagAdmin)

@@ -37,40 +37,54 @@ class AccountManager(BaseUserManager):
 
 class Account(AbstractBaseUser, PermissionsMixin):
 	TYPE_CHOICES = (
-		(0, '需求方'),
-		(1, '技术提供方')
+		(0, 'ICO Company'),
+		(1, 'ICO Investor')
 	)
+
 	VERIFY_PROCESS = (
-		(0, '未通过'),
-		(1, '审核中'),
-		(2, '通过')
+		(0, 'Not Passed'),
+		(1, 'Passed'),
+		(2, 'Verifying')
 	)
+
 	# Auth
 	email = models.EmailField(unique=True, null=True)
-	username = models.CharField(max_length=40, unique=True, null=True)
 	phone = models.CharField(max_length=20, unique=True, null=True)
+
 	# Account Info
-	alias = models.CharField(max_length=20, null=True)
 	avatar = models.ImageField(upload_to='avatars', null=True, blank=True)
 	type = models.IntegerField(choices=TYPE_CHOICES, default=0)
 
 	first_name = models.CharField(max_length=40, null=True, blank=True)
 	last_name = models.CharField(max_length=40, null=True, blank=True)
+
+	description = models.TextField(null=True, blank=True)
+
+	team = models.ForeignKey('Team', related_name='members', null=True, blank=True)
+
+	# Social Media
+	linkedin = models.CharField(max_length=100, null=True, blank=True)
+	twitter = models.CharField(max_length=100, null=True, blank=True)
+	slack = models.CharField(max_length=100, null=True, blank=True)
+	telegram = models.CharField(max_length=100, null=True, blank=True)
+
 	# Permission
-	# From inherit
+	# # from inherit
 	is_staff = models.BooleanField(default=False)
 	is_active = models.BooleanField(default=True)
-	# self-defined
+	# # self defined
 	is_activated = models.BooleanField(default=False)
 	is_verified = models.IntegerField(choices=VERIFY_PROCESS, default=0)
-	is_company = models.BooleanField(default=False)
+
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
+
 	# Relations
 	objects = AccountManager()
+
 	# Settings
-	USERNAME_FIELD = 'username'
+	USERNAME_FIELD = 'email'
 
 	class Meta:
 		ordering = ['created']
@@ -124,6 +138,7 @@ class AccountVerifyInfo(models.Model):
 	wechat = models.CharField(max_length=50, null=True)
 	qq = models.CharField(max_length=50, null=True)
 	phone = models.CharField(max_length=50, null=True)
+
 	# for company
 	company_name = models.CharField(max_length=20, null=True)
 	company_register_file = models.FileField(upload_to='company_register_file')
@@ -132,6 +147,20 @@ class AccountVerifyInfo(models.Model):
 	company_email = models.CharField(max_length=50, null=True)
 	company_address = models.CharField(max_length=50, null=True)
 	company_field = models.CharField(max_length=50, null=True)
+
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
+
+
+class Team(models.Model):
+	# Team Info
+	name = models.CharField(max_length=50, null=True)
+	description = models.TextField(null=True, blank=True)
+
+	# Timestamp
+	created = models.DateTimeField(auto_now_add=True)
+	updated = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return self.name

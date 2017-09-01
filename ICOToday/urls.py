@@ -27,7 +27,7 @@ urlpatterns = [
 	url(r'^admin/', admin.site.urls),
 	url(r'^account/', include(account_urls)),
 	url(r'^discussion/', include(discussion_urls)),
-	url(r'^question/', include(post_urls)),
+	url(r'^post/', include(post_urls)),
 ]
 
 if settings.DEBUG:

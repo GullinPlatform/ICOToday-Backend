@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser, FileUploadParser
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 
-from .models import Post, QuestionField, QuestionFile
-from .serializers import QuestionSerializer
+from .models import Post, QuestionField, QuestionFile, PostTag
+from .serializers import PostSerializer, PostTagSerializer
 
 from ..discussions.serializers import DiscussionSerializer
 
@@ -28,7 +28,7 @@ class QuestionViewSet(viewsets.ViewSet):
 			# If page is out of range (e.g. 9999), deliver last page of results.
 			questions = paginator.page(paginator.num_pages)
 
-		serializer = QuestionSerializer(questions, many=True)
+		serializer = PostSerializer(questions, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	# TODO:
@@ -36,15 +36,15 @@ class QuestionViewSet(viewsets.ViewSet):
 		pass
 
 	def created_question_list(self, request, pk):
-		serializer = QuestionSerializer(request.user.created_questions, many=True)
+		serializer = PostSerializer(request.user.created_questions, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def applied_question_list(self, request, pk):
-		serializer = QuestionSerializer(request.user.applied_questions, many=True)
+		serializer = PostSerializer(request.user.applied_questions, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def marked_question_list(self, request, pk):
-		serializer = QuestionSerializer(request.user.marked_questions, many=True)
+		serializer = PostSerializer(request.user.marked_questions, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def create(self, request):
@@ -70,12 +70,12 @@ class QuestionViewSet(viewsets.ViewSet):
 
 	def retrieve(self, request, pk):
 		question = get_object_or_404(self.queryset, pk=pk)
-		serializer = QuestionSerializer(question)
+		serializer = PostSerializer(question)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def update(self, request, pk):
 		question = get_object_or_404(self.queryset, pk=pk)
-		serializer = QuestionSerializer(question, data=request.data)
+		serializer = PostSerializer(question, data=request.data)
 
 		if serializer.is_valid():
 			serializer.save()
@@ -127,3 +127,21 @@ class QuestionViewSet(viewsets.ViewSet):
 			return Response(status=status.HTTP_200_OK)
 
 		return Response(status=status.HTTP_403_FORBIDDEN)
+
+	def search_by_tag(self, request, tag):
+		tag = PostTag.objects.get(tag=tag)
+		if tag:
+			serializer = PostSerializer(tag.posts.all(), many=True)
+			return Response(serializer.data,status=status.HTTP_200_OK)
+		else:
+			return Response(status=status.HTTP_404_NOT_FOUND)
+
+	def get_tag_list(self, request):
+		tags = PostTag.objects.all()
+		serializer = PostTagSerializer(tags, many=True)
+
+		return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+

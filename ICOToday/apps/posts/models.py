@@ -18,8 +18,7 @@ class Post(models.Model):
 	due_date = models.DateTimeField(null=True)
 	difficulty = models.IntegerField(default=1)
 
-	industry_tags = models.ManyToManyField('QuestionTag', related_name='industry_questions')
-	tech_tags = models.ManyToManyField('QuestionTag', related_name='tech_questions')
+	tags = models.ManyToManyField('PostTag', related_name='posts')
 
 	#ICO fields
 	website = models.CharField(max_length=100, null=True)
@@ -66,12 +65,8 @@ class QuestionFile(models.Model):
 		return self.question.title + ' file'
 
 
-class QuestionTag(models.Model):
-	TYPE_CHOICE = (
-		(0, 'Industry'), (1, 'Tech')
-	)
+class PostTag(models.Model):
 	tag = models.CharField(max_length=40)
-	type = models.IntegerField(choices=TYPE_CHOICE)
 
 	def __str__(self):
 		return self.tag

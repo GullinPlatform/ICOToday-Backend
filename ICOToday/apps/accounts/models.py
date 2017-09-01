@@ -90,11 +90,11 @@ class Account(AbstractBaseUser, PermissionsMixin):
 		ordering = ['created']
 
 	def __str__(self):
-		return self.username
+		return self.email
 
 	@property
 	def full_name(self):
-		return self.username
+		return self.email if self.email else self.phone
 
 	@property
 	def is_admin(self):
@@ -104,10 +104,10 @@ class Account(AbstractBaseUser, PermissionsMixin):
 		send_mail(subject, message, from_email, [self.email], **kwargs)
 
 	def get_short_name(self):
-		return self.username
+		return self.email
 
 	def get_full_name(self):
-		return self.username
+		return self.email
 
 
 class VerifyToken(models.Model):

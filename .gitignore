@@ -70,3 +70,5 @@ ICOToday/apps/accounts/migrations/0001_initial\.py
 ICOToday/apps/posts/migrations/0002_auto_20170901_0903\.py
 
 ICOToday/apps/accounts/migrations/0002_auto_20170901_0903\.py
+
+ICOToday/apps/posts/migrations/0003_auto_20170901_0926\.py

@@ -40,7 +40,7 @@ class Post(models.Model):
 	# files
 
 	def __str__(self):
-		return self.title
+		return self.title if self.title else ' '
 
 	def num_votes(self):
 		return self.up_votes - self.down_votes
@@ -50,4 +50,4 @@ class PostTag(models.Model):
 	tag = models.CharField(max_length=40)
 
 	def __str__(self):
-		return self.tag
+		return self.tag if self.tag else ' '

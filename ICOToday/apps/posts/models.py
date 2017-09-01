@@ -36,7 +36,9 @@ class Post(models.Model):
 	video_link = models.CharField(max_length=100, null=True, blank=True)
 	team = models.ForeignKey('accounts.Team', blank=True, related_name='posts')
 
-	goal = models.IntegerField(default=0)
+	maximum_goal = models.IntegerField(default=0)
+	minimum_goal = models.IntegerField(default=0)
+
 	coin_type = models.CharField(max_length=20, default='BTC')
 
 	# Timestamp

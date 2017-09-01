@@ -47,6 +47,13 @@ class Post(models.Model):
 		return  votes
 
 
+class CommentsField(models.Model):
+	post = models.ForeignKey('posts.Post', related_name='comments')
+	author = models.ForeignKey('accounts.Account', related_name='author_questions')
+	comment = models.TextField()
+	timestamp = models.DateTimeField(auto_now_add=True)
+
+
 class QuestionField(models.Model):
 	question = models.ForeignKey('Post', related_name='fields')
 	title = models.CharField(max_length=20)

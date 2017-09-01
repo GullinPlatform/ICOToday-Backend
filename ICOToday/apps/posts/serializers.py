@@ -1,39 +1,33 @@
 from rest_framework import serializers
 
-from .models import Post, QuestionFile, QuestionField, QuestionTag, CommentsField
+from .models import Post, PostTag, CommentsField
+from ..accounts.serializers import BasicAccountSerializer
 
 class CommentsFieldSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = CommentsField
 		fields = '__all__'
 
-
-class QuestionFileSerializer(serializers.ModelSerializer):
+class PostTagSerializer(serializers.ModelSerializer):
 	class Meta:
-		model = QuestionFile
-		fields = '__all__'
+		model = PostTag
+		fields = ['tag']
 
 
-class QuestionFieldSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = QuestionField
-		fields = '__all__'
-
-
-class QuestionTagSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = QuestionTag
-		fields = '__all__'
-
-
-class QuestionSerializer(serializers.ModelSerializer):
-	files = QuestionFileSerializer(required=False, allow_null=True, many=True)
-	fields = QuestionFieldSerializer(required=False, allow_null=True, many=True)
-	industry_tags = QuestionTagSerializer(required=False, allow_null=True, many=True)
-	tech_tags = QuestionTagSerializer(required=False, allow_null=True, many=True)
-	comments = CommentsFieldSerializer(required=False, allow_null=True, many=True)
+class PostSerializer(serializers.ModelSerializer):
+	tags = PostTagSerializer(required=False, allow_null=True, many=True)
+	team_members = BasicAccountSerializer(required=False, allow_null=True, many=True)
 
 	class Meta:
 		model = Post
 		fields = '__all__'
+		read_only_fields = ('created', 'updated', 'status')
+
+
+class BasicPostSerializer(serializers.ModelSerializer):
+	tags = PostTagSerializer(required=False, allow_null=True, many=True)
+
+	class Meta:
+		model = Post
+		fields = ['id', 'description_short', 'logo_image', 'promo_image', 'title', 'status', 'tags', 'website', 'start_date', 'end_date']
 		read_only_fields = ('created', 'updated', 'status')

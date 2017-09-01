@@ -11,7 +11,7 @@ class AccountCreationForm(forms.ModelForm):
 
 	class Meta:
 		model = Account
-		fields = ('username', 'username')
+		fields = ('email',)
 
 	def clean_password2(self):
 		# Check that the two password entries match
@@ -39,7 +39,7 @@ class AccountChangeForm(forms.ModelForm):
 
 	class Meta:
 		model = Account
-		fields = ('id', 'email', 'username', 'phone', 'avatar')
+		fields = ('id', 'email', 'phone', 'avatar')
 
 	def clean_password(self):
 		# Regardless of what the user provides, return the initial value.

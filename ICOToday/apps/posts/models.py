@@ -18,17 +18,17 @@ class Post(models.Model):
 
 	tags = models.ManyToManyField('PostTag', related_name='posts')
 
-	promote_image = models.ImageField(upload_to='posts/images/', null=True)
-	logo_image = models.ImageField(upload_to='posts/images/', null=True)
+	promote_image = models.ImageField(upload_to='posts/images/', null=True, blank=True)
+	logo_image = models.ImageField(upload_to='posts/images/', null=True, blank=True)
 
 	# ICO fields
-	website = models.CharField(max_length=100, null=True)
+	website = models.CharField(max_length=100, null=True, blank=True)
 	start_date = models.DateTimeField(null=True)
 	end_date = models.DateTimeField(null=True)
-	white_paper = models.FileField(upload_to='white_papers/', null=True)
+	white_paper = models.FileField(upload_to='white_papers/', null=True, blank=True)
 	up_votes = models.IntegerField(default=0)
 	down_votes = models.IntegerField(default=0)
-	video_link = models.CharField(max_length=100, null=True)
+	video_link = models.CharField(max_length=100, null=True, blank=True)
 	team_members = models.ManyToManyField('accounts.Account', blank=True, related_name='posts')
 
 	# Timestamp

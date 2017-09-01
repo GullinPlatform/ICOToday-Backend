@@ -64,9 +64,10 @@ class PostViewSet(viewsets.ViewSet):
 	def create(self, request):
 		new_post = Post(
 			creator_id=request.user.id,
-			title=request.data['title'],
+			title=request.data.get('title'),
 			description_short=request.data['description_short'],
-			prize=request.data['prize']
+			website=request.data.get('website'),
+			team_id=request.user.team.id
 		)
 		new_post.save()
 

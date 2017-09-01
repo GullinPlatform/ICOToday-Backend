@@ -48,8 +48,8 @@ class Account(AbstractBaseUser, PermissionsMixin):
 	)
 
 	# Auth
-	email = models.EmailField(unique=True, null=True)
-	phone = models.CharField(max_length=20, unique=True, null=True)
+	email = models.EmailField(unique=True, null=True, blank=True)
+	phone = models.CharField(max_length=20, unique=True, null=True, blank=True)
 
 	# Account Info
 	avatar = models.ImageField(upload_to='avatars', null=True, blank=True)

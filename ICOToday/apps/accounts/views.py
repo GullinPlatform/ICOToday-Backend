@@ -14,7 +14,7 @@ from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 
 from .models import Account, VerifyToken, AccountVerifyInfo, Team
-from .serializers import AccountSerializer, TeamSerializer
+from .serializers import AccountSerializer, TeamSerializer, BasicTeamSerializer
 
 
 def send_verify_token(email=None, phone=None):
@@ -220,7 +220,7 @@ class TeamViewSet(viewsets.ViewSet):
 	permission_classes = (IsAuthenticatedOrReadOnly,)
 
 	def list(self, request):
-		serializer = TeamSerializer(self.queryset, many=True)
+		serializer = BasicTeamSerializer(self.queryset, many=True)
 		return Response(serializer.data)
 
 	def retrieve(self, request, pk=None):

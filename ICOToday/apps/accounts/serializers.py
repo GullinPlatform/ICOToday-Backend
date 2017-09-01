@@ -26,15 +26,31 @@ class AccountSerializer(serializers.ModelSerializer):
 			return False
 
 
+class MiniAccountSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Account
+		fields = ['id', 'email', 'phone', 'avatar', 'type',
+		          'first_name', 'last_name', 'linkedin', 'twitter', 'slack', 'telegram']
+
+
 class TeamSerializer(serializers.ModelSerializer):
+	members = MiniAccountSerializer(allow_null=True, many=True)
+
 	class Meta:
 		model = Team
-		fields = ['name', 'description']
+		fields = ['id', 'name', 'description', 'members']
+		read_only_fields = ('created', 'updated',)
+
+
+class BasicTeamSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Team
+		fields = ['id', 'name', 'description']
 		read_only_fields = ('created', 'updated',)
 
 
 class BasicAccountSerializer(serializers.ModelSerializer):
-	team = TeamSerializer(allow_null=True)
+	team = BasicTeamSerializer(allow_null=True)
 
 	class Meta:
 		model = Account

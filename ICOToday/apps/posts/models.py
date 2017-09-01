@@ -6,6 +6,7 @@ class Post(models.Model):
 		(0, 'Processing'),
 		(1, 'Verified'),
 		(2, 'Completed'),
+		(3, 'Promoting'),
 	)
 	creator = models.ForeignKey('accounts.Account', related_name='created_posts')
 	appliers = models.ManyToManyField('accounts.Account', blank=True, related_name='applied_posts')
@@ -16,6 +17,9 @@ class Post(models.Model):
 	status = models.IntegerField(choices=STATUS_CHOICES, default=0)
 
 	tags = models.ManyToManyField('PostTag', related_name='posts')
+
+	promote_image = models.ImageField(upload_to='posts/images/', null=True)
+	logo_image = models.ImageField(upload_to='posts/images/', null=True)
 
 	# ICO fields
 	website = models.CharField(max_length=100, null=True)

@@ -229,7 +229,13 @@ class TeamViewSet(viewsets.ViewSet):
 		return Response(serializer.data)
 
 	def create(self, request):
-		serializer = TeamSerializer(data=request.data)
-		serializer.is_valid(raise_exception=True)
-		serializer.save()
-		return Response(status=status.HTTP_201_CREATED)
+		if request.data.get('name') and request.data.get('description'):
+			team = Team.objects.create(
+				name=request.data.get('name'),
+				description=request.data.get('description')
+			)
+			request.user.team = team
+			request.use.save()
+			return Response(status=status.HTTP_201_CREATED)
+		else:
+			return Response(status=status.HTTP_400_BAD_REQUEST)

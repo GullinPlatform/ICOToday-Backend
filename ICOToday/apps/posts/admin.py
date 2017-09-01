@@ -9,12 +9,12 @@ class CommentsFieldInline(admin.TabularInline):
 
 
 class PostAdmin(admin.ModelAdmin):
-	list_display = ('title', 'status', 'creator', 'start_datetime', 'start_datetime')
+	list_display = ('title', 'status', 'creator', 'start_datetime', 'end_datetime')
 
 	fieldsets = (
 		('Question Info', {'fields': ('title', 'status', 'creator')}),
 		('Details', {'fields': ('description_short', 'promote_image', 'logo_image')}),
-		('ICO Details', {'fields': ('start_datetime', 'start_datetime', 'website', 'video_link', 'up_votes', 'down_votes', 'white_paper',)}),
+		('ICO Details', {'fields': ('start_datetime', 'end_datetime', 'website', 'video_link', 'up_votes', 'down_votes', 'white_paper',)}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	inlines = [CommentsFieldInline]

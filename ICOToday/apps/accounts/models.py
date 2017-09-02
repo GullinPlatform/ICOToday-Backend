@@ -19,6 +19,8 @@ class AccountInfo(models.Model):
 
 	team = models.ForeignKey('Team', related_name='members', null=True, blank=True)
 
+	is_adviser = models.BooleanField(default=False)
+
 	# Social Media
 	linkedin = models.CharField(max_length=100, null=True, blank=True)
 	twitter = models.CharField(max_length=100, null=True, blank=True)
@@ -26,7 +28,7 @@ class AccountInfo(models.Model):
 	telegram = models.CharField(max_length=100, null=True, blank=True)
 
 	def __str__(self):
-		return self.first_name + ' ' + self.last_name
+		return self.first_name + ' ' + self.last_name if self.first_name and self.last_name else str(self.id)
 
 
 class AccountManager(BaseUserManager):
@@ -42,7 +44,7 @@ class AccountManager(BaseUserManager):
 		info = AccountInfo.objects.create()
 		account = self.model(**extra_fields)
 		account.set_password(password)
-		account.info = info
+		account.info_id = info.id
 		account.save()
 		return account
 
@@ -63,12 +65,6 @@ class Account(AbstractBaseUser, PermissionsMixin):
 		(1, 'ICO Investor')
 	)
 
-	VERIFY_PROCESS = (
-		(0, 'Not Passed'),
-		(1, 'Passed'),
-		(2, 'Verifying')
-	)
-
 	# Auth
 	email = models.EmailField(unique=True, null=True, blank=True)
 	phone = models.CharField(max_length=20, unique=True, null=True, blank=True)
@@ -82,8 +78,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
 	is_staff = models.BooleanField(default=False)
 	is_active = models.BooleanField(default=True)
 	# # self defined
-	is_activated = models.BooleanField(default=False)
-	is_verified = models.IntegerField(choices=VERIFY_PROCESS, default=0)
+	is_verified = models.BooleanField(default=False)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)

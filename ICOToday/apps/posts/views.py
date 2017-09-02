@@ -52,24 +52,22 @@ class PostViewSet(viewsets.ViewSet):
 		pass
 
 	def create(self, request):
-
 		Post.objects.create(
 			creator_id=request.user.id,
 			title=request.data.get('title'),
 			description_full=request.data.get('description_full'),
-			website=request.data.get('website'),
 			team_id=request.user.team.id,
 			maximum_goal=request.data.get('maximum_goal'),
 			minimum_goal=request.data.get('minimum_goal'),
 			coin_type=request.data.get('coin_type'),
 			start_datetime=request.data.get('start_datetime'),
 			end_datetime=request.data.get('end_datetime'),
-			logo_image=request.data.get('logo'),
-			promote_image=request.data.get('promo_logo', ''),
-			white_paper=request.data.get('white_paper'),
+			logo_image=request.file.get('logo'),
+			promote_image=request.file.get('promo_logo', ''),
+			white_paper=request.file.get('white_paper'),
 			video_link=request.data.get('video_link', ''),
+			website=request.data.get('website'),
 		)
-
 		return Response(status=status.HTTP_201_CREATED)
 
 	def retrieve(self, request, pk):

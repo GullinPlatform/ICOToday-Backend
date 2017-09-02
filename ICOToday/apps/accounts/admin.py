@@ -16,8 +16,8 @@ class AccountInline(admin.TabularInline):
 
 class AccountInfoInline(admin.TabularInline):
 	model = AccountInfo
-	fields = ('id', 'first_name', 'last_name', 'title', 'team')
-	readonly_fields = ('id', 'first_name', 'last_name', 'title', 'team')
+	fields = ('id', 'first_name', 'last_name', 'title', 'team', 'is_adviser')
+	readonly_fields = ('id', 'first_name', 'last_name', 'title', 'team', 'is_adviser')
 	show_change_link = True
 	extra = 0
 
@@ -26,11 +26,11 @@ class AccountAdmin(UserAdmin):
 	# The forms to add and change user instances
 	form = AccountChangeForm
 	add_form = AccountCreationForm
-	list_display = ('id', 'email', 'phone', 'is_staff')
-	list_filter = ['is_staff']
+	list_display = ('id', 'email', 'phone', 'is_verified')
+	list_filter = ['is_staff', 'is_verified']
 	fieldsets = (
-		(None, {'fields': ('email', 'phone', 'password')}),
-		('Permissions', {'fields': ('is_staff', 'is_activated', 'is_verified')}),
+		(None, {'fields': ('email', 'phone', 'password', 'info')}),
+		('Permissions', {'fields': ('is_staff', 'is_verified')}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	readonly_fields = ('created', 'updated', 'is_staff',)
@@ -45,10 +45,9 @@ class AccountAdmin(UserAdmin):
 
 
 class AccountInfoAdmin(admin.ModelAdmin):
-	list_display = ('id', 'first_name', 'last_name', 'title', 'team')
-	list_filter = ['is_staff']
+	list_display = ('id', 'first_name', 'last_name', 'title', 'team', 'is_adviser')
 	fieldsets = (
-		('Personal info', {'fields': ('avatar', 'first_name', 'last_name', 'description', 'team')}),
+		('Personal info', {'fields': ('avatar', 'first_name', 'last_name', 'description', 'team', 'is_adviser')}),
 		('Social Media', {'fields': ('linkedin', 'twitter', 'slack', 'telegram')}),
 	)
 	search_fields = ['first_name', 'last_name']
@@ -72,8 +71,8 @@ class TeamAdmin(admin.ModelAdmin):
 	readonly_fields = ('created', 'updated')
 
 
-
 admin.site.register(Account, AccountAdmin)
+admin.site.register(AccountInfo, AccountInfoAdmin)
 admin.site.register(VerifyToken, VerifyTokenAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.unregister(AdminGroup)

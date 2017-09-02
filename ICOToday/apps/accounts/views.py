@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 
-from .models import Account, VerifyToken, Team
+from .models import Account, VerifyToken, Team, AccountInfo
 from .serializers import AuthAccountSerializer, TeamSerializer, BasicTeamSerializer, BasicAccountSerializer
 
 from ..posts.serializers import PostSerializer
@@ -22,26 +22,37 @@ from ..posts.serializers import PostSerializer
 def send_verify_token(email=None, phone=None):
 	if email:
 		token_instance, created = VerifyToken.objects.get_or_create(email=email)
-
 		# if token exists, recreate one
 		if created:
 			token_instance.expire_time = timezone.now() + timedelta(hours=5)
 			token_instance.token = random.randint(0, 10 ** 6 - 1)
 			token_instance.save()
 		token = token_instance.token
+
+	# TODO: Email Backend
 	# email = EmailMessage(subject, render_to_string('email/%s.html' % template, ctx), 'no-reply@icotoday.io', [to])
 	# email.content_subtype = 'html'
 	# email.send()
+
 	if phone:
 		token_instance, created = VerifyToken.objects.get_or_create(phone=phone)
-
 		# if token exists, recreate one
 		if created:
 			token_instance.expire_time = timezone.now() + timedelta(hours=5)
 			token_instance.token = random.randint(0, 10 ** 6 - 1)
 			token_instance.save()
-
 		token = token_instance.token
+
+
+def send_invitation_email(email, info_id):
+	print email, info_id
+	pass
+
+
+# TODO: Email Backend
+# email = EmailMessage(subject, render_to_string('email/%s.html' % template, ctx), 'no-reply@icotoday.io', [to])
+# email.content_subtype = 'html'
+# email.send()
 
 
 class AccountRegisterViewSet(viewsets.ViewSet):
@@ -68,6 +79,24 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		token = jwt_encode_handler(payload)
 
 		return Response({'token': token}, status=status.HTTP_201_CREATED)
+
+	def invited_register(self, request):
+		if request.data.get('info_id') and request.data.get('email'):
+			info = get_object_or_404(AccountInfo.objects.all(), pk=request.data.get('info_id'))
+			serializer = AuthAccountSerializer(data=request.data)
+			serializer.is_valid(raise_exception=True)
+			user = serializer.save()
+			user.info = info
+
+			# return token right away
+			jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+			jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+			payload = jwt_payload_handler(user)
+			token = jwt_encode_handler(payload)
+
+			return Response({'token': token}, status=status.HTTP_400_BAD_REQUEST)
+		else:
+			return Response(status=status.HTTP_201_CREATED)
 
 	def send_token(self, request):
 		if request.data['email']:
@@ -240,18 +269,45 @@ class TeamViewSet(viewsets.ViewSet):
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
+	def update(self, request, pk):
+		team = get_object_or_404(self.queryset, pk=pk)
+
+		if request.data.get('name'):
+			team.name = request.data.get('name')
+
+		if request.data.get('description'):
+			team.description = request.data.get('description')
+
+		team.save()
+		return Response(status=status.HTTP_200_OK)
+
 	def add_team_member(self, request, pk):
-		post = get_object_or_404(self.queryset, pk=pk)
-		if request.method == 'POST':
-			if request.data.get('member_id'):
-				member = get_object_or_404(Account.objects.all(), id=int(request.data.get('member_id')))
-				post.add(member)
-				post.save()
+		team = get_object_or_404(self.queryset, pk=pk)
+		if request.method == 'PATCH':
+			if request.data.get('email'):
+				info = AccountInfo.objects.create(
+					first_name=request.data.get('first_name'),
+					last_name=request.data.get('last_name'),
+					title=request.data.get('title'),
+					description=request.data.get('description'),
+					team_id=pk,
+					is_adviser=request.data.get('is_adviser'),
+					linkedin=request.data.get('linkedin', ''),
+					twitter=request.data.get('twitter', ''),
+					slack=request.data.get('slack', ''),
+					telegram=request.data.get('telegram', ''),
+				)
+
+				team.members.add(info)
+				send_invitation_email(request.data.get('email'), info.id)
 				return Response(status=status.HTTP_200_OK)
 			else:
 				return Response(status=status.HTTP_400_BAD_REQUEST)
 
 		elif request.method == 'DELETE':
-			post.remove(request.user)
-			post.save()
-			return Response(status=status.HTTP_200_OK)
+			if request.data.get('account_id'):
+				account = get_object_or_404(Account.objects.all(), pk=request.data.get('account_id'))
+				team.members.remove(account)
+				return Response(status=status.HTTP_200_OK)
+			else:
+				return Response(status=status.HTTP_400_BAD_REQUEST)

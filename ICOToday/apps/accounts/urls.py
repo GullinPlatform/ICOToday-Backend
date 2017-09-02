@@ -20,6 +20,10 @@ account_register = AccountRegisterViewSet.as_view({
 	'post': 'register'
 })
 
+account_invited_register = AccountRegisterViewSet.as_view({
+	'post': 'invited_register'
+})
+
 account_register_token = AccountRegisterViewSet.as_view({
 	'post': 'send_token',
 	'put' : 'verify_token'
@@ -42,12 +46,15 @@ account_marked_posts = AccountViewSet.as_view({
 })
 
 team_list = TeamViewSet.as_view({
-	'get': 'retrieve'
+	'get': 'list'
 })
 
 team_detail = TeamViewSet.as_view({
-	'post': 'create',
-	'get' : 'list'
+	'get'   : 'retrieve',
+	'post'  : 'create',
+	'put'   : 'update',
+	'patch' : 'add_team_member',
+	'delete': 'add_team_member',
 })
 
 urlpatterns = [
@@ -57,6 +64,7 @@ urlpatterns = [
 
 	url(r'^login/$', obtain_jwt_token),
 	url(r'^signup/$', account_register, name='user-register'),
+	url(r'^invited_signup/$', account_invited_register, name='user-invited-register'),
 
 	url(r'^reset/$', account_change_password, name='change-pass'),
 	url(r'^token/$', account_register_token, name='user-token'),
@@ -76,6 +84,6 @@ urlpatterns = [
 
 	# Team
 	url(r'^teams/$', team_list, name='team-list'),
-	url(r'^team/new/$', team_detail, name='team-list'),
-	url(r'^team/(?P<pk>[0-9]+)/$', team_detail, name='team-list'),
+	url(r'^team/new/$', team_detail, name='team-new'),
+	url(r'^team/(?P<pk>[0-9]+)/$', team_detail, name='team-detail'),
 ]

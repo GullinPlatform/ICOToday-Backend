@@ -58,6 +58,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
 	first_name = models.CharField(max_length=40, null=True, blank=True)
 	last_name = models.CharField(max_length=40, null=True, blank=True)
 
+	title = models.CharField(max_length=40, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
 
 	team = models.ForeignKey('Team', related_name='members', null=True, blank=True)

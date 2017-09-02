@@ -11,7 +11,6 @@ class Post(models.Model):
 		(4, 'Closed'),
 	)
 	creator = models.ForeignKey('accounts.Account', related_name='created_posts')
-	appliers = models.ManyToManyField('accounts.Account', blank=True, related_name='applied_posts')
 	marked = models.ManyToManyField('accounts.Account', blank=True, related_name='marked_posts')
 
 	title = models.CharField(max_length=200)
@@ -31,10 +30,11 @@ class Post(models.Model):
 	timezone = models.CharField(max_length=10, default='EST')
 
 	white_paper = models.FileField(upload_to='white_papers/', null=True, blank=True)
-	up_votes = models.IntegerField(default=0)
-	down_votes = models.IntegerField(default=0)
 	video_link = models.CharField(max_length=100, null=True, blank=True)
 	team = models.ForeignKey('accounts.Team', blank=True, related_name='posts')
+
+	up_votes = models.IntegerField(default=0)
+	down_votes = models.IntegerField(default=0)
 
 	maximum_goal = models.IntegerField(default=0)
 	minimum_goal = models.IntegerField(default=0)

@@ -50,8 +50,12 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		serializer = AccountSerializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
 		user = serializer.save()
-		if not user:
-			return Response({'error': 'Must provide Phone or Email.'}, status=status.HTTP_400_BAD_REQUEST)
+		# If ICO Company and have team name
+		if request.data.get('team_name') and request.data.get('type') is 0:
+			team = Team.objects.create(name=request.data.get('team_name'))
+			user.team_id = team.id
+			user.save()
+		# return token right away
 		jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 		jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 		payload = jwt_payload_handler(user)

@@ -13,12 +13,14 @@ class AccountSerializer(serializers.ModelSerializer):
 
 	def create(self, validated_data):
 		if 'phone' in validated_data:
-			account = Account(phone=validated_data['phone'], username=validated_data['username'], type=validated_data['type'])
+			account = Account(phone=validated_data['phone'], type=validated_data['type'],
+			                  first_name=validated_data['first_name'], last_name=validated_data['last_name'])
 			account.set_password(validated_data['password'])
 			account.save()
 			return account
 		elif 'email' in validated_data:
-			account = Account(email=validated_data['email'], username=validated_data['username'], type=validated_data['type'])
+			account = Account(email=validated_data['email'], type=validated_data['type'],
+			                  first_name=validated_data['first_name'], last_name=validated_data['last_name'])
 			account.set_password(validated_data['password'])
 			account.save()
 			return account

@@ -20,7 +20,15 @@ with open(os.path.join(BASE_DIR, 'settings/secret.txt')) as f:
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+	'http://www.icotoday.io',
+	'http://icotoday.io',
+	'https://icotoday.io',
+	'icotoday.io',
+	'www.icotoday.io',
+	'api.icotoday.io',
+
+]
 
 # Set auto redirect to false
 APPEND_SLASH = False
@@ -124,11 +132,13 @@ REST_FRAMEWORK = {
 
 # Cors Origin Settings
 CORS_ORIGIN_WHITELIST = (
-	'http://www.classgotcha.com',
-	'http://classgotcha.com',
-	'https://classgotcha.com',
-	'classgotcha.com',
-	'www.classgotcha.com',
+	'http://www.icotoday.io',
+	'http://icotoday.io',
+	'https://icotoday.io',
+	'icotoday.io',
+	'www.icotoday.io',
+	'api.icotoday.io',
+
 )
 CORS_ALLOW_HEADERS = (
 	'accept',
@@ -193,4 +203,3 @@ AWS_SECRET_ACCESS_KEY = ''
 AWS_SES_REGION_NAME = 'us-east-1'
 AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
 AWS_SES_AUTO_THROTTLE = 0.5  # (default; safety factor applied to rate limit)
-

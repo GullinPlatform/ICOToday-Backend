@@ -114,9 +114,9 @@ STATIC_ROOT = os.path.join(REPOSITORY_ROOT, 'static/')
 DATABASES = {
 	'default': {
 		'ENGINE'  : 'django.db.backends.mysql',
-		'NAME'    : '',
-		'USER'    : '',
-		'PASSWORD': '',
+		'NAME'    : 'icotoday',
+		'USER'    : 'root',
+		'PASSWORD': 'billions',
 		'HOST'    : '/var/lib/mysql/mysql.sock',
 	}
 }
@@ -196,8 +196,8 @@ EMAIL_BACKEND = 'django_ses.SESBackend'
 
 # These are optional -- if they're set as environment variables they won't
 # need to be set here as well
-AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY = ''
+AWS_ACCESS_KEY_ID = 'AKIAIPLNT5PYIDLOIOAQ'
+AWS_SECRET_ACCESS_KEY = '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'
 
 # Additionally, if you are not using the default AWS region of us-east-1,
 # you need to specify a region, like so:

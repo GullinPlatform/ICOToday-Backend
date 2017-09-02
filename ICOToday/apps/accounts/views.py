@@ -16,6 +16,8 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from .models import Account, VerifyToken, AccountVerifyInfo, Team
 from .serializers import AccountSerializer, TeamSerializer, BasicTeamSerializer
 
+from ..posts.serializers import PostSerializer
+
 
 def send_verify_token(email=None, phone=None):
 	if email:
@@ -182,40 +184,59 @@ class AccountViewSet(viewsets.ViewSet):
 		request.user.save()
 		return Response(status=status.HTTP_201_CREATED)
 
-	# @api_view(['GET', 'POST', 'OPTION'])
-	# @permission_classes((IsAuthenticated,))
-	# @parser_classes((MultiPartParser, FormParser,))
-	# def account_avatar(request):
-	# 	if request.method == 'POST':
-	# 		from StringIO import StringIO
-	# 		from django.core.files.uploadedfile import InMemoryUploadedFile
-	# 		from resizeimage import resizeimage
-	# 		from PIL import Image
-	# 		upload = request.FILES.get('file', False)
-	# 		if not upload:
-	# 			return Response(status=status.HTTP_400_BAD_REQUEST)
-	# 		filename, file_extension = upload.name.split('.')
-	# 		with Image.open(upload) as image:
-	# 			image2x = resizeimage.resize_cover(image, [128, 128])
-	# 			image1x = resizeimage.resize_cover(image, [48, 48])
-	# 			img2x_name = str(request.user.id) + '.2x' + file_extension
-	# 			img1x_name = str(request.user.id) + '.1x' + file_extension
-	# 			img2x_io = StringIO()
-	# 			img1x_io = StringIO()
-	# 			image2x.save(img2x_io, image.format)
-	# 			image1x.save(img1x_io, image.format)
-	# 			image2x_file = InMemoryUploadedFile(img2x_io, None, img2x_name, 'image/' + image.format,
-	# 			                                    img2x_io.len, None)
-	# 			image1x_file = InMemoryUploadedFile(img1x_io, None, img1x_name, 'image/' + image.format,
-	# 			                                    img1x_io.len, None)
-	#
-	# 		new_avatar = Avatar.objects.create(avatar2x=image2x_file, avatar1x=image1x_file)
-	# 		request.user.avatar = new_avatar
-	# 		request.user.save()
-	# 		return Response({'data': 'success'}, status=status.HTTP_200_OK)
-	# 	elif request.method == 'GET':
-	# 		serializer = AvatarSerializer(request.user.avatar)
-	# 		return Response(serializer.data)
+	def marked_posts(self, request, pk=None):
+		if pk:
+			account = get_object_or_404(self.queryset, pk=pk)
+			serializer = PostSerializer(account.marked_posts.all(), many=True)
+			return Response(serializer.data, status=status.HTTP_200_OK)
+		else:
+			serializer = PostSerializer(request.user.marked_posts.all(), many=True)
+			return Response(serializer.data, status=status.HTTP_200_OK)
+
+	def created_posts(self, request, pk=None):
+		if pk:
+			account = get_object_or_404(self.queryset, pk=pk)
+			serializer = PostSerializer(account.created_posts.all(), many=True)
+			return Response(serializer.data, status=status.HTTP_200_OK)
+		else:
+			serializer = PostSerializer(request.user.created_posts.all(), many=True)
+			return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# @api_view(['GET', 'POST', 'OPTION'])
+# @permission_classes((IsAuthenticated,))
+# @parser_classes((MultiPartParser, FormParser,))
+# def account_avatar(request):
+# 	if request.method == 'POST':
+# 		from StringIO import StringIO
+# 		from django.core.files.uploadedfile import InMemoryUploadedFile
+# 		from resizeimage import resizeimage
+# 		from PIL import Image
+# 		upload = request.FILES.get('file', False)
+# 		if not upload:
+# 			return Response(status=status.HTTP_400_BAD_REQUEST)
+# 		filename, file_extension = upload.name.split('.')
+# 		with Image.open(upload) as image:
+# 			image2x = resizeimage.resize_cover(image, [128, 128])
+# 			image1x = resizeimage.resize_cover(image, [48, 48])
+# 			img2x_name = str(request.user.id) + '.2x' + file_extension
+# 			img1x_name = str(request.user.id) + '.1x' + file_extension
+# 			img2x_io = StringIO()
+# 			img1x_io = StringIO()
+# 			image2x.save(img2x_io, image.format)
+# 			image1x.save(img1x_io, image.format)
+# 			image2x_file = InMemoryUploadedFile(img2x_io, None, img2x_name, 'image/' + image.format,
+# 			                                    img2x_io.len, None)
+# 			image1x_file = InMemoryUploadedFile(img1x_io, None, img1x_name, 'image/' + image.format,
+# 			                                    img1x_io.len, None)
+#
+# 		new_avatar = Avatar.objects.create(avatar2x=image2x_file, avatar1x=image1x_file)
+# 		request.user.avatar = new_avatar
+# 		request.user.save()
+# 		return Response({'data': 'success'}, status=status.HTTP_200_OK)
+# 	elif request.method == 'GET':
+# 		serializer = AvatarSerializer(request.user.avatar)
+# 		return Response(serializer.data)
 
 
 class TeamViewSet(viewsets.ViewSet):

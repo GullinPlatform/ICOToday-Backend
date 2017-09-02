@@ -6,8 +6,7 @@ from .models import Account, Team
 class AccountSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Account
-		exclude = ('user_permissions', 'groups', 'is_superuser', 'is_staff',
-		           'is_active')
+		exclude = ('user_permissions', 'groups', 'is_superuser', 'is_staff', 'is_active')
 		read_only_fields = ('created', 'updated',)
 		write_only_fields = ('password',)
 

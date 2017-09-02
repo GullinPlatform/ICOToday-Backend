@@ -76,6 +76,4 @@ urlpatterns = [
 	url(r'^(?P<pk>[0-9]+)/apply/$', post_apply, name='post_apply'),
 	url(r'^(?P<pk>[0-9]+)/mark/$', post_mark, name='post_mark'),
 	url(r'^(?P<pk>[0-9]+)/add_team_member/$', add_team_member, name='add_team_member'),
-
-
 ]

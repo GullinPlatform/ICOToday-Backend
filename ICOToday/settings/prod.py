@@ -11,8 +11,8 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # TODO
-MEDIA_ROOT = ''
-MEDIA_URL = ''
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(REPOSITORY_ROOT, 'media/')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 with open(os.path.join(BASE_DIR, 'settings/secret.txt')) as f:
@@ -107,6 +107,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(REPOSITORY_ROOT, 'static/')
 
 # Database
 # TODO

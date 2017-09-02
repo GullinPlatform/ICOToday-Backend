@@ -42,7 +42,7 @@ class AccountInfoSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = AccountInfo
 		fields = ['id', 'avatar', 'first_name', 'last_name',
-		          'team', 'description', 'is_adviser',
+		          'team', 'title', 'description', 'is_adviser',
 		          'linkedin', 'twitter', 'slack', 'telegram']
 
 
@@ -54,8 +54,16 @@ class BasicAccountSerializer(serializers.ModelSerializer):
 		fields = ['id', 'email', 'phone', 'type', 'is_verified', 'info']
 
 
+class BasicAccountInfoSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = AccountInfo
+		fields = ['id', 'avatar', 'first_name', 'last_name',
+		          'team', 'title', 'description', 'is_adviser',
+		          'linkedin', 'twitter', 'slack', 'telegram']
+
+
 class TeamSerializer(serializers.ModelSerializer):
-	members = BasicAccountSerializer(allow_null=True, many=True)
+	members = BasicAccountInfoSerializer(allow_null=True, many=True)
 
 	class Meta:
 		model = Team

@@ -282,8 +282,9 @@ class TeamViewSet(viewsets.ViewSet):
 		return Response(status=status.HTTP_200_OK)
 
 	def add_team_member(self, request, pk):
-		team = get_object_or_404(self.queryset, pk=pk)
+		# IMPORTANT: Here pk is Team Pk!
 		if request.method == 'PATCH':
+			team = get_object_or_404(self.queryset, pk=pk)
 			if request.data.get('email'):
 				info = AccountInfo.objects.create(
 					first_name=request.data.get('first_name'),
@@ -303,11 +304,9 @@ class TeamViewSet(viewsets.ViewSet):
 				return Response(status=status.HTTP_200_OK)
 			else:
 				return Response(status=status.HTTP_400_BAD_REQUEST)
-
+		# IMPORTANT: Here pk is Account Pk!
 		elif request.method == 'DELETE':
-			if request.data.get('account_id'):
-				account = get_object_or_404(Account.objects.all(), pk=request.data.get('account_id'))
-				team.members.remove(account)
-				return Response(status=status.HTTP_200_OK)
-			else:
-				return Response(status=status.HTTP_400_BAD_REQUEST)
+			info = get_object_or_404(AccountInfo.objects.all(), pk=pk)
+			info.team.members.remove(info)
+			return Response(status=status.HTTP_200_OK)
+

@@ -7,6 +7,28 @@ from django.core.mail import send_mail
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
 
+class AccountInfo(models.Model):
+	# Account Info
+	avatar = models.ImageField(upload_to='avatars', null=True, blank=True)
+
+	first_name = models.CharField(max_length=40, null=True, blank=True)
+	last_name = models.CharField(max_length=40, null=True, blank=True)
+
+	title = models.CharField(max_length=40, null=True, blank=True)
+	description = models.TextField(null=True, blank=True)
+
+	team = models.ForeignKey('Team', related_name='members', null=True, blank=True)
+
+	# Social Media
+	linkedin = models.CharField(max_length=100, null=True, blank=True)
+	twitter = models.CharField(max_length=100, null=True, blank=True)
+	slack = models.CharField(max_length=100, null=True, blank=True)
+	telegram = models.CharField(max_length=100, null=True, blank=True)
+
+	def __str__(self):
+		return self.first_name + ' ' + self.last_name
+
+
 class AccountManager(BaseUserManager):
 	use_in_migrations = True
 
@@ -14,15 +36,13 @@ class AccountManager(BaseUserManager):
 		"""
 		Creates and saves a User with the given email and password.
 		"""
-		if not extra_fields.get('email') and not extra_fields.get('username') and not extra_fields.get('phone'):
-			raise ValueError('The email/username/phone must be set')
+		if not extra_fields.get('email') and not extra_fields.get('phone'):
+			raise ValueError('The email/phone must be set')
 
-		# if extra_fields.get('email'):
-		# 	email = self.normalize_email(extra_fields.get('email'))
-		#
-		# email = self.normalize_email(email)
+		info = AccountInfo.objects.create()
 		account = self.model(**extra_fields)
 		account.set_password(password)
+		account.info = info
 		account.save()
 		return account
 
@@ -52,24 +72,10 @@ class Account(AbstractBaseUser, PermissionsMixin):
 	# Auth
 	email = models.EmailField(unique=True, null=True, blank=True)
 	phone = models.CharField(max_length=20, unique=True, null=True, blank=True)
-
-	# Account Info
-	avatar = models.ImageField(upload_to='avatars', null=True, blank=True)
 	type = models.IntegerField(choices=TYPE_CHOICES, default=0)
 
-	first_name = models.CharField(max_length=40, null=True, blank=True)
-	last_name = models.CharField(max_length=40, null=True, blank=True)
-
-	title = models.CharField(max_length=40, null=True, blank=True)
-	description = models.TextField(null=True, blank=True)
-
-	team = models.ForeignKey('Team', related_name='members', null=True, blank=True)
-
-	# Social Media
-	linkedin = models.CharField(max_length=100, null=True, blank=True)
-	twitter = models.CharField(max_length=100, null=True, blank=True)
-	slack = models.CharField(max_length=100, null=True, blank=True)
-	telegram = models.CharField(max_length=100, null=True, blank=True)
+	# Info
+	info = models.OneToOneField('AccountInfo', related_name='account')
 
 	# Permission
 	# # from inherit
@@ -122,38 +128,6 @@ class VerifyToken(models.Model):
 	@property
 	def is_expired(self):
 		return (timezone.now() - timedelta(hours=5)) > self.expire_time
-
-
-class AccountVerifyInfo(models.Model):
-	LEGAL_ID_TYPE = (
-		(0, '中华人民共和国身份证'),
-		(1, '护照'),
-		(2, '驾照'),
-	)
-	account = models.OneToOneField('Account', related_name='verify_info')
-
-	# for individual
-	real_name = models.CharField(max_length=20, null=True)
-	birthday = models.DateField(null=True)
-	working_at = models.CharField(max_length=50, null=True)
-	legal_id = models.FileField(upload_to='user_legal_id')
-	legal_id_type = models.IntegerField(choices=LEGAL_ID_TYPE, null=True)
-	wechat = models.CharField(max_length=50, null=True)
-	qq = models.CharField(max_length=50, null=True)
-	phone = models.CharField(max_length=50, null=True)
-
-	# for company
-	company_name = models.CharField(max_length=20, null=True)
-	company_register_file = models.FileField(upload_to='company_register_file')
-	company_phone = models.CharField(max_length=50, null=True)
-	company_contact = models.CharField(max_length=50, null=True)
-	company_email = models.CharField(max_length=50, null=True)
-	company_address = models.CharField(max_length=50, null=True)
-	company_field = models.CharField(max_length=50, null=True)
-
-	# Timestamp
-	created = models.DateTimeField(auto_now_add=True)
-	updated = models.DateTimeField(auto_now=True)
 
 
 class Team(models.Model):

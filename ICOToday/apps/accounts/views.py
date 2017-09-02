@@ -1,5 +1,5 @@
 import random
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
@@ -13,8 +13,8 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 
-from .models import Account, VerifyToken, AccountVerifyInfo, Team
-from .serializers import AccountSerializer, TeamSerializer, BasicTeamSerializer
+from .models import Account, VerifyToken, Team
+from .serializers import AuthAccountSerializer, TeamSerializer, BasicTeamSerializer, BasicAccountSerializer
 
 from ..posts.serializers import PostSerializer
 
@@ -49,14 +49,18 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 	permission_classes = (AllowAny,)
 
 	def register(self, request):
-		serializer = AccountSerializer(data=request.data)
+		serializer = AuthAccountSerializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
 		user = serializer.save()
-		# If ICO Company and have team name
-		if request.data.get('team_name') and request.data.get('type') is 0:
+
+		# If ICO Company, have team name
+		if request.data.get('type') is 0:
+			user.info.first_name = request.data.get('first_name')
+			user.info.last_name = request.data.get('last_name')
 			team = Team.objects.create(name=request.data.get('team_name'))
-			user.team_id = team.id
-			user.save()
+			user.info.team_id = team.id
+			user.info.save()
+
 		# return token right away
 		jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 		jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
@@ -82,7 +86,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			return Response({'message': 'Token is expired'}, status=status.HTTP_400_BAD_REQUEST)
 
 		token_instance.account.is_verified = True
-		token_instance.is_expired = True
+		token_instance.expire_time = datetime.utcnow()
 		return Response(status=status.HTTP_200_OK)
 
 	def forget_password(self, request, token=None):
@@ -107,7 +111,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			# set new password to user
 			token_instance.account.set_password(request.data['password'])
 			token_instance.account.save()
-			token_instance.is_expired = True
+			token_instance.expire_time = datetime.utcnow()
 			return Response(status=status.HTTP_200_OK)
 
 
@@ -118,7 +122,7 @@ class AccountViewSet(viewsets.ViewSet):
 
 	def retrieve(self, request, pk):
 		user = get_object_or_404(self.queryset, pk=pk)
-		serializer = AccountSerializer(user)
+		serializer = BasicAccountSerializer(user)
 		return Response(serializer.data)
 
 	def destroy(self, request, pk=None):
@@ -132,7 +136,7 @@ class AccountViewSet(viewsets.ViewSet):
 	@staticmethod
 	def me(request):
 		if request.method == 'GET':
-			serializer = AccountSerializer(request.user)
+			serializer = BasicAccountSerializer(request.user)
 			return Response(serializer.data)
 
 	@staticmethod
@@ -154,35 +158,6 @@ class AccountViewSet(viewsets.ViewSet):
 		except:
 			# If exception return with status 400
 			return Response(status=status.HTTP_400_BAD_REQUEST)
-
-	def verify_info(self, request):
-		if request.user.is_company:
-			info = AccountVerifyInfo(account=request.user,
-			                         company_name=request.data['company_name'],
-			                         company_register_file=request.data['company_register_file'],
-			                         company_phone=request.data['company_phone'],
-			                         company_contact=request.data['company_contact'],
-			                         company_email=request.data['company_email'],
-			                         company_address=request.data['company_address'],
-			                         company_field=request.data['company_field'],
-			                         )
-		else:
-			info = AccountVerifyInfo(account=request.user,
-			                         real_name=request.data['real_name'],
-			                         working_at=request.data['working_at'],
-			                         legal_id=request.data['legal_id'],
-			                         legal_id_type=request.data['legal_id_type'],
-			                         wechat=request.data['wechat'],
-			                         qq=request.data['qq'],
-			                         phone=request.data['phone'],
-			                         )
-			if request.data['birthday']:
-				info.birthday = request.data['birthday']
-
-		info.save()
-		request.user.is_verified = 1
-		request.user.save()
-		return Response(status=status.HTTP_201_CREATED)
 
 	def marked_posts(self, request, pk=None):
 		if pk:

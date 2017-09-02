@@ -65,9 +65,9 @@ class PostViewSet(viewsets.ViewSet):
 			start_datetime=request.data.get('start_datetime'),
 			end_datetime=request.data.get('end_datetime'),
 			logo_image=request.data.get('logo'),
-			promote_image=request.data.get('promo_logo'),
+			promote_image=request.data.get('promo_logo', ''),
 			white_paper=request.data.get('white_paper'),
-			video_link=request.data.get('video_link'),
+			video_link=request.data.get('video_link', ''),
 		)
 
 		return Response(status=status.HTTP_201_CREATED)

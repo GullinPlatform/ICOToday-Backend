@@ -3,13 +3,21 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group as AdminGroup
 
 from .forms import AccountChangeForm, AccountCreationForm
-from .models import Account, VerifyToken, AccountVerifyInfo, Team
+from .models import Account, AccountInfo, VerifyToken, Team
 
 
 class AccountInline(admin.TabularInline):
 	model = Account
 	fields = ('id', 'email', 'phone')
 	readonly_fields = ('id', 'email', 'phone')
+	show_change_link = True
+	extra = 0
+
+
+class AccountInfoInline(admin.TabularInline):
+	model = AccountInfo
+	fields = ('id', 'first_name', 'last_name', 'title', 'team')
+	readonly_fields = ('id', 'first_name', 'last_name', 'title', 'team')
 	show_change_link = True
 	extra = 0
 
@@ -22,7 +30,6 @@ class AccountAdmin(UserAdmin):
 	list_filter = ['is_staff']
 	fieldsets = (
 		(None, {'fields': ('email', 'phone', 'password')}),
-		('Personal info', {'fields': ('first_name', 'last_name', 'team')}),
 		('Permissions', {'fields': ('is_staff', 'is_activated', 'is_verified')}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
@@ -30,11 +37,22 @@ class AccountAdmin(UserAdmin):
 	add_fieldsets = (
 		(None, {
 			'classes': ('wide',),
-			'fields' : ('first_name', 'last_name', 'email', 'username', 'password1', 'password2')}
+			'fields' : ('email', 'password1', 'password2')}
 		 ),
 	)
-	search_fields = ('email', 'username')
-	ordering = ('email',)
+	search_fields = ['email']
+	ordering = ['email', ]
+
+
+class AccountInfoAdmin(admin.ModelAdmin):
+	list_display = ('id', 'first_name', 'last_name', 'title', 'team')
+	list_filter = ['is_staff']
+	fieldsets = (
+		('Personal info', {'fields': ('avatar', 'first_name', 'last_name', 'description', 'team')}),
+		('Social Media', {'fields': ('linkedin', 'twitter', 'slack', 'telegram')}),
+	)
+	search_fields = ['first_name', 'last_name']
+	inlines = [AccountInline]
 
 
 class VerifyTokenAdmin(admin.ModelAdmin):
@@ -45,18 +63,6 @@ class VerifyTokenAdmin(admin.ModelAdmin):
 	readonly_fields = ('is_expired', 'expire_time')
 
 
-# class AccountVerifyInfoAdmin(admin.ModelAdmin):
-# 	list_display = ('account', 'created', 'updated')
-# 	fieldsets = (
-# 		(None, {'fields': ('account', 'created', 'updated')}),
-# 		('Individual',
-# 		 {'fields': ('real_name', 'birthday', 'working_at', 'legal_id', 'legal_id_type', 'wechat', 'qq', 'phone',)}),
-# 		('Company',
-# 		 {'fields': ('company_name', 'company_register_file', 'company_phone', 'company_contact', 'company_email',
-# 		             'company_address', 'company_field',)}),
-# 	)
-# 	readonly_fields = ('created', 'updated')
-
 class TeamAdmin(admin.ModelAdmin):
 	list_display = ('name', 'description', 'created')
 	fieldsets = [
@@ -64,7 +70,7 @@ class TeamAdmin(admin.ModelAdmin):
 		['Timestamp', {'fields': ['created', 'updated']}],
 	]
 	readonly_fields = ('created', 'updated')
-	inlines = [AccountInline]
+
 
 
 admin.site.register(Account, AccountAdmin)

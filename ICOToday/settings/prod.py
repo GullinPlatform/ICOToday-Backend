@@ -9,6 +9,8 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# TODO
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
@@ -64,7 +66,7 @@ MIDDLEWARE = [
 TEMPLATES = [
 	{
 		'BACKEND' : 'django.template.backends.django.DjangoTemplates',
-		'DIRS'    : [os.path.join(BASE_DIR, 'templates')],
+		'DIRS'    : [],
 		'APP_DIRS': True,
 		'OPTIONS' : {
 			'context_processors': [
@@ -137,6 +139,7 @@ CORS_ORIGIN_WHITELIST = (
 	'icotoday.io',
 	'www.icotoday.io',
 	'api.icotoday.io',
+
 )
 CORS_ALLOW_HEADERS = (
 	'accept',
@@ -190,12 +193,11 @@ AWS_STORAGE_BUCKET_NAME = 'icotoday'
 # ------ SES email settings ------
 
 EMAIL_BACKEND = 'django_ses.SESBackend'
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # These are optional -- if they're set as environment variables they won't
 # need to be set here as well
-AWS_ACCESS_KEY_ID = 'AKIAIPLNT5PYIDLOIOAQ'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY_ID = 'AKIAJOZXNV5BDLRRO7LQ'
+AWS_SECRET_ACCESS_KEY = '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'
 
 # Additionally, if you are not using the default AWS region of us-east-1,
 # you need to specify a region, like so:

@@ -139,7 +139,6 @@ CORS_ORIGIN_WHITELIST = (
 	'icotoday.io',
 	'www.icotoday.io',
 	'api.icotoday.io',
-
 )
 CORS_ALLOW_HEADERS = (
 	'accept',

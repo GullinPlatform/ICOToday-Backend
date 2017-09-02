@@ -16,6 +16,7 @@ DEBUG_TOOLBAR_CONFIG = {
 
 SECRET = '42'
 
+ALLOWED_HOSTS = '*'
 # Set database to local sqlite
 DATABASES = {
     'default': {

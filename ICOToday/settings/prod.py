@@ -11,8 +11,8 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # TODO
-MEDIA_ROOT = ''
-MEDIA_URL = ''
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 with open(os.path.join(BASE_DIR, 'settings/secret.txt')) as f:
@@ -20,7 +20,15 @@ with open(os.path.join(BASE_DIR, 'settings/secret.txt')) as f:
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+	'http://www.icotoday.io',
+	'http://icotoday.io',
+	'https://icotoday.io',
+	'icotoday.io',
+	'www.icotoday.io',
+	'api.icotoday.io',
+
+]
 
 # Set auto redirect to false
 APPEND_SLASH = False
@@ -99,15 +107,16 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 # Database
 # TODO
 DATABASES = {
 	'default': {
 		'ENGINE'  : 'django.db.backends.mysql',
-		'NAME'    : '',
-		'USER'    : '',
-		'PASSWORD': '',
+		'NAME'    : 'icotoday',
+		'USER'    : 'root',
+		'PASSWORD': 'billions',
 		'HOST'    : '/var/lib/mysql/mysql.sock',
 	}
 }
@@ -124,11 +133,13 @@ REST_FRAMEWORK = {
 
 # Cors Origin Settings
 CORS_ORIGIN_WHITELIST = (
-	'http://www.classgotcha.com',
-	'http://classgotcha.com',
-	'https://classgotcha.com',
-	'classgotcha.com',
-	'www.classgotcha.com',
+	'http://www.icotoday.io',
+	'http://icotoday.io',
+	'https://icotoday.io',
+	'icotoday.io',
+	'www.icotoday.io',
+	'api.icotoday.io',
+
 )
 CORS_ALLOW_HEADERS = (
 	'accept',
@@ -185,12 +196,11 @@ EMAIL_BACKEND = 'django_ses.SESBackend'
 
 # These are optional -- if they're set as environment variables they won't
 # need to be set here as well
-AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY = ''
+AWS_ACCESS_KEY_ID = 'AKIAIPLNT5PYIDLOIOAQ'
+AWS_SECRET_ACCESS_KEY = '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'
 
 # Additionally, if you are not using the default AWS region of us-east-1,
 # you need to specify a region, like so:
 AWS_SES_REGION_NAME = 'us-east-1'
 AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
 AWS_SES_AUTO_THROTTLE = 0.5  # (default; safety factor applied to rate limit)
-

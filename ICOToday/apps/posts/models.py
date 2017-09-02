@@ -14,7 +14,9 @@ class Post(models.Model):
 	marked = models.ManyToManyField('accounts.Account', blank=True, related_name='marked_posts')
 
 	title = models.CharField(max_length=200)
-	description_short = models.TextField()
+	description_short = models.CharField(max_length=200, null=True, blank=True)
+	description_full = models.TextField()
+
 	status = models.IntegerField(choices=STATUS_CHOICES, default=0)
 
 	tags = models.ManyToManyField('PostTag', related_name='posts')
@@ -23,7 +25,7 @@ class Post(models.Model):
 	logo_image = models.ImageField(upload_to='posts/images/', null=True, blank=True)
 
 	# ICO fields
-	website = models.CharField(max_length=100, null=True, blank=True)
+	team = models.ForeignKey('accounts.Team', blank=True, related_name='posts')
 
 	start_datetime = models.DateTimeField(null=True)
 	end_datetime = models.DateTimeField(null=True)
@@ -31,7 +33,7 @@ class Post(models.Model):
 
 	white_paper = models.FileField(upload_to='white_papers/', null=True, blank=True)
 	video_link = models.CharField(max_length=100, null=True, blank=True)
-	team = models.ForeignKey('accounts.Team', blank=True, related_name='posts')
+	website = models.CharField(max_length=100, null=True, blank=True)
 
 	up_votes = models.IntegerField(default=0)
 	down_votes = models.IntegerField(default=0)

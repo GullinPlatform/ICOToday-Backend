@@ -264,3 +264,19 @@ class TeamViewSet(viewsets.ViewSet):
 			return Response(status=status.HTTP_201_CREATED)
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
+
+	def add_team_member(self, request, pk):
+		post = get_object_or_404(self.queryset, pk=pk)
+		if request.method == 'POST':
+			if request.data.get('member_id'):
+				member = get_object_or_404(Account.objects.all(), id=int(request.data.get('member_id')))
+				post.add(member)
+				post.save()
+				return Response(status=status.HTTP_200_OK)
+			else:
+				return Response(status=status.HTTP_400_BAD_REQUEST)
+
+		elif request.method == 'DELETE':
+			post.remove(request.user)
+			post.save()
+			return Response(status=status.HTTP_200_OK)

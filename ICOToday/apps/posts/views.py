@@ -49,27 +49,26 @@ class PostViewSet(viewsets.ViewSet):
 	def filtered_list(self, request):
 		pass
 
-	def created_post_list(self, request, pk):
-		serializer = PostSerializer(request.user.created_posts, many=True)
-		return Response(serializer.data, status=status.HTTP_200_OK)
-
-	def applied_post_list(self, request, pk):
-		serializer = PostSerializer(request.user.applied_posts, many=True)
-		return Response(serializer.data, status=status.HTTP_200_OK)
-
-	def marked_post_list(self, request, pk):
-		serializer = PostSerializer(request.user.marked_posts, many=True)
-		return Response(serializer.data, status=status.HTTP_200_OK)
-
 	def create(self, request):
-		new_post = Post(
+
+		new_post = Post.objects.create(
 			creator_id=request.user.id,
 			title=request.data.get('title'),
-			description_short=request.data['description_short'],
+			description_full=request.data.get('description_full'),
 			website=request.data.get('website'),
-			team_id=request.user.team.id
+			team_id=request.user.team.id,
+			maximum_goal=request.data.get('maximum_goal'),
+			minimum_goal=request.data.get('minimum_goal'),
+			coin_type=request.data.get('coin_type'),
+			white_paper=request.data.get('white_paper'),
+			video_link=request.data.get('video_link'),
 		)
-		new_post.save()
+
+		start_datetime = request.data.get('start_datetime'),
+		end_datetime = request.data.get('end_datetime'),
+
+
+		# new_post.save()
 
 		# for file in request.FILES.values():
 		# 	new_post_file = PostFile(file=file,
@@ -130,22 +129,6 @@ class PostViewSet(viewsets.ViewSet):
 		post.save()
 		return Response(status=status.HTTP_200_OK)
 
-	def add_team_member(self, request, pk):
-		post = get_object_or_404(self.queryset, pk=pk)
-		if request.method == 'POST':
-			if request.data.get('member_id'):
-				member = get_object_or_404(Account.objects.all(), id=int(request.data.get('member_id')))
-				post.add(member)
-				post.save()
-				return Response(status=status.HTTP_200_OK)
-			else:
-				return Response(status=status.HTTP_400_BAD_REQUEST)
-
-		elif request.method == 'DELETE':
-			post.remove(request.user)
-			post.save()
-			return Response(status=status.HTTP_200_OK)
-
 	def search_by_tag(self, request, tag):
 		tag = PostTag.objects.get(tag=tag)
 		if tag:
@@ -157,7 +140,7 @@ class PostViewSet(viewsets.ViewSet):
 	def add_comment(self, request, pk):
 		question = get_object_or_404(self.queryset, pk=pk)
 		for field in request.data:
-			question_field = CommentField(comment=field[0], author=request.user, question=question)
+			question_field = CommentsField(comment=field[0], author=request.user, question=question)
 			question_field.save()
 		return Response(status=status.HTTP_201_CREATED)
 

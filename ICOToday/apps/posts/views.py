@@ -1,3 +1,5 @@
+from django.utils import timezone, dateparse
+
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import get_object_or_404
 
@@ -51,7 +53,7 @@ class PostViewSet(viewsets.ViewSet):
 
 	def create(self, request):
 
-		new_post = Post.objects.create(
+		Post.objects.create(
 			creator_id=request.user.id,
 			title=request.data.get('title'),
 			description_full=request.data.get('description_full'),
@@ -60,25 +62,13 @@ class PostViewSet(viewsets.ViewSet):
 			maximum_goal=request.data.get('maximum_goal'),
 			minimum_goal=request.data.get('minimum_goal'),
 			coin_type=request.data.get('coin_type'),
+			start_datetime=request.data.get('start_datetime'),
+			end_datetime=request.data.get('end_datetime'),
+			logo_image=request.data.get('logo'),
+			promote_image=request.data.get('promo_logo'),
 			white_paper=request.data.get('white_paper'),
 			video_link=request.data.get('video_link'),
 		)
-
-		start_datetime = request.data.get('start_datetime'),
-		end_datetime = request.data.get('end_datetime'),
-
-
-		# new_post.save()
-
-		# for file in request.FILES.values():
-		# 	new_post_file = PostFile(file=file,
-		# 	                                 file_name=file.name,
-		# 	                                 file_size=file.size,
-		# 	                                 post_id=new_post.id)
-		# 	new_post_file.save()
-
-		# 'industry_tags'
-		# 'tech_tags'
 
 		return Response(status=status.HTTP_201_CREATED)
 

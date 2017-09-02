@@ -34,11 +34,11 @@ account_verify_info = AccountViewSet.as_view({
 })
 
 account_created_posts = AccountViewSet.as_view({
-	'post': 'created_posts'
+	'get': 'created_posts'
 })
 
 account_marked_posts = AccountViewSet.as_view({
-	'post': 'marked_posts'
+	'get': 'marked_posts'
 })
 
 team_list = TeamViewSet.as_view({
@@ -78,5 +78,4 @@ urlpatterns = [
 	url(r'^teams/$', team_list, name='team-list'),
 	url(r'^team/new/$', team_detail, name='team-list'),
 	url(r'^team/(?P<pk>[0-9]+)/$', team_detail, name='team-list'),
-
 ]

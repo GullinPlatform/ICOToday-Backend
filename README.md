@@ -25,6 +25,41 @@
 > python manage.py runserver
 ```
 
+##lAUNCHING TO AWS
+```
+Do prior steps + ...
+
+sudo yum install gcc gcc-c++
+sudo yum install -y libffi libffi-devel
+pip install --upgrade pip 
+pip install --upgrade pillow
+sudo yum install libtiff-devel libjpeg-devel libzip-devel freetype-devel lcms2-devel libwebp-devel tcl-devel tk-devel
+
+sudo yum install nginx
+pip install uwsgi
+sudo /etc/init.d/nginx start
+touch nginx.conf
+sudo mkdir /etc/nginx/sites-enabled/
+sudo ln -s /home/ec2-user/ICOToday-Backend/nginx.conf /etc/nginx/sites-enabled/
+sudo yum install mysql-devel
+sudo yum -y install readline-devel openssl-devel gmp-devel ncurses-devel
+sudo yum -y install gdbm-devel expat-devel libGL-devel libX11-devel tcl-devel tk-devel
+sudo yum -y install tix-devel sqlite-devel db4-devel
+
+### just try both - for some reason one didn't work for me ###
+easy_install MySQL-python
+pip install MySQL-python
+
+
+
+
+
+
+
+
+```
+
+
 ## Project Structure
 ```
 DeepComp

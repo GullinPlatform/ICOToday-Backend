@@ -9,8 +9,6 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# TODO
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
@@ -66,7 +64,7 @@ MIDDLEWARE = [
 TEMPLATES = [
 	{
 		'BACKEND' : 'django.template.backends.django.DjangoTemplates',
-		'DIRS'    : [],
+		'DIRS'    : [os.path.join(BASE_DIR, 'templates')],
 		'APP_DIRS': True,
 		'OPTIONS' : {
 			'context_processors': [
@@ -192,6 +190,7 @@ AWS_STORAGE_BUCKET_NAME = 'icotoday'
 # ------ SES email settings ------
 
 EMAIL_BACKEND = 'django_ses.SESBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # These are optional -- if they're set as environment variables they won't
 # need to be set here as well

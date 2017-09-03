@@ -19,7 +19,7 @@ class AccountInfo(models.Model):
 
 	team = models.ForeignKey('Team', related_name='members', null=True, blank=True)
 
-	is_adviser = models.BooleanField(default=False)
+	is_advisor = models.BooleanField(default=False)
 
 	# Social Media
 	linkedin = models.CharField(max_length=100, null=True, blank=True)

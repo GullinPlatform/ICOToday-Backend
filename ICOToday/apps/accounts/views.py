@@ -14,7 +14,7 @@ from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 
 from .models import Account, VerifyToken, Team, AccountInfo
-from .serializers import AuthAccountSerializer, TeamSerializer, BasicTeamSerializer, BasicAccountSerializer
+from .serializers import AuthAccountSerializer, TeamSerializer, BasicTeamSerializer, BasicAccountSerializer, AccountInfoSerializer
 
 from ..posts.serializers import PostSerializer
 
@@ -167,6 +167,11 @@ class AccountViewSet(viewsets.ViewSet):
 		if request.method == 'GET':
 			serializer = BasicAccountSerializer(request.user)
 			return Response(serializer.data)
+		elif request.method == 'PUT':
+			serializer = AccountInfoSerializer(request.user.info, data=request.data, partial=True)
+			serializer.is_valid(raise_exception=True)
+			serializer.save()
+			return Response(serializer.data)
 
 	@staticmethod
 	def change_password(request):
@@ -286,13 +291,17 @@ class TeamViewSet(viewsets.ViewSet):
 		if request.method == 'PATCH':
 			team = get_object_or_404(self.queryset, pk=pk)
 			if request.data.get('email'):
+				# Must use == not is here, otherwise type dismatch
+				is_advisor = True if request.data.get('is_advisor') == 'true' else False
+				print is_advisor
 				info = AccountInfo.objects.create(
+					avatar=request.FILES.get('avatar'),
 					first_name=request.data.get('first_name'),
 					last_name=request.data.get('last_name'),
 					title=request.data.get('title'),
 					description=request.data.get('description'),
 					team_id=pk,
-					is_adviser=request.data.get('is_adviser'),
+					is_advisor=is_advisor,
 					linkedin=request.data.get('linkedin', ''),
 					twitter=request.data.get('twitter', ''),
 					slack=request.data.get('slack', ''),
@@ -309,4 +318,3 @@ class TeamViewSet(viewsets.ViewSet):
 			info = get_object_or_404(AccountInfo.objects.all(), pk=pk)
 			info.team.members.remove(info)
 			return Response(status=status.HTTP_200_OK)
-

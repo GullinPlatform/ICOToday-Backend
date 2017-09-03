@@ -16,8 +16,8 @@ class AccountInline(admin.TabularInline):
 
 class AccountInfoInline(admin.TabularInline):
 	model = AccountInfo
-	fields = ('id', 'first_name', 'last_name', 'title', 'team', 'is_adviser')
-	readonly_fields = ('id', 'first_name', 'last_name', 'title', 'team', 'is_adviser')
+	fields = ('id', 'first_name', 'last_name', 'title', 'team', 'is_advisor')
+	readonly_fields = ('id', 'first_name', 'last_name', 'title', 'team', 'is_advisor')
 	show_change_link = True
 	extra = 0
 
@@ -45,9 +45,9 @@ class AccountAdmin(UserAdmin):
 
 
 class AccountInfoAdmin(admin.ModelAdmin):
-	list_display = ('id', 'first_name', 'last_name', 'title', 'team', 'is_adviser')
+	list_display = ('id', 'first_name', 'last_name', 'title', 'team', 'is_advisor')
 	fieldsets = (
-		('Personal info', {'fields': ('avatar', 'first_name', 'last_name', 'description', 'title', 'team', 'is_adviser')}),
+		('Personal info', {'fields': ('avatar', 'first_name', 'last_name', 'description', 'title', 'team', 'is_advisor')}),
 		('Social Media', {'fields': ('linkedin', 'twitter', 'slack', 'telegram')}),
 	)
 	search_fields = ['first_name', 'last_name']

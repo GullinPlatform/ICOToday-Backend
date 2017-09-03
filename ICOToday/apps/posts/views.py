@@ -62,9 +62,9 @@ class PostViewSet(viewsets.ViewSet):
 			coin_type=request.data.get('coin_type'),
 			start_datetime=request.data.get('start_datetime'),
 			end_datetime=request.data.get('end_datetime'),
-			logo_image=request.file.get('logo'),
-			promote_image=request.file.get('promo_logo', ''),
-			white_paper=request.file.get('white_paper'),
+			logo_image=request.FILES.get('logo'),
+			promote_image=request.FILES.get('promo_logo', ''),
+			white_paper=request.FILES.get('white_paper'),
 			video_link=request.data.get('video_link', ''),
 			website=request.data.get('website'),
 		)

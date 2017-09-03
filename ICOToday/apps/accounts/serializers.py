@@ -37,12 +37,12 @@ class AuthAccountSerializer(serializers.ModelSerializer):
 
 
 class AccountInfoSerializer(serializers.ModelSerializer):
-	team = BasicTeamSerializer(allow_null=True)
+	team = BasicTeamSerializer(allow_null=True, read_only=True)
 
 	class Meta:
 		model = AccountInfo
 		fields = ['id', 'avatar', 'first_name', 'last_name',
-		          'team', 'title', 'description', 'is_adviser',
+		          'team', 'title', 'description', 'is_advisor',
 		          'linkedin', 'twitter', 'slack', 'telegram']
 
 
@@ -58,7 +58,7 @@ class BasicAccountInfoSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = AccountInfo
 		fields = ['id', 'avatar', 'first_name', 'last_name',
-		          'team', 'title', 'description', 'is_adviser',
+		          'team', 'title', 'description', 'is_advisor',
 		          'linkedin', 'twitter', 'slack', 'telegram']
 
 

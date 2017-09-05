@@ -170,9 +170,6 @@ class AccountViewSet(viewsets.ViewSet):
 		elif request.method == 'PUT':
 			if request.data.get('avatar'):
 				request.user.info.avatar = request.data.get('avatar')
-				print type(request.data.get('avatar'))
-				print type(request.FILES.get('avatar'))
-				print type(request.user.info.avatar)
 				request.user.info.save()
 				return Response(status=status.HTTP_200_OK)
 			else:

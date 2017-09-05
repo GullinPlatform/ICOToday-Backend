@@ -10,7 +10,8 @@ class Post(models.Model):
 		(1, 'Verified'),
 		(2, 'Completed'),
 		(3, 'Promoting'),
-		(4, 'Closed'),
+		(4, 'Premium'),
+		(5, 'Closed'),
 	)
 	creator = models.ForeignKey('accounts.Account', related_name='created_posts')
 	marked = models.ManyToManyField('accounts.Account', blank=True, related_name='marked_posts')

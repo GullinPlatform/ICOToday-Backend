@@ -1,19 +1,19 @@
 from rest_framework import serializers
 
-from .models import Discussion, Reply
+from .models import Comment, Message
 
 
 class ReplySerializer(serializers.ModelSerializer):
 	class Meta:
-		model = Reply
+		model = Comment
 		fields = '__all__'
 		read_only_fields = ('created', 'updated')
 
 
-class DiscussionSerializer(serializers.ModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
 	replies = ReplySerializer(many=True, required=False)
 
 	class Meta:
-		model = Discussion
+		model = Comment
 		fields = '__all__'
 		read_only_fields = ('created', 'updated')

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Discussion, Reply
+from .models import Comment, Message
 
 
 class DiscussionAdmin(admin.ModelAdmin):
@@ -12,14 +12,14 @@ class DiscussionAdmin(admin.ModelAdmin):
 	readonly_fields = ('created', 'updated')
 
 
-class ReplyAdmin(admin.ModelAdmin):
+class CommentAdmin(admin.ModelAdmin):
+	list_display = ('id', 'post', 'account', 'created')
 	fieldsets = (
-		(None, {'fields': ('question', 'account')}),
-		('Details', {'fields': ('content',)}),
+		(None, {'fields': ('post', 'account')}),
+		('Details', {'fields': ('content', 'reply_to')}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	readonly_fields = ('created', 'updated')
 
 
-admin.site.register(Discussion, DiscussionAdmin)
-admin.site.register(Reply, ReplyAdmin)
+admin.site.register(Comment, CommentAdmin)

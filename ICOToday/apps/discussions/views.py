@@ -6,29 +6,34 @@ from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from ..posts.models import Post
-from .models import Discussion, Reply
-from .serializers import ReplySerializer, DiscussionSerializer
+from .models import Comment
+from .serializers import ReplySerializer, CommentSerializer
 
 
-class DiscussionViewSet(viewsets.ViewSet):
-	queryset = Discussion.objects.all()
+class CommentViewSet(viewsets.ViewSet):
+	queryset = Comment.objects.all()
 	parser_classes = (MultiPartParser, FormParser, JSONParser)
 	permission_classes = (IsAuthenticated,)
 
+	def list(self, request, post_pk):
+		post = get_object_or_404(Post.objects.all(), pk=post_pk)
+		serializer = CommentSerializer(post.comments, many=True)
+		return Response(serializer.data, status=status.HTTP_200_OK)
+
 	def create(self, request):
-		serializer = DiscussionSerializer(data=request.data)
+		serializer = CommentSerializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
 		serializer.save()
 		return Response(status=status.HTTP_201_CREATED)
 
 	def retrieve(self, request, pk):
 		discussion = get_object_or_404(self.queryset, pk=pk)
-		serializer = DiscussionSerializer(discussion)
+		serializer = CommentSerializer(discussion)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def update(self, request, pk):
 		question = get_object_or_404(self.queryset, pk=pk)
-		serializer = DiscussionSerializer(question, data=request.data)
+		serializer = CommentSerializer(question, data=request.data)
 
 		if serializer.is_valid():
 			serializer.save()
@@ -44,8 +49,7 @@ class DiscussionViewSet(viewsets.ViewSet):
 			return Response(status=status.HTTP_403_FORBIDDEN)
 
 	def reply(self, request, pk):
-		question = get_object_or_404(self.queryset, pk=pk)
-		request.data['question'] = question
+		comment = get_object_or_404(self.queryset, pk=pk)
 		serializer = ReplySerializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
 		serializer.save()

@@ -1,10 +1,13 @@
 from django.contrib import admin
 
-from .models import Post, PostTag, CommentsField
+from .models import Post, PostTag
+from ..discussions.models import Comment
 
 
-class CommentsFieldInline(admin.TabularInline):
-	model = CommentsField
+class CommentsInline(admin.TabularInline):
+	model = Comment
+	show_change_link = True
+	extra = 1
 
 
 class PostAdmin(admin.ModelAdmin):
@@ -16,7 +19,7 @@ class PostAdmin(admin.ModelAdmin):
 		('ICO Details', {'fields': ('maximum_goal', 'minimum_goal', 'coin_type', 'start_datetime', 'end_datetime', 'website', 'video_link', 'up_votes', 'down_votes', 'white_paper')}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
-	inlines = [CommentsFieldInline]
+	inlines = [CommentsInline]
 	readonly_fields = ('created', 'updated')
 
 

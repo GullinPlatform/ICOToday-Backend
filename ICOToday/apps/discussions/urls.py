@@ -1,25 +1,28 @@
 from django.conf.urls import url
 
-from .views import DiscussionViewSet
+from .views import CommentViewSet
 
-discussion = DiscussionViewSet.as_view({
+comment = CommentViewSet.as_view({
 	'get'   : 'retrieve',
 	'patch' : 'update',
 	'delete': 'delete'
 })
 
-discussion_create = DiscussionViewSet.as_view({
+comment_create = CommentViewSet.as_view({
 	'post': 'create',
+
+})
+comment_list = CommentViewSet.as_view({
+	'get': 'list',
 })
 
-discussion_reply = DiscussionViewSet.as_view({
-	'post': 'reply',
-	'patch': 'update_reply',
-
+comment_reply = CommentViewSet.as_view({
+	'post' : 'reply',
 })
 
 urlpatterns = [
-	url(r'^$', discussion_create, name='discussion-create'),
-	url(r'^(?P<pk>[0-9]+)/$', discussion, name='discussion'),
-	url(r'^(?P<pk>[0-9]+)/reply/$', discussion_reply, name='discussion-reply'),
+	url(r'^$', comment_create, name='comment-create'),
+	url(r'p/^(?P<post_pk>[0-9]+)/$', comment_list, name='comment-list'),
+	url(r'^(?P<pk>[0-9]+)/$', comment, name='comment'),
+	url(r'^(?P<pk>[0-9]+)/reply/$', comment_reply, name='comment-reply'),
 ]

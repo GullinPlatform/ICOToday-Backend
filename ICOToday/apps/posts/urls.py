@@ -21,8 +21,8 @@ post_close = PostViewSet.as_view({
 	'get' : 'close',
 })
 
-post_discussions = PostViewSet.as_view({
-	'get': 'discussion_list'
+post_comments = PostViewSet.as_view({
+	'get': 'comment_list'
 })
 
 post_mark = PostViewSet.as_view({
@@ -52,7 +52,7 @@ urlpatterns = [
 	url(r'^tags/$', get_post_tags, name='get_post_tags'),
 
 	url(r'^(?P<pk>[0-9]+)/$', post, name='post'),
-	url(r'^(?P<pk>[0-9]+)/discussions/$', post_discussions, name='post'),
+	url(r'^(?P<pk>[0-9]+)/comments/$', post_comments, name='post-comments'),
 	url(r'^(?P<pk>[0-9]+)/mark/$', post_mark, name='post_mark'),
 	url(r'^(?P<pk>[0-9]+)/add_team_member/$', add_team_member, name='add_team_member'),
 ]

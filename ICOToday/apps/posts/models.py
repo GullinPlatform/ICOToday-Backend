@@ -65,13 +65,6 @@ class Post(models.Model):
 		return True if self.end_date > timezone.now() else False
 
 
-class CommentsField(models.Model):
-	post = models.ForeignKey('posts.Post', related_name='comments')
-	author = models.ForeignKey('accounts.Account', related_name='author_questions')
-	comment = models.TextField()
-	timestamp = models.DateTimeField(auto_now_add=True)
-
-
 class PostTag(models.Model):
 	tag = models.CharField(max_length=40)
 

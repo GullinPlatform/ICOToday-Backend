@@ -37,13 +37,15 @@ class Post(models.Model):
 	video_link = models.CharField(max_length=100, null=True, blank=True)
 	website = models.CharField(max_length=100, null=True, blank=True)
 
-	up_votes = models.IntegerField(default=0)
-	down_votes = models.IntegerField(default=0)
+	rating = models.IntegerField(default=0)
+	ratio = models.FloatField(default=0.1)
+
+	coin_name = models.CharField(max_length=100, null=True, blank=True)
+	coin_type = models.CharField(max_length=20, default='BTC')
 
 	maximum_goal = models.IntegerField(default=0)
 	minimum_goal = models.IntegerField(default=0)
-
-	coin_type = models.CharField(max_length=20, default='BTC')
+	current = models.IntegerField(default=0)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
@@ -58,9 +60,6 @@ class Post(models.Model):
 	def __str__(self):
 		return self.title
 
-	def num_votes(self):
-		return self.up_votes - self.down_votes
-
 	def time_passed(self):
 		return True if self.end_date > timezone.now() else False
 
@@ -70,3 +69,7 @@ class PostTag(models.Model):
 
 	def __str__(self):
 		return self.tag if self.tag else ' '
+
+
+class RatingDescription():
+	pass

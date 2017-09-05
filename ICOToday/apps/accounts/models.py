@@ -9,7 +9,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 
 class AccountInfo(models.Model):
 	# Account Info
-	avatar = models.ImageField(upload_to='avatars', null=True, blank=True)
+	avatar = models.ImageField(upload_to='avatars', default='avatars/default.jpg', null=True, blank=True)
 
 	first_name = models.CharField(max_length=40, null=True, blank=True)
 	last_name = models.CharField(max_length=40, null=True, blank=True)

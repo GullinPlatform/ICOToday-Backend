@@ -41,15 +41,14 @@ INSTALLED_APPS = [
 	'django.contrib.sessions',
 	'django.contrib.messages',
 	'django.contrib.staticfiles',
+	# installed
 	'rest_framework',
-	'rest_framework_jwt',
 	'corsheaders',
 	'storages',
-
+	# apps
 	'ICOToday.apps.accounts',
 	'ICOToday.apps.posts',
 	'ICOToday.apps.discussions'
-
 ]
 
 MIDDLEWARE = [
@@ -66,7 +65,7 @@ MIDDLEWARE = [
 TEMPLATES = [
 	{
 		'BACKEND' : 'django.template.backends.django.DjangoTemplates',
-		'DIRS'    : [],
+		'DIRS'    :  [os.path.join(BASE_DIR, 'templates')],
 		'APP_DIRS': True,
 		'OPTIONS' : {
 			'context_processors': [
@@ -187,17 +186,19 @@ AUTH_USER_MODEL = 'accounts.Account'
 
 # ------ Amazon S3 ------
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-# Amazon Web Services storage bucket name, as a string.
-AWS_STORAGE_BUCKET_NAME = 'icotoday'
-
-# ------ SES email settings ------
-
-EMAIL_BACKEND = 'django_ses.SESBackend'
 
 # These are optional -- if they're set as environment variables they won't
 # need to be set here as well
 AWS_ACCESS_KEY_ID = 'AKIAJOZXNV5BDLRRO7LQ'
 AWS_SECRET_ACCESS_KEY = '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'
+
+# Amazon Web Services storage bucket name, as a string.
+AWS_STORAGE_BUCKET_NAME = 'icotoday'
+AWS_S3_HOST = 's3.us-east-2.amazonaws.com'
+# ------ SES email settings ------
+
+EMAIL_BACKEND = 'django_ses.SESBackend'
+
 
 # Additionally, if you are not using the default AWS region of us-east-1,
 # you need to specify a region, like so:

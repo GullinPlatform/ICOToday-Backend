@@ -168,11 +168,18 @@ class AccountViewSet(viewsets.ViewSet):
 			serializer = BasicAccountSerializer(request.user)
 			return Response(serializer.data)
 		elif request.method == 'PUT':
-			serializer = AccountInfoSerializer(request.user.info, data=request.data, partial=True)
-			serializer.is_valid(raise_exception=True)
-			serializer.save()
-			return Response(serializer.data)
-
+			if request.data.get('avatar'):
+				request.user.info.avatar = request.data.get('avatar')
+				print type(request.data.get('avatar'))
+				print type(request.FILES.get('avatar'))
+				print type(request.user.info.avatar)
+				request.user.info.save()
+				return Response(status=status.HTTP_200_OK)
+			else:
+				serializer = AccountInfoSerializer(request.user.info, data=request.data, partial=True)
+				serializer.is_valid(raise_exception=True)
+				serializer.save()
+				return Response(serializer.data)
 	@staticmethod
 	def change_password(request):
 		# If password or old-password not in request body

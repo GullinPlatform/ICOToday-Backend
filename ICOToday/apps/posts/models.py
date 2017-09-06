@@ -6,8 +6,8 @@ from django.db import models
 
 class Post(models.Model):
 	STATUS_CHOICES = (
-		(0, 'Processing'),
-		(1, 'Verified'),
+		(0, 'Verifying'),
+		(1, 'Active'),
 		(2, 'Completed'),
 		(3, 'Promoting'),
 		(4, 'Premium'),
@@ -38,15 +38,16 @@ class Post(models.Model):
 	video_link = models.CharField(max_length=100, null=True, blank=True)
 	website = models.CharField(max_length=100, null=True, blank=True)
 
+	coin_name = models.CharField(max_length=100, null=True, blank=True)
 	rating = models.IntegerField(default=0)
 	ratio = models.FloatField(default=0.1)
 
-	coin_name = models.CharField(max_length=100, null=True, blank=True)
 	coin_type = models.CharField(max_length=20, default='BTC')
 
 	maximum_goal = models.IntegerField(default=0)
 	minimum_goal = models.IntegerField(default=0)
 	current = models.IntegerField(default=0)
+	money_raised = models.IntegerField(default=0)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)

@@ -11,8 +11,8 @@ class PostTagSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-	tags = PostTagSerializer(required=False, allow_null=True, many=True)
-	team = BasicTeamSerializer(required=False, allow_null=True)
+	tags = PostTagSerializer(required=False, allow_null=True, many=True, read_only=True)
+	team = BasicTeamSerializer(required=False, allow_null=True, read_only=True)
 
 	class Meta:
 		model = Post
@@ -29,5 +29,5 @@ class BasicPostSerializer(serializers.ModelSerializer):
 		fields = ['id', 'team', 'description_short',
 		          'logo_image', 'promote_image', 'title',
 		          'status', 'tags', 'website', 'maximum_goal', 'minimum_goal', 'coin_type',
-		          'start_datetime', 'end_datetime']
+		          'start_datetime', 'end_datetime', 'current', 'money_raised']
 		read_only_fields = ('created', 'updated', 'status')

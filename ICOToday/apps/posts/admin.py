@@ -15,8 +15,8 @@ class PostAdmin(admin.ModelAdmin):
 
 	fieldsets = (
 		('Question Info', {'fields': ('title', 'status', 'creator')}),
-		('Details', {'fields': ('team', 'description_short', 'promote_image', 'logo_image')}),
-		('ICO Details', {'fields': ('maximum_goal', 'minimum_goal', 'coin_type', 'start_datetime', 'end_datetime', 'website', 'video_link', 'up_votes', 'down_votes', 'white_paper')}),
+		('Details', {'fields': ('team', 'description_short', 'description_full', 'promote_image', 'logo_image')}),
+		('ICO Details', {'fields': ('maximum_goal', 'minimum_goal', 'coin_type', 'start_datetime', 'end_datetime', 'website', 'video_link', 'white_paper')}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	inlines = [CommentsInline]

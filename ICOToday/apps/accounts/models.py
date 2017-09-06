@@ -130,6 +130,12 @@ class Team(models.Model):
 	name = models.CharField(max_length=50, null=True)
 	description = models.TextField(null=True, blank=True)
 
+	# Social Media
+	medium = models.CharField(max_length=100, null=True, blank=True)
+	twitter = models.CharField(max_length=100, null=True, blank=True)
+	slack = models.CharField(max_length=100, null=True, blank=True)
+	telegram = models.CharField(max_length=100, null=True, blank=True)
+
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)

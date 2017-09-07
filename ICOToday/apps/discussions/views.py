@@ -40,6 +40,7 @@ class CommentViewSet(viewsets.ViewSet):
 		comment = get_object_or_404(self.queryset, pk=comment_pk)
 		if comment.creator_id is request.user.id:
 			comment.delete()
+			return Response(status=status.HTTP_200_OK)
 		else:
 			return Response(status=status.HTTP_403_FORBIDDEN)
 

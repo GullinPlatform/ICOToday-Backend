@@ -7,7 +7,7 @@ class Comment(models.Model):
 	post = models.ForeignKey('posts.Post', related_name='comments')
 	creator = models.ForeignKey('accounts.Account', related_name='my_comments')
 	content = models.TextField()
-	reply_to = models.ForeignKey('self', related_name='replies', null=True, blank=True)
+	reply_to = models.ForeignKey('self', related_name='replies', null=True, blank=True, on_delete=models.CASCADE)
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)

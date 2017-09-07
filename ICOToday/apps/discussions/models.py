@@ -5,7 +5,7 @@ from django.db import models
 
 class Comment(models.Model):
 	post = models.ForeignKey('posts.Post', related_name='comments')
-	account = models.ForeignKey('accounts.Account', related_name='replies')
+	creator = models.ForeignKey('accounts.Account', related_name='my_comments')
 	content = models.TextField()
 	reply_to = models.ForeignKey('self', related_name='replies', null=True, blank=True)
 	# Timestamp
@@ -14,6 +14,9 @@ class Comment(models.Model):
 
 	def __str__(self):
 		return self.question.title
+
+	class Meta:
+		ordering = ['-created']
 
 
 class Message(models.Model):

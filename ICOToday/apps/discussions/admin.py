@@ -13,7 +13,7 @@ class DiscussionAdmin(admin.ModelAdmin):
 
 
 class CommentAdmin(admin.ModelAdmin):
-	list_display = ('id', 'post', 'account', 'created')
+	list_display = ('id', 'post', 'creator', 'created')
 	fieldsets = (
 		(None, {'fields': ('post', 'account')}),
 		('Details', {'fields': ('content', 'reply_to')}),

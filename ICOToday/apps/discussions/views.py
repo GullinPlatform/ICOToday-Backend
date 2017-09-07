@@ -17,40 +17,41 @@ class CommentViewSet(viewsets.ViewSet):
 
 	def list(self, request, post_pk):
 		post = get_object_or_404(Post.objects.all(), pk=post_pk)
-		serializer = CommentSerializer(post.comments, many=True)
+		serializer = CommentSerializer(post.comments.filter(reply_to=None), many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
-	def create(self, request):
-		serializer = CommentSerializer(data=request.data)
+	def create(self, request, post_pk):
+		serializer = CommentSerializer(data=request.data, context={'creator_id': request.user.id, 'post_id': post_pk})
 		serializer.is_valid(raise_exception=True)
 		serializer.save()
-		return Response(status=status.HTTP_201_CREATED)
+		return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-	def retrieve(self, request, pk):
-		discussion = get_object_or_404(self.queryset, pk=pk)
-		serializer = CommentSerializer(discussion)
-		return Response(serializer.data, status=status.HTTP_200_OK)
-
-	def update(self, request, pk):
-		question = get_object_or_404(self.queryset, pk=pk)
-		serializer = CommentSerializer(question, data=request.data)
-
-		if serializer.is_valid():
+	def update(self, request, comment_pk):
+		comment = get_object_or_404(self.queryset, pk=comment_pk)
+		if request.data.get('content', None) and comment.creator_id is request.user.id:
+			serializer = CommentSerializer(comment, data=request.data, partial=True)
+			serializer.is_valid(raise_exception=True)
 			serializer.save()
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
-			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+			return Response(status=status.HTTP_400_BAD_REQUEST)
 
-	def delete(self, request, pk):
-		question = get_object_or_404(self.queryset, pk=pk)
-		if request.user.is_staff or question.account_id == request.user.id:
-			question.delete()
+	def delete(self, request, comment_pk):
+		comment = get_object_or_404(self.queryset, pk=comment_pk)
+		if comment.creator_id is request.user.id:
+			comment.delete()
 		else:
 			return Response(status=status.HTTP_403_FORBIDDEN)
 
-	def reply(self, request, pk):
-		comment = get_object_or_404(self.queryset, pk=pk)
-		serializer = ReplySerializer(data=request.data)
+	def reply(self, request, comment_pk):
+		comment = get_object_or_404(self.queryset, pk=comment_pk)
+
+		serializer = ReplySerializer(data=request.data,
+		                             context=
+		                             {'creator_id': request.user.id,
+		                              'post_id'   : comment.post_id,
+		                              'reply_to_id': comment_pk}
+		                             )
 		serializer.is_valid(raise_exception=True)
 		serializer.save()
-		return Response(status=status.HTTP_201_CREATED)
+		return Response(serializer.data, status=status.HTTP_201_CREATED)

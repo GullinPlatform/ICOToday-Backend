@@ -16,6 +16,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from .models import Account, VerifyToken, Team, AccountInfo
 from .serializers import AuthAccountSerializer, TeamSerializer, BasicTeamSerializer, BasicAccountSerializer, AccountInfoSerializer
 
+from ..posts.models import Post
 from ..posts.serializers import PostSerializer
 
 
@@ -210,10 +211,10 @@ class AccountViewSet(viewsets.ViewSet):
 	def created_posts(self, request, pk=None):
 		if pk:
 			account = get_object_or_404(self.queryset, pk=pk)
-			serializer = PostSerializer(account.created_posts.all(), many=True)
+			serializer = PostSerializer(Post.objects.filter(team_id=account.info.team.id), many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
-			serializer = PostSerializer(request.user.created_posts.all(), many=True)
+			serializer = PostSerializer(Post.objects.filter(team_id=request.user.info.team.id), many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 
 

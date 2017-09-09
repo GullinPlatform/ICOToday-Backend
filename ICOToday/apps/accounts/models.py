@@ -24,8 +24,8 @@ class AccountInfo(models.Model):
 	# Social Media
 	linkedin = models.CharField(max_length=100, null=True, blank=True)
 	twitter = models.CharField(max_length=100, null=True, blank=True)
-	slack = models.CharField(max_length=100, null=True, blank=True)
 	telegram = models.CharField(max_length=100, null=True, blank=True)
+	facebook = models.CharField(max_length=100, null=True, blank=True)
 
 	def __str__(self):
 		return self.first_name + ' ' + self.last_name if self.first_name and self.last_name else str(self.id)
@@ -62,7 +62,8 @@ class AccountManager(BaseUserManager):
 class Account(AbstractBaseUser, PermissionsMixin):
 	TYPE_CHOICES = (
 		(0, 'ICO Company'),
-		(1, 'ICO Investor')
+		(1, 'ICO Investor'),
+		(2, 'ICO Expert'),
 	)
 
 	# Auth
@@ -129,12 +130,6 @@ class Team(models.Model):
 	# Team Info
 	name = models.CharField(max_length=50, null=True)
 	description = models.TextField(null=True, blank=True)
-
-	# Social Media
-	medium = models.CharField(max_length=100, null=True, blank=True)
-	twitter = models.CharField(max_length=100, null=True, blank=True)
-	slack = models.CharField(max_length=100, null=True, blank=True)
-	telegram = models.CharField(max_length=100, null=True, blank=True)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)

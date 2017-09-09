@@ -17,6 +17,7 @@ class PostAdmin(admin.ModelAdmin):
 		('Question Info', {'fields': ('title', 'status', 'creator')}),
 		('Details', {'fields': ('team', 'description_short', 'description_full', 'promote_image', 'logo_image')}),
 		('ICO Details', {'fields': ('maximum_goal', 'minimum_goal', 'coin_type', 'start_datetime', 'end_datetime', 'website', 'video_link', 'white_paper')}),
+		('Media Info', {'fields': ('medium', 'twitter', 'slack', 'telegram')}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	inlines = [CommentsInline]

@@ -177,6 +177,7 @@ class AccountViewSet(viewsets.ViewSet):
 				serializer.is_valid(raise_exception=True)
 				serializer.save()
 				return Response(serializer.data)
+
 	@staticmethod
 	def change_password(request):
 		# If password or old-password not in request body
@@ -214,42 +215,6 @@ class AccountViewSet(viewsets.ViewSet):
 		else:
 			serializer = PostSerializer(request.user.created_posts.all(), many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-# @api_view(['GET', 'POST', 'OPTION'])
-# @permission_classes((IsAuthenticated,))
-# @parser_classes((MultiPartParser, FormParser,))
-# def account_avatar(request):
-# 	if request.method == 'POST':
-# 		from StringIO import StringIO
-# 		from django.core.files.uploadedfile import InMemoryUploadedFile
-# 		from resizeimage import resizeimage
-# 		from PIL import Image
-# 		upload = request.FILES.get('file', False)
-# 		if not upload:
-# 			return Response(status=status.HTTP_400_BAD_REQUEST)
-# 		filename, file_extension = upload.name.split('.')
-# 		with Image.open(upload) as image:
-# 			image2x = resizeimage.resize_cover(image, [128, 128])
-# 			image1x = resizeimage.resize_cover(image, [48, 48])
-# 			img2x_name = str(request.user.id) + '.2x' + file_extension
-# 			img1x_name = str(request.user.id) + '.1x' + file_extension
-# 			img2x_io = StringIO()
-# 			img1x_io = StringIO()
-# 			image2x.save(img2x_io, image.format)
-# 			image1x.save(img1x_io, image.format)
-# 			image2x_file = InMemoryUploadedFile(img2x_io, None, img2x_name, 'image/' + image.format,
-# 			                                    img2x_io.len, None)
-# 			image1x_file = InMemoryUploadedFile(img1x_io, None, img1x_name, 'image/' + image.format,
-# 			                                    img1x_io.len, None)
-#
-# 		new_avatar = Avatar.objects.create(avatar2x=image2x_file, avatar1x=image1x_file)
-# 		request.user.avatar = new_avatar
-# 		request.user.save()
-# 		return Response({'data': 'success'}, status=status.HTTP_200_OK)
-# 	elif request.method == 'GET':
-# 		serializer = AvatarSerializer(request.user.avatar)
-# 		return Response(serializer.data)
 
 
 class TeamViewSet(viewsets.ViewSet):
@@ -297,9 +262,9 @@ class TeamViewSet(viewsets.ViewSet):
 			if request.data.get('email'):
 				# Must use == not is here, otherwise type dismatch
 				is_advisor = True if request.data.get('is_advisor') == 'true' else False
-				print is_advisor
+				print request.data.get('avatar')
 				info = AccountInfo.objects.create(
-					avatar=request.FILES.get('avatar'),
+					avatar=request.data.get('avatar'),
 					first_name=request.data.get('first_name'),
 					last_name=request.data.get('last_name'),
 					title=request.data.get('title'),

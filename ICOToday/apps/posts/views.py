@@ -8,8 +8,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser, FileUploadParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from .models import Post, PostTag
-from ..accounts.models import Account
+from .models import Post, PostTag, RatingDescription
 
 from .serializers import PostSerializer, PostTagSerializer, BasicPostSerializer
 from ..discussions.serializers import CommentSerializer
@@ -67,6 +66,10 @@ class PostViewSet(viewsets.ViewSet):
 			white_paper=request.data.get('white_paper'),
 			video_link=request.data.get('video_link', ''),
 			website=request.data.get('website'),
+			medium=request.data.get('medium'),
+			twitter=request.data.get('twitter'),
+			slack=request.data.get('slack'),
+			telegram=request.data.get('telegram'),
 		)
 		return Response(status=status.HTTP_201_CREATED)
 
@@ -91,24 +94,11 @@ class PostViewSet(viewsets.ViewSet):
 		else:
 			return Response(status=status.HTTP_403_FORBIDDEN)
 
-	# def add_fields(self, request, pk):
-	# 	post = get_object_or_404(self.queryset, pk=pk)
-	# 	for field in request.data:
-	# 		post_field = PostField(title=field[0], description=field[1], post=post)
-	# 		post_field.save()
-	# 	return Response(status=status.HTTP_201_CREATED)
-
 	def comment_list(self, request, pk):
 		post = get_object_or_404(Post.objects.all(), pk=pk)
 		discussions = post.discussions
 		serializer = CommentSerializer(discussions, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
-
-	def apply_post(self, request, pk):
-		post = get_object_or_404(self.queryset, pk=pk)
-		post.appliers.add(request.user)
-		post.save()
-		return Response(status=status.HTTP_200_OK)
 
 	def mark_post(self, request, pk):
 		post = get_object_or_404(self.queryset, pk=pk)
@@ -129,3 +119,16 @@ class PostViewSet(viewsets.ViewSet):
 		serializer = PostTagSerializer(tags, many=True)
 
 		return Response(serializer.data, status=status.HTTP_200_OK)
+
+	def rate(self, request, pk):
+		if request.user.type == 3:
+			post = get_object_or_404(self.queryset, pk=pk)
+			if request.data.get('descriptions', False):
+				RatingDescription.objects.create(
+					rater_id=request.user.id,
+					description=request.data.get('descriptions'),
+					post_id=post.id
+				)
+
+		else:
+			return Response(status=status.HTTP_403_FORBIDDEN)

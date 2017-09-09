@@ -49,6 +49,12 @@ class Post(models.Model):
 	current = models.IntegerField(default=0)
 	money_raised = models.IntegerField(default=0)
 
+	# Social Media
+	medium = models.CharField(max_length=100, null=True, blank=True)
+	twitter = models.CharField(max_length=100, null=True, blank=True)
+	slack = models.CharField(max_length=100, null=True, blank=True)
+	telegram = models.CharField(max_length=100, null=True, blank=True)
+
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
@@ -73,5 +79,14 @@ class PostTag(models.Model):
 		return self.tag if self.tag else ' '
 
 
-class RatingDescription():
-	pass
+class RatingDescription(models.Model):
+	rater = models.ForeignKey('accounts.Account', related_name='ratings')
+	post = models.ForeignKey('Post', related_name='rating_description')
+	description = models.TextField()
+
+	# Timestamp
+	created = models.DateTimeField(auto_now_add=True)
+	updated = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return self.post.title + ' by ' + self.rater.info

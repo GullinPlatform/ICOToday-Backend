@@ -79,22 +79,28 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 
 		return Response({'token': token}, status=status.HTTP_201_CREATED)
 
-	def invited_register(self, request):
-		if request.data.get('email'):
-			# TODO: Not sure
-			serializer = AuthAccountSerializer(data=request.data, partial=True)
-			serializer.is_valid(raise_exception=True)
-			user = serializer.save()
+	def invited_register(self, request, token=None):
+		if request.method == 'GET':
+			token_instance = get_object_or_404(VerifyToken.objects.all(), token=token)
+			serializer = BasicAccountSerializer(token_instance.account)
+			return Response(serializer.data, status=status.HTTP_200_OK)
 
-			# return token right away
-			jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-			jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-			payload = jwt_payload_handler(user)
-			token = jwt_encode_handler(payload)
+		elif request.method == 'POST':
+			if request.data.get('email'):
+				# TODO: Not sure
+				serializer = AuthAccountSerializer(data=request.data, partial=True)
+				serializer.is_valid(raise_exception=True)
+				user = serializer.save()
 
-			return Response({'token': token}, status=status.HTTP_400_BAD_REQUEST)
-		else:
-			return Response(status=status.HTTP_400_BAD_REQUEST)
+				# return token right away
+				jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+				jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+				payload = jwt_payload_handler(user)
+				token = jwt_encode_handler(payload)
+
+				return Response({'token': token}, status=status.HTTP_201_CREATED)
+			else:
+				return Response(status=status.HTTP_400_BAD_REQUEST)
 
 	def email_verify(self, request, token=None):
 		# Verify Token

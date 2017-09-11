@@ -48,7 +48,7 @@ class AccountInfoAdmin(admin.ModelAdmin):
 	list_display = ('id', 'first_name', 'last_name', 'title', 'team', 'is_advisor')
 	fieldsets = (
 		('Personal info', {'fields': ('avatar', 'first_name', 'last_name', 'description', 'title', 'team', 'is_advisor')}),
-		('Social Media', {'fields': ('linkedin', 'twitter', 'slack', 'telegram')}),
+		('Social Media', {'fields': ('linkedin', 'twitter', 'facebook', 'telegram')}),
 	)
 	search_fields = ['first_name', 'last_name']
 	inlines = [AccountInline]

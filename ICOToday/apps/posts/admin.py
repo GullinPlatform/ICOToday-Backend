@@ -33,7 +33,7 @@ class RatingDetailAdmin(admin.ModelAdmin):
 	list_display = ('rater', 'post', 'created',)
 	fieldsets = (
 		('Info', {'fields': ('rater', 'post')}),
-		('Details', {'fields': ('description',)}),
+		('Details', {'fields': ('detail',)}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	readonly_fields = ('created', 'updated')

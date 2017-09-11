@@ -30,10 +30,10 @@ def send_email(receiver_list, subject, template_name, ctx):
 
 def get_user_verify_token(user=None, email=None):
 	if user:
-		token_instance, created = VerifyToken.objects.get_or_create(user_id=user.id)
+		token_instance, created = VerifyToken.objects.get_or_create(account_id=user.id)
 	elif email:
 		user = get_object_or_404(Account.objects.all(), email=email)
-		token_instance, created = VerifyToken.objects.get_or_create(user_id=user.id)
+		token_instance, created = VerifyToken.objects.get_or_create(account_id=user.id)
 	else:
 		return None
 
@@ -284,7 +284,7 @@ class TeamViewSet(viewsets.ViewSet):
 			if request.data.get('email'):
 				# Must use == not is here, otherwise type dismatch
 				is_advisor = True if request.data.get('is_advisor') == 'true' else False
-				print request.data.get('avatar')
+
 				info = AccountInfo.objects.create(
 					avatar=request.data.get('avatar'),
 					first_name=request.data.get('first_name'),
@@ -295,17 +295,19 @@ class TeamViewSet(viewsets.ViewSet):
 					is_advisor=is_advisor,
 					linkedin=request.data.get('linkedin', ''),
 					twitter=request.data.get('twitter', ''),
-					slack=request.data.get('slack', ''),
+					facebook=request.data.get('facebook', ''),
 					telegram=request.data.get('telegram', ''),
 				)
+
 				team.members.add(info)
 
-				user = Account.objects.create_user(
+				user = Account.objects.create(
 					email=request.data.get('email'),
-					info=info,
-					type=1,  # ICO Company
-					password=''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+					info_id=info.id,
+					type=0,  # ICO Company
 				)
+				user.set_password(''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)]))
+				user.save()
 
 				user_verify_token = get_user_verify_token(user)
 				send_email(receiver_list=[user.email],

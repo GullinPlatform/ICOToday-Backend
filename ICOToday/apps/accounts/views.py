@@ -1,4 +1,6 @@
 import random
+import string
+
 from datetime import timedelta, datetime
 
 from django.utils import timezone
@@ -20,40 +22,28 @@ from ..posts.models import Post
 from ..posts.serializers import PostSerializer
 
 
-def send_verify_token(email=None, phone=None):
-	if email:
-		token_instance, created = VerifyToken.objects.get_or_create(email=email)
-		# if token exists, recreate one
-		if created:
-			token_instance.expire_time = timezone.now() + timedelta(hours=5)
-			token_instance.token = random.randint(0, 10 ** 6 - 1)
-			token_instance.save()
-		token = token_instance.token
-
-	# TODO: Email Backend
-	# email = EmailMessage(subject, render_to_string('email/%s.html' % template, ctx), 'no-reply@icotoday.io', [to])
-	# email.content_subtype = 'html'
-	# email.send()
-
-	if phone:
-		token_instance, created = VerifyToken.objects.get_or_create(phone=phone)
-		# if token exists, recreate one
-		if created:
-			token_instance.expire_time = timezone.now() + timedelta(hours=5)
-			token_instance.token = random.randint(0, 10 ** 6 - 1)
-			token_instance.save()
-		token = token_instance.token
+def send_email(receiver_list, subject, template_name, ctx):
+	email = EmailMessage(subject, render_to_string('email/%s.html' % template_name, ctx), 'no-reply@icotoday.io', receiver_list)
+	email.content_subtype = 'html'
+	email.send()
 
 
-def send_invitation_email(email, info_id):
-	print email, info_id
-	pass
+def get_user_verify_token(user=None, email=None):
+	if user:
+		token_instance, created = VerifyToken.objects.get_or_create(user_id=user.id)
+	elif email:
+		user = get_object_or_404(Account.objects.all(), email=email)
+		token_instance, created = VerifyToken.objects.get_or_create(user_id=user.id)
+	else:
+		return None
 
-
-# TODO: Email Backend
-# email = EmailMessage(subject, render_to_string('email/%s.html' % template, ctx), 'no-reply@icotoday.io', [to])
-# email.content_subtype = 'html'
-# email.send()
+	if created or not token_instance.is_expired:
+		return token_instance
+	else:
+		token_instance.expire_time = timezone.now() + timedelta(hours=5)
+		token_instance.token = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+		token_instance.save()
+		return token_instance
 
 
 class AccountRegisterViewSet(viewsets.ViewSet):
@@ -79,15 +69,22 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		payload = jwt_payload_handler(user)
 		token = jwt_encode_handler(payload)
 
+		user_verify_token = get_user_verify_token(user)
+
+		send_email(receiver_list=[user.email],
+		           subject='ICOToday - Email Verification',
+		           template_name='EmailVerification',
+		           ctx={'user': user, 'token': user_verify_token}
+		           )
+
 		return Response({'token': token}, status=status.HTTP_201_CREATED)
 
 	def invited_register(self, request):
-		if request.data.get('info_id') and request.data.get('email'):
-			info = get_object_or_404(AccountInfo.objects.all(), pk=request.data.get('info_id'))
-			serializer = AuthAccountSerializer(data=request.data)
+		if request.data.get('email'):
+			# TODO: Not sure
+			serializer = AuthAccountSerializer(data=request.data, partial=True)
 			serializer.is_valid(raise_exception=True)
 			user = serializer.save()
-			user.info = info
 
 			# return token right away
 			jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -97,31 +94,45 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 
 			return Response({'token': token}, status=status.HTTP_400_BAD_REQUEST)
 		else:
-			return Response(status=status.HTTP_201_CREATED)
-
-	def send_token(self, request):
-		if request.data['email']:
-			send_verify_token(email=request.data['email'])
-		if request.data['phone']:
-			send_verify_token(phone=request.data['phone'])
-		return Response(status=status.HTTP_200_OK)
-
-	def verify_token(self, request):
-		if not request.data['token']:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
-		token_instance = get_object_or_404(VerifyToken.objects.all(), token=request.data['token'])
-		# check is_expired
-		if token_instance.is_expired:
-			return Response({'message': 'Token is expired'}, status=status.HTTP_400_BAD_REQUEST)
+	def email_verify(self, request, token=None):
+		# Verify Token
+		if request.method == 'GET':
+			if not token:
+				return Response(status=status.HTTP_400_BAD_REQUEST)
 
-		token_instance.account.is_verified = True
-		token_instance.expire_time = datetime.utcnow()
-		return Response(status=status.HTTP_200_OK)
+			token_instance = get_object_or_404(VerifyToken.objects.all(), token=token)
+			# check is_expired
+			if token_instance.is_expired:
+				return Response({'message': 'Token is expired'}, status=status.HTTP_400_BAD_REQUEST)
+
+			token_instance.account.is_verified = True
+			token_instance.expire_time = datetime.utcnow()
+			return Response(status=status.HTTP_200_OK)
+		# Resend Email
+		elif request.method == 'POST':
+			user_verify_token = get_user_verify_token(request.user)
+
+			send_email(receiver_list=[request.user.email],
+			           subject='ICOToday - Email Verification',
+			           template_name='EmailVerification',
+			           ctx={'user': request.user, 'token': user_verify_token}
+			           )
 
 	def forget_password(self, request, token=None):
 		token_queryset = VerifyToken.objects.all()
 		# verify token
+		if request.method == 'GET':
+			# if token not exist return 404 here
+			token_instance = get_object_or_404(token_queryset, token=token)
+			# check is_expired
+			if token_instance.is_expired:
+				return Response(status=status.HTTP_404_NOT_FOUND)
+			# else return 200
+			return Response(status=status.HTTP_200_OK)
+
+		# get token
 		if request.method == 'POST':
 			# if token not exist return 404 here
 			token_instance = get_object_or_404(token_queryset, token=token)
@@ -211,8 +222,12 @@ class AccountViewSet(viewsets.ViewSet):
 	def created_posts(self, request, pk=None):
 		if pk:
 			account = get_object_or_404(self.queryset, pk=pk)
-			serializer = PostSerializer(Post.objects.filter(team_id=account.info.team.id), many=True)
-			return Response(serializer.data, status=status.HTTP_200_OK)
+			if account.info.team:
+				serializer = PostSerializer(Post.objects.filter(team_id=account.info.team.id), many=True)
+				return Response(serializer.data, status=status.HTTP_200_OK)
+			else:
+				return Response([], status=status.HTTP_200_OK)
+
 		else:
 			serializer = PostSerializer(Post.objects.filter(team_id=request.user.info.team.id), many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
@@ -277,9 +292,22 @@ class TeamViewSet(viewsets.ViewSet):
 					slack=request.data.get('slack', ''),
 					telegram=request.data.get('telegram', ''),
 				)
-
 				team.members.add(info)
-				send_invitation_email(request.data.get('email'), info.id)
+
+				user = Account.objects.create_user(
+					email=request.data.get('email'),
+					info=info,
+					type=1,  # ICO Company
+					password=''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+				)
+
+				user_verify_token = get_user_verify_token(user)
+				send_email(receiver_list=[user.email],
+				           subject='ICOToday - Your Team is Waiting You',
+				           template_name='TeamInvitation',
+				           ctx={'user': user, 'token': user_verify_token}
+				           )
+
 				return Response(status=status.HTTP_200_OK)
 			else:
 				return Response(status=status.HTTP_400_BAD_REQUEST)

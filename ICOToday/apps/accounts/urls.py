@@ -25,13 +25,15 @@ account_invited_register = AccountRegisterViewSet.as_view({
 	'post': 'invited_register'
 })
 
-account_reset_token = AccountRegisterViewSet.as_view({
-	'post': 'send_token',
-	'put' : 'verify_token'
+account_verification = AccountRegisterViewSet.as_view({
+	'get' : 'email_verify',  # Verify Token
+	'post': 'email_verify',  # Resend Email
 })
 
 account_forget_password = AccountRegisterViewSet.as_view({
-	'post': 'forget_password'
+	'get' : 'forget_password',  # Verify Token
+	'post': 'forget_password',  # Get Token
+	'put' : 'forget_password',  # Change Pass
 })
 
 account_created_posts = AccountViewSet.as_view({
@@ -63,13 +65,17 @@ urlpatterns = [
 	url(r'^signup/$', account_register, name='user-register'),
 	url(r'^invited_signup/$', account_invited_register, name='user-invited-register'),
 
-	url(r'^reset/$', account_change_password, name='change-pass'),
-	url(r'^token/$', account_reset_token, name='user-reset-token'),
+	url(r'^email_verify/$', account_verification, name='user-email-verify'),
+	url(r'^email_verify/(?P<token>[A-z0-9\-]+)/$', account_verification, name='user-email-verify'),
+
+	url(r'^change_pass/$', account_change_password, name='user-change-pass'),
 
 	url(r'^refresh/$', refresh_jwt_token),
 	url(r'^verify/$', verify_jwt_token),
 
+	url(r'^forget/$', account_forget_password, name='user-forget-password'),
 	url(r'^forget/(?P<token>[A-z0-9\-]+)/$', account_forget_password, name='user-forget-password'),
+
 	url(r'^me/$', account_me, name='me'),
 
 	url(r'^me/marked_posts/$', account_marked_posts, name='me-marked-posts'),

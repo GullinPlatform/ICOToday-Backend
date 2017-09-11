@@ -20,20 +20,21 @@ class AuthAccountSerializer(serializers.ModelSerializer):
 	def create(self, validated_data):
 		if 'phone' in validated_data:
 			account = Account(phone=validated_data['phone'], type=validated_data['type'])
-			account.set_password(validated_data['password'])
-			info = AccountInfo.objects.create()
-			account.info = info
-			account.save()
-			return account
 		elif 'email' in validated_data:
 			account = Account(email=validated_data['email'], type=validated_data['type'])
-			account.set_password(validated_data['password'])
-			info = AccountInfo.objects.create()
-			account.info = info
-			account.save()
-			return account
 		else:
 			return False
+
+		account.set_password(validated_data['password'])
+		info = AccountInfo.objects.create()
+		account.info = info
+		account.save()
+		return account
+
+	def update(self, instance, validated_data):
+		instance.set_password(validated_data['password'])
+		instance.save()
+		return instance
 
 
 class AccountInfoSerializer(serializers.ModelSerializer):

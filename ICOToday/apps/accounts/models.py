@@ -116,8 +116,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
 
 class VerifyToken(models.Model):
-	email = models.CharField(max_length=200, null=True)
-	phone = models.CharField(max_length=200, null=True)
+	account = models.ForeignKey('Account', related_name='verify_token')
 	token = models.CharField(max_length=200)
 	expire_time = models.DateTimeField(auto_now_add=True)
 

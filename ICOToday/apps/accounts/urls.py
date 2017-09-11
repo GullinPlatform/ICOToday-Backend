@@ -65,7 +65,6 @@ urlpatterns = [
 	url(r'^login/$', obtain_jwt_token),
 	url(r'^signup/$', account_register, name='user-register'),
 
-	url(r'^invited_signup/$', account_invited_register, name='user-invited-register'),
 	url(r'^invited_signup/(?P<token>[A-z0-9\-]+)/$', account_invited_register, name='user-invited-register'),
 
 	url(r'^email_verify/$', account_verification, name='user-email-verify'),

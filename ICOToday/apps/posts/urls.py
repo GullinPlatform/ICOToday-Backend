@@ -29,6 +29,12 @@ post_mark = PostViewSet.as_view({
 	'post': 'mark_post'
 })
 
+
+post_rating_detail = PostViewSet.as_view({
+	'get': 'retrieve_rating_detail'
+})
+
+
 add_team_member = PostViewSet.as_view({
 	'post': 'add_team_member',
 	'delete': 'add_team_member'
@@ -52,6 +58,7 @@ urlpatterns = [
 	url(r'^tags/$', get_post_tags, name='get_post_tags'),
 
 	url(r'^(?P<pk>[0-9]+)/$', post, name='post'),
+	url(r'^(?P<pk>[0-9]+)/rating/$', post_rating_detail, name='post-rating'),
 	url(r'^(?P<pk>[0-9]+)/comments/$', post_comments, name='post-comments'),
 	url(r'^(?P<pk>[0-9]+)/mark/$', post_mark, name='post_mark'),
 	url(r'^(?P<pk>[0-9]+)/add_team_member/$', add_team_member, name='add_team_member'),

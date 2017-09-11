@@ -8,9 +8,9 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser, FileUploadParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from .models import Post, PostTag, RatingDescription
+from .models import Post, PostTag, RatingDetail
 
-from .serializers import PostSerializer, PostTagSerializer, BasicPostSerializer
+from .serializers import PostSerializer, PostTagSerializer, BasicPostSerializer, RatingDetailSerializer
 from ..discussions.serializers import CommentSerializer
 
 
@@ -78,6 +78,11 @@ class PostViewSet(viewsets.ViewSet):
 		serializer = PostSerializer(post)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
+	def retrieve_rating_detail(self, request, pk):
+		post = get_object_or_404(self.queryset, pk=pk)
+		serializer = RatingDetailSerializer(post.rating_detail, many=True)
+		return Response(serializer.data, status=status.HTTP_200_OK)
+
 	def update(self, request, pk):
 		post = get_object_or_404(self.queryset, pk=pk)
 		serializer = PostSerializer(post, data=request.data, partial=True)
@@ -121,6 +126,7 @@ class PostViewSet(viewsets.ViewSet):
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def rate(self, request, pk):
+		# Is Expert
 		if request.user.type == 3:
 			post = get_object_or_404(self.queryset, pk=pk)
 			if request.data.get('descriptions', False):
@@ -129,6 +135,5 @@ class PostViewSet(viewsets.ViewSet):
 					description=request.data.get('descriptions'),
 					post_id=post.id
 				)
-
 		else:
 			return Response(status=status.HTTP_403_FORBIDDEN)

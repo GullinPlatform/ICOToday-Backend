@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Post, PostTag
+from .models import Post, PostTag, RatingDetail
 from ..discussions.models import Comment
 
 
@@ -29,11 +29,16 @@ class PostTagAdmin(admin.ModelAdmin):
 	list_display = ('tag',)
 
 
-class CommentsFieldAdmin(admin.ModelAdmin):
+class RatingDetailAdmin(admin.ModelAdmin):
+	list_display = ('rater', 'post', 'created',)
 	fieldsets = (
-		('Comments Field Info', {'fields': ('comment',)}),
+		('Info', {'fields': ('rater', 'post')}),
+		('Details', {'fields': ('description',)}),
+		('Timestamp', {'fields': ('created', 'updated')})
 	)
+	readonly_fields = ('created', 'updated')
 
 
 admin.site.register(Post, PostAdmin)
 admin.site.register(PostTag, PostTagAdmin)
+admin.site.register(RatingDetail, RatingDetailAdmin)

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from .models import Post, PostTag
-from ..accounts.serializers import BasicAccountSerializer, BasicTeamSerializer
+from .models import Post, PostTag, RatingDetail
+from ..accounts.serializers import BasicTeamSerializer, BasicAccountSerializer
 
 
 class PostTagSerializer(serializers.ModelSerializer):
@@ -33,3 +33,13 @@ class BasicPostSerializer(serializers.ModelSerializer):
 		          'medium', 'twitter', 'slack', 'telegram']
 
 		read_only_fields = ('created', 'updated', 'status')
+
+
+class RatingDetailSerializer(serializers.ModelSerializer):
+	rater = BasicAccountSerializer(read_only=True)
+
+	class Meta:
+		model = RatingDetail
+		fields = ['rater', 'post', 'detail', 'created', 'updated', 'score']
+
+		read_only_fields = ('created', 'updated')

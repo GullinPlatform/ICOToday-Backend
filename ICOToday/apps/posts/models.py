@@ -79,14 +79,15 @@ class PostTag(models.Model):
 		return self.tag if self.tag else ' '
 
 
-class RatingDescription(models.Model):
+class RatingDetail(models.Model):
 	rater = models.ForeignKey('accounts.Account', related_name='ratings')
-	post = models.ForeignKey('Post', related_name='rating_description')
-	description = models.TextField()
+	post = models.ForeignKey('Post', related_name='rating_detail')
+	detail = models.TextField()
+	score = models.IntegerField(default=0)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
 
 	def __str__(self):
-		return self.post.title + ' by ' + self.rater.info
+		return self.post.title + ' by ' + self.rater.email

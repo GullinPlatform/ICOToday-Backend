@@ -7,7 +7,7 @@ from django.db import models
 class Post(models.Model):
 	STATUS_CHOICES = (
 		(0, 'Verifying'),
-		(1, 'Active'),
+		(1, 'Verified'),
 		(2, 'Completed'),
 		(3, 'Promoting'),
 		(4, 'Premium'),

@@ -13,7 +13,7 @@ class Comment(models.Model):
 	updated = models.DateTimeField(auto_now=True)
 
 	def __str__(self):
-		return self.question.title
+		return self.post.title
 
 	class Meta:
 		ordering = ['-created']

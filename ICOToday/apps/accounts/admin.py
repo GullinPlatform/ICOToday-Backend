@@ -55,7 +55,7 @@ class AccountInfoAdmin(admin.ModelAdmin):
 
 
 class VerifyTokenAdmin(admin.ModelAdmin):
-	list_display = ('email', 'phone', 'is_expired')
+	list_display = ('account', 'is_expired')
 	fieldsets = (
 		(None, {'fields': ('account', 'token', 'expire_time', 'is_expired')}),
 	)

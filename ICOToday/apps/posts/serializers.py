@@ -27,9 +27,9 @@ class BasicPostSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Post
 		fields = ['id', 'team', 'description_short',
-		          'logo_image', 'promote_image', 'title',
+		          'logo_image', 'promote_image', 'title', 'type',
 		          'status', 'tags', 'website', 'maximum_goal', 'minimum_goal', 'coin_type',
-		          'start_datetime', 'end_datetime', 'current', 'money_raised',
+		          'start_datetime', 'end_datetime', 'current', 'money_raised', 'equality_on_offer',
 		          'medium', 'twitter', 'slack', 'telegram']
 
 		read_only_fields = ('created', 'updated', 'status')

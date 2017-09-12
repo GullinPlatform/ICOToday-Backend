@@ -63,7 +63,6 @@ class Account(AbstractBaseUser, PermissionsMixin):
 	TYPE_CHOICES = (
 		(0, 'ICO Company'),
 		(1, 'ICO Investor'),
-		(2, 'ICO Expert'),
 	)
 
 	# Auth

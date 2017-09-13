@@ -111,8 +111,10 @@ class PostViewSet(viewsets.ViewSet):
 
 	def mark_post(self, request, pk):
 		post = get_object_or_404(self.queryset, pk=pk)
-		post.marked.add(request.user)
-		post.save()
+		if request.user in post.marked.all():
+			post.marked.remove(request.user)
+		else:
+			post.marked.add(request.user)
 		return Response(status=status.HTTP_200_OK)
 
 	def search_by_tag(self, request, tag):
@@ -134,7 +136,7 @@ class PostViewSet(viewsets.ViewSet):
 		if request.user.type == 3:
 			post = get_object_or_404(self.queryset, pk=pk)
 			if request.data.get('descriptions', False):
-				RatingDescription.objects.create(
+				RatingDetail.objects.create(
 					rater_id=request.user.id,
 					description=request.data.get('descriptions'),
 					post_id=post.id

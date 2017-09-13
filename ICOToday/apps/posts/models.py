@@ -32,7 +32,6 @@ class Post(models.Model):
 	# Time
 	start_datetime = models.DateTimeField(null=True)
 	end_datetime = models.DateTimeField(null=True)
-	timezone = models.CharField(max_length=10, default='EST')
 
 	# ICO Details
 	type = models.IntegerField(choices=TYPE_CHOICES, default=0)

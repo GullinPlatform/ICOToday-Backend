@@ -34,7 +34,7 @@ post_rating_detail = PostViewSet.as_view({
 })
 
 post_search = PostViewSet.as_view({
-	'post': 'filtered_list'
+	'get': 'filtered_list'
 })
 
 search_posts_by_tag = PostViewSet.as_view({

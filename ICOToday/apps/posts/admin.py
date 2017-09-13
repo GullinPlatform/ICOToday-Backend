@@ -14,7 +14,7 @@ class PostAdmin(admin.ModelAdmin):
 	list_display = ('title', 'status', 'creator', 'start_datetime', 'end_datetime')
 
 	fieldsets = (
-		('Question Info', {'fields': ('title', 'status', 'creator')}),
+		('Question Info', {'fields': ('title', 'status', 'creator', 'category')}),
 		('Details', {'fields': ('team', 'description_short', 'description_full', 'promote_image', 'logo_image')}),
 		('ICO Details', {'fields': ('maximum_goal', 'minimum_goal', 'coin_type', 'start_datetime', 'end_datetime', 'website', 'video_link', 'white_paper')}),
 		('Media Info', {'fields': ('medium', 'twitter', 'slack', 'telegram')}),

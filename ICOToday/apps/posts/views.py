@@ -48,17 +48,28 @@ class PostViewSet(viewsets.ViewSet):
 		return Response(status=status.HTTP_200_OK)
 
 	def filtered_list(self, request, p=None):
-		query = self.queryset
-		# First filter by category
-		if request.data.get('category'):
-			query = query.filter(category=request.data.get('category'))
+		query = self.queryset.exclude(status=0)
+		print request.GET
+		# First filter by status
+		if request.GET.get('status'):
+			post_status = request.GET.get('status')
+			now = timezone.now()
+			if post_status == 'active':
+				query = query.filter(start_datetime__lte=now, end_datetime__gte=now)
+			if post_status == 'upcoming':
+				query = query.filter(start_datetime__gte=now)
+			if post_status == 'passed':
+				query = query.filter(end_datetime__lte=now)
+		# Then filter by category
+		if request.GET.get('category'):
+			query = query.filter(category=request.GET.get('category'))
 		# Then filter by type
-		if request.data.get('type'):
+		if request.GET.get('type'):
 			query = query.filter(type=type)
 		# Then search by keyword
-		if request.data.get('keyword'):
+		if request.GET.get('keyword'):
 			for post in query:
-				if request.data.get('keyword').lower() not in post.title.lower():
+				if request.GET.get('keyword').lower() not in post.title.lower():
 					query.exclude(id=post.id)
 		# Then paginate
 		paginator = Paginator(query, 10)

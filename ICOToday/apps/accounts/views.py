@@ -37,13 +37,10 @@ def get_user_verify_token(user=None, email=None):
 	else:
 		return None
 
-	if created and not token_instance.is_expired:
-		return token_instance
-	else:
-		token_instance.expire_time = timezone.now() + timedelta(hours=5)
-		token_instance.token = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
-		token_instance.save()
-		return token_instance
+	token_instance.expire_time = timezone.now() + timedelta(hours=5)
+	token_instance.token = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+	token_instance.save()
+	return token_instance
 
 
 class AccountRegisterViewSet(viewsets.ViewSet):
@@ -74,8 +71,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		send_email(receiver_list=[user.email],
 		           subject='ICOToday - Email Verification',
 		           template_name='EmailVerification',
-		           ctx={'user': user, 'token': user_verify_token.token}
-		           )
+		           ctx={'user': user, 'token': user_verify_token.token})
 
 		return Response({'token': token}, status=status.HTTP_201_CREATED)
 
@@ -114,7 +110,11 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 				return Response({'message': 'Token is expired'}, status=status.HTTP_400_BAD_REQUEST)
 
 			token_instance.account.is_verified = True
+			token_instance.account.save()
+
 			token_instance.expire_time = datetime.utcnow()
+			token_instance.save()
+
 			return Response(status=status.HTTP_200_OK)
 		# Resend Email
 		elif request.method == 'POST':

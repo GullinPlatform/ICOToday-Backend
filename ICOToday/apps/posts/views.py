@@ -12,6 +12,7 @@ from .models import Post, PostTag, RatingDetail
 
 from .serializers import PostSerializer, PostTagSerializer, BasicPostSerializer, RatingDetailSerializer
 from ..discussions.serializers import CommentSerializer
+from ..accounts.views import send_email
 
 
 class PostViewSet(viewsets.ViewSet):
@@ -51,7 +52,7 @@ class PostViewSet(viewsets.ViewSet):
 		pass
 
 	def create(self, request):
-		Post.objects.create(
+		post = Post.objects.create(
 			creator_id=request.user.id,
 			title=request.data.get('title'),
 			description_full=request.data.get('description_full'),
@@ -75,6 +76,9 @@ class PostViewSet(viewsets.ViewSet):
 			slack=request.data.get('slack'),
 			telegram=request.data.get('telegram'),
 		)
+		# Subscribe for post creator
+		for member in request.user.info.team.members.all():
+			post.marked.add(member)
 		return Response(status=status.HTTP_201_CREATED)
 
 	def retrieve(self, request, pk):
@@ -91,7 +95,13 @@ class PostViewSet(viewsets.ViewSet):
 		post = get_object_or_404(self.queryset, pk=pk)
 		serializer = PostSerializer(post, data=request.data, partial=True)
 		if serializer.is_valid():
-			serializer.save()
+			post = serializer.save()
+
+			email_list = []
+			for marked in post.marked.all():
+				email_list.append(marked.email)
+
+			send_email(email_list, 'ICOToday - Official Update on ICO Project You Subscribe to', 'NewComment', {id: post.id})
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
 			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

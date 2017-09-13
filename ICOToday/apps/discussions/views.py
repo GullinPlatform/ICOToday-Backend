@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from ..posts.models import Post
 from .models import Comment
 from .serializers import ReplySerializer, CommentSerializer
+from ..accounts.views import send_email
 
 
 class CommentViewSet(viewsets.ViewSet):
@@ -21,9 +22,22 @@ class CommentViewSet(viewsets.ViewSet):
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def create(self, request, post_pk):
+
 		serializer = CommentSerializer(data=request.data, context={'creator_id': request.user.id, 'post_id': post_pk})
 		serializer.is_valid(raise_exception=True)
 		serializer.save()
+
+		# Send Email
+		post = Post.objects.get(pk=post_pk)
+
+		email_list = []
+		for marked in post.marked.all():
+			email_list.append(marked.email)
+		if request.user in post.team.members.all():
+			send_email(email_list, 'ICOToday - Official Team Member Posted a Comment in ICO Project', 'NewComment', {id: post_pk})
+		else:
+			send_email(email_list, 'ICOToday - New Comment on ICO You Subscribe to', 'NewComment', {id: post_pk})
+
 		return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 	def update(self, request, comment_pk):
@@ -48,11 +62,13 @@ class CommentViewSet(viewsets.ViewSet):
 		comment = get_object_or_404(self.queryset, pk=comment_pk)
 
 		serializer = ReplySerializer(data=request.data,
-		                             context=
-		                             {'creator_id': request.user.id,
-		                              'post_id'   : comment.post_id,
-		                              'reply_to_id': comment_pk}
-		                             )
+		                             context={'creator_id' : request.user.id,
+		                                      'post_id'    : comment.post_id,
+		                                      'reply_to_id': comment_pk})
 		serializer.is_valid(raise_exception=True)
 		serializer.save()
+
+		# Send Email
+		send_email([comment.creator.email], 'ICOToday - New Reply on Your Comment', 'NewComment', {id: comment.post_id})
+
 		return Response(serializer.data, status=status.HTTP_201_CREATED)

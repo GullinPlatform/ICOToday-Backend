@@ -310,11 +310,19 @@ class TeamViewSet(viewsets.ViewSet):
 				user.save()
 
 				user_verify_token = get_user_verify_token(user)
-				send_email(receiver_list=[user.email],
-				           subject='ICOToday - Your Team is Waiting You',
-				           template_name='TeamInvitation',
-				           ctx={'user': user, 'token': user_verify_token}
-				           )
+
+				if is_advisor:
+					send_email(receiver_list=[user.email],
+					           subject='ICOToday - Your Team is Waiting You',
+					           template_name='TeamAdvisorInvitation',
+					           ctx={'user': user, 'token': user_verify_token}
+					           )
+				else:
+					send_email(receiver_list=[user.email],
+					           subject='ICOToday - Your Team is Waiting You',
+					           template_name='TeamMemberInvitation',
+					           ctx={'user': user, 'token': user_verify_token}
+					           )
 
 				return Response(status=status.HTTP_200_OK)
 			else:

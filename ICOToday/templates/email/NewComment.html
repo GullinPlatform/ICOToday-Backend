@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="format-detection" content="telephone=no"/> <!-- disable auto telephone linking in iOS -->
+    <title>Respmail is a response HTML email designed to work on all major email platforms and smartphones</title>
     <style type="text/css">
         /* RESET STYLES */
         html {
@@ -261,7 +262,8 @@
             text-decoration: none !important;
         }
 
-        /* A nice and clean way to target phone numbers you want clickable and avoid a mobile phone from linking other numbers that look like, but are not phone numbers.  Use these two blocks of code to "unstyle" any numbers that may be linked.  The second block gives you a class to apply with a span tag to the numbers you would like linked and styled.
+        /* A nice and clean way to target phone numbers you want clickable and avoid a mobile phone from linking other numbers that look like, but are not phone numbers.
+        Use these two blocks of code to "unstyle" any numbers that may be linked.  The second block gives you a class to apply with a span tag to the numbers you would like linked and styled.
         Inspired by Campaign Monitor's article on using phone numbers in email: http://www.campaignmonitor.com/blog/post/3571/using-phone-numbers-in-html-email/.
         */
         .a[href^="tel"], a[href^="sms"] {
@@ -583,7 +585,7 @@
                                                     <!-- CONTENT TABLE // -->
 
 
-                                                    <h2 style="color:#000;">A project you are subscribed to on ICOToday has posted an update. </h2>
+                                                    <h2 style="color:#000;">An investor on ICOToday has posted a comment on your ICO. </h2>
                                                     <!-- // CONTENT TABLE -->
 
                                                 </td>
@@ -615,8 +617,9 @@
                                                     <table border="0" cellpadding="0" cellspacing="0" width="50%" class="emailButton" style="background-color: #3498DB;">
                                                         <tr>
                                                             <td align="center" valign="middle" class="buttonContent" style="padding-top:15px;padding-bottom:15px;padding-right:15px;padding-left:15px;">
-                                                                <a style="color:#FFFFFF;text-decoration:none;font-family:Helvetica,Arial,sans-serif;font-size:20px;line-height:135%;" href="#"
-                                                                   target="_blank">View Update</a>
+                                                                <a style="color:#FFFFFF;text-decoration:none;font-family:Helvetica,Arial,sans-serif;font-size:20px;line-height:135%;"
+                                                                   href="http://icotoday.io/project/{{ id }}"
+                                                                   target="_blank">View Comment</a>
                                                             </td>
                                                         </tr>
                                                     </table>

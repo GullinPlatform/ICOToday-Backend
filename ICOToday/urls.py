@@ -24,7 +24,7 @@ from .apps.posts import urls as post_urls
 from .apps.discussions import urls as discussion_urls
 
 urlpatterns = [
-	url(r'^admin/', admin.site.urls),
+	url(r'^6y07cs0yq9/', admin.site.urls),
 	url(r'^account/', include(account_urls)),
 	url(r'^discussion/', include(discussion_urls)),
 	url(r'^post/', include(post_urls)),

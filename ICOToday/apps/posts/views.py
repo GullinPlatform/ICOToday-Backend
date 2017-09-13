@@ -1,5 +1,5 @@
 from django.utils import timezone, dateparse
-
+from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import get_object_or_404
 
@@ -21,7 +21,7 @@ class PostViewSet(viewsets.ViewSet):
 	permission_classes = (IsAuthenticatedOrReadOnly,)
 
 	def list(self, request, p=None):
-		queryset = self.queryset.filter(status=1)
+		queryset = self.queryset.exclude(status=0)
 		paginator = Paginator(queryset, 10)
 		try:
 			posts = paginator.page(p)
@@ -47,9 +47,32 @@ class PostViewSet(viewsets.ViewSet):
 				post.save()
 		return Response(status=status.HTTP_200_OK)
 
-	# TODO:
-	def filtered_list(self, request):
-		pass
+	def filtered_list(self, request, p=None):
+		query = self.queryset
+		# First filter by category
+		if request.data.get('category'):
+			query = query.filter(category=request.data.get('category'))
+		# Then filter by type
+		if request.data.get('type'):
+			query = query.filter(type=type)
+		# Then search by keyword
+		if request.data.get('keyword'):
+			for post in query:
+				if request.data.get('keyword').lower() not in post.title.lower():
+					query.exclude(id=post.id)
+		# Then paginate
+		paginator = Paginator(query, 10)
+		try:
+			posts = paginator.page(p)
+		except PageNotAnInteger:
+			# If page is not an integer, deliver first page.
+			posts = paginator.page(1)
+		except EmptyPage:
+			# If page is out of range (e.g. 9999), deliver last page of results.
+			posts = paginator.page(paginator.num_pages)
+
+		serializer = BasicPostSerializer(posts, many=True)
+		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def create(self, request):
 		post = Post.objects.create(

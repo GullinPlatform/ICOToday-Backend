@@ -49,7 +49,6 @@ class PostViewSet(viewsets.ViewSet):
 
 	def filtered_list(self, request, p=None):
 		query = self.queryset.exclude(status=0)
-		print request.GET
 		# First filter by status
 		if request.GET.get('status'):
 			post_status = request.GET.get('status')
@@ -112,7 +111,10 @@ class PostViewSet(viewsets.ViewSet):
 		)
 		# Subscribe for post creator
 		for member in request.user.info.team.members.all():
-			post.marked.add(member)
+			try:
+				post.marked.add(member.account)
+			except:
+				pass
 		return Response(status=status.HTTP_201_CREATED)
 
 	def retrieve(self, request, pk):

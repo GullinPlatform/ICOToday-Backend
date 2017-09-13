@@ -37,7 +37,7 @@ def get_user_verify_token(user=None, email=None):
 	else:
 		return None
 
-	if created or not token_instance.is_expired:
+	if created and not token_instance.is_expired:
 		return token_instance
 	else:
 		token_instance.expire_time = timezone.now() + timedelta(hours=5)
@@ -74,7 +74,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		send_email(receiver_list=[user.email],
 		           subject='ICOToday - Email Verification',
 		           template_name='EmailVerification',
-		           ctx={'user': user, 'token': user_verify_token}
+		           ctx={'user': user, 'token': user_verify_token.token}
 		           )
 
 		return Response({'token': token}, status=status.HTTP_201_CREATED)
@@ -315,13 +315,13 @@ class TeamViewSet(viewsets.ViewSet):
 					send_email(receiver_list=[user.email],
 					           subject='ICOToday - Your Team is Waiting You',
 					           template_name='TeamAdvisorInvitation',
-					           ctx={'user': user, 'token': user_verify_token}
+					           ctx={'user': user, 'token': user_verify_token.token}
 					           )
 				else:
 					send_email(receiver_list=[user.email],
 					           subject='ICOToday - Your Team is Waiting You',
 					           template_name='TeamMemberInvitation',
-					           ctx={'user': user, 'token': user_verify_token}
+					           ctx={'user': user, 'token': user_verify_token.token}
 					           )
 
 				return Response(status=status.HTTP_200_OK)

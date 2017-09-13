@@ -23,10 +23,11 @@ class Post(models.Model):
 	team = models.ForeignKey('accounts.Team', blank=True, related_name='posts')
 
 	# Information
-	title = models.CharField(max_length=200)
+	title = models.CharField(max_length=100)
 	description_short = models.CharField(max_length=200, null=True, blank=True)
 	description_full = models.TextField()
 	tags = models.ManyToManyField('PostTag', related_name='posts')
+	category = models.CharField(max_length=100)
 
 	# Time
 	start_datetime = models.DateTimeField(null=True)

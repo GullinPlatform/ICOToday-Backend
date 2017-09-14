@@ -30,6 +30,9 @@ class AccountInfo(models.Model):
 	def __str__(self):
 		return self.first_name + ' ' + self.last_name if self.first_name and self.last_name else str(self.id)
 
+	def full_name(self):
+		return self.first_name + ' ' + self.last_name if self.first_name and self.last_name else str(self.id)
+
 
 class AccountManager(BaseUserManager):
 	use_in_migrations = True

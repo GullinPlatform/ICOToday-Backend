@@ -15,8 +15,8 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 
-from .models import Account, VerifyToken, Team, AccountInfo
-from .serializers import AuthAccountSerializer, TeamSerializer, BasicTeamSerializer, BasicAccountSerializer, AccountInfoSerializer
+from .models import Account, VerifyToken, Team, AccountInfo, ExpertApplication
+from .serializers import AuthAccountSerializer, TeamSerializer, BasicTeamSerializer, BasicAccountSerializer, AccountInfoSerializer, ExpertApplicationSerializer
 
 from ..posts.models import Post
 from ..posts.serializers import PostSerializer
@@ -87,6 +87,8 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			if request.data.get('password'):
 				token_instance = get_object_or_404(VerifyToken.objects.all(), token=token)
 				token_instance.account.set_password(request.data.get('password'))
+				token_instance.account.is_verified = True
+				token_instance.account.save()
 
 				# return auth token right away
 				jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -313,15 +315,15 @@ class TeamViewSet(viewsets.ViewSet):
 
 				if is_advisor:
 					send_email(receiver_list=[user.email],
-					           subject='ICOToday - Your Team is Waiting You',
+					           subject='ICOToday - ' + user.full_name + ', Your Team is Waiting You',
 					           template_name='TeamAdvisorInvitation',
-					           ctx={'user': user, 'token': user_verify_token.token}
+					           ctx={'user': user, 'token': user_verify_token.token, 'team_name': team.name}
 					           )
 				else:
 					send_email(receiver_list=[user.email],
-					           subject='ICOToday - Your Team is Waiting You',
+					           subject='ICOToday - ' + user.full_name + ', Your Team is Waiting You',
 					           template_name='TeamMemberInvitation',
-					           ctx={'user': user, 'token': user_verify_token.token}
+					           ctx={'user': user, 'token': user_verify_token.token, 'team_name': team.name}
 					           )
 
 				return Response(status=status.HTTP_200_OK)

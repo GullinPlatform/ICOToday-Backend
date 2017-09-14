@@ -1,7 +1,7 @@
 from django.conf.urls import url
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
 
-from .views import AccountViewSet, AccountRegisterViewSet, TeamViewSet
+from .views import AccountViewSet, AccountRegisterViewSet, TeamViewSet, ExpertApplicationViewSet
 
 account_change_password = AccountViewSet.as_view({
 	'post': 'change_password'
@@ -57,6 +57,11 @@ team_detail = TeamViewSet.as_view({
 	'delete': 'add_team_member',
 })
 
+expert_application = ExpertApplicationViewSet.as_view({
+	'post': 'create',
+	'put' : 'update',
+})
+
 urlpatterns = [
 	# Account
 	url(r'^(?P<pk>[0-9]+)/$', account_detail, name='user-detail'),
@@ -90,4 +95,9 @@ urlpatterns = [
 	url(r'^teams/$', team_list, name='team-list'),
 	url(r'^team/new/$', team_detail, name='team-new'),
 	url(r'^team/(?P<pk>[0-9]+)/$', team_detail, name='team-detail'),
+
+	# Expert Application
+	url(r'^teams/$', expert_application, name='expert-application-post'),
+	url(r'^team/(?P<pk>[0-9]+)/$', expert_application, name='expert-application-update'),
+
 ]

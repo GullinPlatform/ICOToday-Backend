@@ -97,7 +97,6 @@ urlpatterns = [
 	url(r'^team/(?P<pk>[0-9]+)/$', team_detail, name='team-detail'),
 
 	# Expert Application
-	url(r'^teams/$', expert_application, name='expert-application-post'),
-	url(r'^team/(?P<pk>[0-9]+)/$', expert_application, name='expert-application-update'),
-
+	url(r'^apply/$', expert_application, name='expert-application-post'),
+	url(r'^apply/(?P<pk>[0-9]+)/$', expert_application, name='expert-application-update'),
 ]

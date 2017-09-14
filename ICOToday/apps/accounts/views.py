@@ -161,6 +161,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			token_instance.account.set_password(request.data['password'])
 			token_instance.account.save()
 			token_instance.expire_time = datetime.utcnow()
+			token_instance.save()
 			return Response(status=status.HTTP_200_OK)
 
 
@@ -286,7 +287,7 @@ class TeamViewSet(viewsets.ViewSet):
 			if request.data.get('email'):
 				# Must use == not is here, otherwise type dismatch
 				is_advisor = True if request.data.get('is_advisor') == 'true' else False
-
+				# Create AccountInfo first
 				info = AccountInfo.objects.create(
 					avatar=request.data.get('avatar'),
 					first_name=request.data.get('first_name'),
@@ -300,14 +301,19 @@ class TeamViewSet(viewsets.ViewSet):
 					facebook=request.data.get('facebook', ''),
 					telegram=request.data.get('telegram', ''),
 				)
-
+				# if user email duplicate, delete the AccountInfo just created and return 400
+				try:
+					user = Account.objects.create(
+						email=request.data.get('email'),
+						info_id=info.id,
+						type=0,  # ICO Company
+					)
+				except:
+					info.delete()
+					return Response({'detail': 'User with this email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+				# if created user, add AccountInfo to team
 				team.members.add(info)
-
-				user = Account.objects.create(
-					email=request.data.get('email'),
-					info_id=info.id,
-					type=0,  # ICO Company
-				)
+				# give user just created a random password
 				user.set_password(''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)]))
 				user.save()
 
@@ -315,13 +321,13 @@ class TeamViewSet(viewsets.ViewSet):
 
 				if is_advisor:
 					send_email(receiver_list=[user.email],
-					           subject='ICOToday - ' + user.full_name + ', Your Team is Waiting You',
+					           subject='ICOToday - ' + user.info.full_name + ', Your Team is Waiting You',
 					           template_name='TeamAdvisorInvitation',
 					           ctx={'user': user, 'token': user_verify_token.token, 'team_name': team.name}
 					           )
 				else:
 					send_email(receiver_list=[user.email],
-					           subject='ICOToday - ' + user.full_name + ', Your Team is Waiting You',
+					           subject='ICOToday - ' + user.info.full_name + ', Your Team is Waiting You',
 					           template_name='TeamMemberInvitation',
 					           ctx={'user': user, 'token': user_verify_token.token, 'team_name': team.name}
 					           )

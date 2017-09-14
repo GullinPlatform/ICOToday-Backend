@@ -135,3 +135,24 @@ class Team(models.Model):
 
 	def __str__(self):
 		return self.name
+
+
+class ExpertApplication(models.Model):
+	STATUS_CHOICES = (
+		(0, 'Processing'),
+		(1, 'Approved'),
+		(2, 'Declined'),
+	)
+
+	# Info
+	account = models.OneToOneField('Account', related_name='my_application')
+	detail = models.TextField()
+	status = models.IntegerField(default=0, choices=STATUS_CHOICES)
+	response = models.TextField()
+
+	# Timestamp
+	created = models.DateTimeField(auto_now_add=True)
+	updated = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return self.account.email

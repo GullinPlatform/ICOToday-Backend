@@ -332,3 +332,29 @@ class TeamViewSet(viewsets.ViewSet):
 			info = get_object_or_404(AccountInfo.objects.all(), pk=pk)
 			info.team.members.remove(info)
 			return Response(status=status.HTTP_200_OK)
+
+
+class ExpertApplicationViewSet(viewsets.ViewSet):
+	queryset = ExpertApplication.objects.all()
+	parser_classes = (MultiPartParser, FormParser, JSONParser)
+	permission_classes = (IsAuthenticatedOrReadOnly,)
+
+	def create(self, request):
+		if request.data.get('detail'):
+			ExpertApplication.objects.create(
+				account_id=request.user.id,
+				detail=request.data.get('detail')
+			)
+			return Response(status=status.HTTP_201_CREATED)
+		else:
+			return Response(status=status.HTTP_400_BAD_REQUEST)
+
+	def update(self, request, pk):
+		application = get_object_or_404(self.queryset, pk=pk)
+
+		if request.data.get('detail'):
+			application.detail = request.data.get('detail')
+			application.save()
+			return Response(status=status.HTTP_200_OK)
+		else:
+			return Response(status=status.HTTP_400_BAD_REQUEST)

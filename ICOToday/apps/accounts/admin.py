@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group as AdminGroup
 
 from .forms import AccountChangeForm, AccountCreationForm
-from .models import Account, AccountInfo, VerifyToken, Team
+from .models import Account, AccountInfo, VerifyToken, Team, ExpertApplication
 
 
 class AccountInline(admin.TabularInline):
@@ -26,7 +26,7 @@ class AccountAdmin(UserAdmin):
 	# The forms to add and change user instances
 	form = AccountChangeForm
 	add_form = AccountCreationForm
-	list_display = ('id', 'email', 'phone', 'is_verified', 'type')
+	list_display = ('id', 'email', 'is_verified', 'type', 'created',)
 	list_filter = ['is_staff', 'is_verified']
 	fieldsets = (
 		(None, {'fields': ('email', 'phone', 'password', 'info', 'type')}),
@@ -71,8 +71,18 @@ class TeamAdmin(admin.ModelAdmin):
 	readonly_fields = ('created', 'updated')
 
 
+class ExpertApplicationAdmin(admin.ModelAdmin):
+	list_display = ('account', 'status', 'created')
+	fieldsets = [
+		[None, {'fields': ['account', 'detail', 'status', 'response']}],
+		['Timestamp', {'fields': ['created', 'updated']}],
+	]
+	readonly_fields = ('created', 'updated')
+
+
 admin.site.register(Account, AccountAdmin)
 admin.site.register(AccountInfo, AccountInfoAdmin)
 admin.site.register(VerifyToken, VerifyTokenAdmin)
 admin.site.register(Team, TeamAdmin)
+admin.site.register(ExpertApplication, ExpertApplicationAdmin)
 admin.site.unregister(AdminGroup)

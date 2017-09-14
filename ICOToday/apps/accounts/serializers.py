@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Account, Team, AccountInfo
+from .models import Account, Team, AccountInfo, ExpertApplication
 
 
 class BasicTeamSerializer(serializers.ModelSerializer):
@@ -69,4 +69,12 @@ class TeamSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Team
 		fields = ['id', 'name', 'description', 'members']
+		read_only_fields = ('created', 'updated',)
+
+
+class ExpertApplicationSerializer(serializers.ModelSerializer):
+
+	class Meta:
+		model = ExpertApplication
+		fields = '__all__'
 		read_only_fields = ('created', 'updated',)

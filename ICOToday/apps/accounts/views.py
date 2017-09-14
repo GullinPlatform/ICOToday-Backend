@@ -321,13 +321,13 @@ class TeamViewSet(viewsets.ViewSet):
 
 				if is_advisor:
 					send_email(receiver_list=[user.email],
-					           subject='ICOToday - ' + user.info.full_name + ', Your Team is Waiting You',
+					           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
 					           template_name='TeamAdvisorInvitation',
 					           ctx={'user': user, 'token': user_verify_token.token, 'team_name': team.name}
 					           )
 				else:
 					send_email(receiver_list=[user.email],
-					           subject='ICOToday - ' + user.info.full_name + ', Your Team is Waiting You',
+					           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
 					           template_name='TeamMemberInvitation',
 					           ctx={'user': user, 'token': user_verify_token.token, 'team_name': team.name}
 					           )

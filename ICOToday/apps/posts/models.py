@@ -97,3 +97,25 @@ class RatingDetail(models.Model):
 
 	def __str__(self):
 		return self.post.title + ' by ' + self.rater.email
+
+
+class PromotionApplication(models.Model):
+	STATUS_CHOICES = (
+		(0, 'Processing'),
+		(1, 'Approved'),
+		(2, 'Declined'),
+	)
+
+	# Info
+	account = models.ForeignKey('accounts.Account', related_name='my_promotions')
+	team = models.ForeignKey('accounts.Team', related_name='promotions')
+	detail = models.TextField()
+	status = models.IntegerField(default=0, choices=STATUS_CHOICES)
+	response = models.TextField()
+
+	# Timestamp
+	created = models.DateTimeField(auto_now_add=True)
+	updated = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return self.team.name

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Post, PostTag, RatingDetail
+from .models import Post, PostTag, RatingDetail, PromotionApplication
 from ..accounts.serializers import BasicTeamSerializer, BasicAccountSerializer
 
 
@@ -42,4 +42,11 @@ class RatingDetailSerializer(serializers.ModelSerializer):
 		model = RatingDetail
 		fields = ['rater', 'post', 'detail', 'created', 'updated', 'score']
 
+		read_only_fields = ('created', 'updated')
+
+
+class PromotionApplicationSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = RatingDetail
+		fields = '__all__'
 		read_only_fields = ('created', 'updated')

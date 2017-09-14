@@ -30,20 +30,20 @@ class Post(models.Model):
 	category = models.CharField(max_length=100)
 
 	# Time
-	start_datetime = models.DateTimeField(null=True)
-	end_datetime = models.DateTimeField(null=True)
+	start_datetime = models.DateTimeField(null=True, blank=True)
+	end_datetime = models.DateTimeField(null=True, blank=True)
 
 	# ICO Details
 	type = models.IntegerField(choices=TYPE_CHOICES, default=0)
 	coin_name = models.CharField(max_length=100, null=True, blank=True)
-	ratio = models.FloatField(default=1)
-	coin_type = models.CharField(max_length=20, default='BTC')
-	maximum_goal = models.IntegerField(default=0)
-	minimum_goal = models.IntegerField(default=0)
-	equality_on_offer = models.IntegerField(default=0)
+	ratio = models.FloatField(null=True, blank=True)
+	coin_type = models.CharField(max_length=20, null=True, blank=True)
+	maximum_goal = models.IntegerField(null=True, blank=True)
+	minimum_goal = models.IntegerField(null=True, blank=True)
+	equality_on_offer = models.IntegerField(null=True, blank=True)
 
-	current = models.IntegerField(default=0)
-	money_raised = models.IntegerField(default=0)
+	current = models.IntegerField(null=True, blank=True)
+	money_raised = models.IntegerField(null=True, blank=True)
 
 	# Supplements
 	promote_image = models.ImageField(upload_to='posts/images/', null=True, blank=True)
@@ -53,7 +53,7 @@ class Post(models.Model):
 	website = models.CharField(max_length=100, null=True, blank=True)
 
 	# Platform
-	rating = models.IntegerField(default=0)
+	rating = models.IntegerField(null=True, blank=True)
 	status = models.IntegerField(choices=STATUS_CHOICES, default=0)
 
 	# Social Media
@@ -67,7 +67,6 @@ class Post(models.Model):
 	updated = models.DateTimeField(auto_now=True)
 
 	# relation
-	# fields
 	# files
 	class Meta:
 		ordering = ['-start_datetime']

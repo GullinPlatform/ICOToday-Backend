@@ -85,29 +85,39 @@ class PostViewSet(viewsets.ViewSet):
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def create(self, request):
+
+		form = request.data
+		for key in form:
+			if form[key] == '' or form[key] == 'null':
+				form[key] = None
+
 		post = Post.objects.create(
 			creator_id=request.user.id,
-			title=request.data.get('title'),
-			description_full=request.data.get('description_full'),
 			team_id=request.user.info.team.id,
-			maximum_goal=request.data.get('maximum_goal'),
-			minimum_goal=request.data.get('minimum_goal'),
-			type=request.data.get('type'),
-			equality_on_offer=request.data.get('equality_on_offer'),
-			coin_type=request.data.get('coin_type'),
-			coin_name=request.data.get('coin_name'),
-			ratio=request.data.get('ratio'),
-			start_datetime=request.data.get('start_datetime'),
-			end_datetime=request.data.get('end_datetime'),
-			logo_image=request.data.get('logo_image'),
-			promote_image=request.data.get('promote_image', ''),
-			white_paper=request.data.get('white_paper'),
-			video_link=request.data.get('video_link', ''),
-			website=request.data.get('website'),
-			medium=request.data.get('medium'),
-			twitter=request.data.get('twitter'),
-			slack=request.data.get('slack'),
-			telegram=request.data.get('telegram'),
+
+			title=form.get('title'),
+			logo_image=form.get('logo_image'),
+			category=form.get('category'),
+			description_full=form.get('description_full'),
+			description_short=form.get('description_short'),
+			type=form.get('type'),
+
+			maximum_goal=form.get('maximum_goal', None),
+			minimum_goal=form.get('minimum_goal', None),
+			equality_on_offer=form.get('equality_on_offer', None),
+			coin_type=form.get('coin_type', None),
+			coin_name=form.get('coin_name', None),
+			ratio=form.get('ratio', None),
+			start_datetime=form.get('start_datetime', None),
+			end_datetime=form.get('end_datetime', None),
+			promote_image=form.get('promote_image', None),
+			white_paper=form.get('white_paper', None),
+			video_link=form.get('video_link', None),
+			website=form.get('website', None),
+			medium=form.get('medium', None),
+			twitter=form.get('twitter', None),
+			slack=form.get('slack', None),
+			telegram=form.get('telegram', None),
 		)
 		# Subscribe for post creator
 		for member in request.user.info.team.members.all():

@@ -40,7 +40,7 @@ class Post(models.Model):
 	coin_type = models.CharField(max_length=20, null=True, blank=True)
 	maximum_goal = models.IntegerField(null=True, blank=True)
 	minimum_goal = models.IntegerField(null=True, blank=True)
-	equality_on_offer = models.IntegerField(null=True, blank=True)
+	equality_on_offer = models.FloatField(null=True, blank=True)
 
 	current = models.IntegerField(null=True, blank=True)
 	money_raised = models.IntegerField(null=True, blank=True)

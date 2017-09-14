@@ -85,6 +85,8 @@ class PostViewSet(viewsets.ViewSet):
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def create(self, request):
+		if request.user.type != 0 or not request.user.is_verified:
+			return Response(status=status.HTTP_403_FORBIDDEN)
 
 		form = request.data
 		for key in form:

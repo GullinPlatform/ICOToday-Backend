@@ -82,3 +82,11 @@ ICOToday/apps/posts/migrations/0003_auto_20170901_0759\.py
 ICOToday/apps/posts/migrations/0002_auto_20170901_0756\.py
 
 env_ico/
+
+ICOToday/templates/email/
+
+icoenv/
+
+\.DS_Store
+
+setup\.sh

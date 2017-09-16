@@ -13,7 +13,7 @@ from rest_framework_jwt.settings import api_settings
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated
 
 from .models import Account, VerifyToken, Team, AccountInfo, ExpertApplication
 from .serializers import AuthAccountSerializer, TeamSerializer, BasicTeamSerializer, BasicAccountSerializer, AccountInfoSerializer, ExpertApplicationSerializer
@@ -345,7 +345,18 @@ class TeamViewSet(viewsets.ViewSet):
 class ExpertApplicationViewSet(viewsets.ViewSet):
 	queryset = ExpertApplication.objects.all()
 	parser_classes = (MultiPartParser, FormParser, JSONParser)
-	permission_classes = (IsAuthenticatedOrReadOnly,)
+	permission_classes = (IsAuthenticated,)
+
+	def retrieve(self, request):
+		# Only Investor Allowed
+		if request.user.type == 1:
+			try:
+				serializer = ExpertApplicationSerializer(request.user.expert_application)
+				return Response(serializer.data, status=status.HTTP_200_OK)
+			except ExpertApplication.DoesNotExist:
+				return Response(status=status.HTTP_200_OK)
+		else:
+			return Response(status=status.HTTP_403_FORBIDDEN)
 
 	def create(self, request):
 		if request.data.get('detail'):
@@ -357,12 +368,16 @@ class ExpertApplicationViewSet(viewsets.ViewSet):
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
-	def update(self, request, pk):
-		application = get_object_or_404(self.queryset, pk=pk)
+	def update(self, request):
+		try:
+			application = request.user.expert_application
+		except ExpertApplication.DoesNotExist:
+			return Response(status=status.HTTP_200_OK)
 
 		if request.data.get('detail'):
 			application.detail = request.data.get('detail')
 			application.save()
-			return Response(status=status.HTTP_200_OK)
+			serializer = ExpertApplicationSerializer(application)
+			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)

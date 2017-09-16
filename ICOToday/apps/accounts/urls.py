@@ -58,6 +58,7 @@ team_detail = TeamViewSet.as_view({
 })
 
 expert_application = ExpertApplicationViewSet.as_view({
+	'get': 'retrieve',
 	'post': 'create',
 	'put' : 'update',
 })
@@ -97,6 +98,5 @@ urlpatterns = [
 	url(r'^team/(?P<pk>[0-9]+)/$', team_detail, name='team-detail'),
 
 	# Expert Application
-	url(r'^apply/$', expert_application, name='expert-application-post'),
-	url(r'^apply/(?P<pk>[0-9]+)/$', expert_application, name='expert-application-update'),
+	url(r'^expert_apply/$', expert_application, name='expert-application'),
 ]

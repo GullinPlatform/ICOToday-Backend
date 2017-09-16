@@ -28,7 +28,7 @@ class BasicPostSerializer(serializers.ModelSerializer):
 		model = Post
 		fields = ['id', 'team', 'description_short',
 		          'logo_image', 'promote_image', 'title', 'type', 'category',
-		          'status', 'tags', 'website', 'maximum_goal', 'minimum_goal', 'coin_type',
+		          'status', 'tags', 'website', 'maximum_goal', 'minimum_goal', 'coin_unit','accept',
 		          'start_datetime', 'end_datetime', 'current', 'money_raised', 'equality_on_offer',
 		          'medium', 'twitter', 'slack', 'telegram']
 

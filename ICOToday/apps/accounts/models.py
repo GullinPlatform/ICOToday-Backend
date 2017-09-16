@@ -20,6 +20,7 @@ class AccountInfo(models.Model):
 	team = models.ForeignKey('Team', related_name='members', null=True, blank=True)
 
 	is_advisor = models.BooleanField(default=False)
+	is_expert = models.BooleanField(default=False)
 
 	# Social Media
 	linkedin = models.CharField(max_length=100, null=True, blank=True)
@@ -148,7 +149,7 @@ class ExpertApplication(models.Model):
 	)
 
 	# Info
-	account = models.OneToOneField('Account', related_name='my_application')
+	account = models.OneToOneField('Account', related_name='expert_application')
 	detail = models.TextField()
 	status = models.IntegerField(default=0, choices=STATUS_CHOICES)
 	response = models.TextField()

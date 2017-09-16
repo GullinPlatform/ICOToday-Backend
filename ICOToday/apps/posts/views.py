@@ -69,7 +69,7 @@ class PostViewSet(viewsets.ViewSet):
 		if request.GET.get('keyword'):
 			for post in query:
 				if request.GET.get('keyword').lower() not in post.title.lower():
-					query.exclude(id=post.id)
+					query = query.exclude(id=post.id)
 		# Then paginate
 		paginator = Paginator(query, 10)
 		try:
@@ -107,9 +107,10 @@ class PostViewSet(viewsets.ViewSet):
 			maximum_goal=form.get('maximum_goal', None),
 			minimum_goal=form.get('minimum_goal', None),
 			equality_on_offer=form.get('equality_on_offer', None),
-			coin_type=form.get('coin_type', None),
+			coin_unit=form.get('coin_unit', None),
 			coin_name=form.get('coin_name', None),
 			ratio=form.get('ratio', None),
+			accept=form.get('accept', None),
 			start_datetime=form.get('start_datetime', None),
 			end_datetime=form.get('end_datetime', None),
 			promote_image=form.get('promote_image', None),

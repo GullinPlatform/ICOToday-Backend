@@ -43,7 +43,7 @@ class AccountInfoSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = AccountInfo
 		fields = ['id', 'avatar', 'first_name', 'last_name',
-		          'team', 'title', 'description', 'is_advisor',
+		          'team', 'title', 'description', 'is_advisor', 'is_expert',
 		          'linkedin', 'twitter', 'telegram', 'facebook']
 
 
@@ -59,7 +59,7 @@ class BasicAccountInfoSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = AccountInfo
 		fields = ['id', 'avatar', 'first_name', 'last_name',
-		          'team', 'title', 'description', 'is_advisor',
+		          'team', 'title', 'description', 'is_advisor', 'is_expert',
 		          'linkedin', 'twitter', 'telegram', 'facebook', 'account']
 
 
@@ -73,7 +73,6 @@ class TeamSerializer(serializers.ModelSerializer):
 
 
 class ExpertApplicationSerializer(serializers.ModelSerializer):
-
 	class Meta:
 		model = ExpertApplication
 		fields = '__all__'

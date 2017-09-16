@@ -48,7 +48,7 @@ class Post(models.Model):
 	# Supplements
 	promote_image = models.ImageField(upload_to='posts/images/', null=True, blank=True)
 	logo_image = models.ImageField(upload_to='posts/images/', null=True, blank=True)
-	white_paper = models.FileField(upload_to='white_papers/', null=True, blank=True)
+	white_paper = models.CharField(max_length=100, null=True, blank=True)
 	video_link = models.CharField(max_length=100, null=True, blank=True)
 	website = models.CharField(max_length=100, null=True, blank=True)
 

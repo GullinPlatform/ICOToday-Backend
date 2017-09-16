@@ -69,7 +69,7 @@ class PostViewSet(viewsets.ViewSet):
 		if request.GET.get('keyword'):
 			for post in query:
 				if request.GET.get('keyword').lower() not in post.title.lower():
-					query.exclude(id=post.id)
+					query = query.exclude(id=post.id)
 		# Then paginate
 		paginator = Paginator(query, 10)
 		try:

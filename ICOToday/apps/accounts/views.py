@@ -37,7 +37,7 @@ def get_user_verify_token(user=None, email=None):
 	else:
 		return None
 
-	token_instance.expire_time = timezone.now() + timedelta(hours=5)
+	token_instance.expire_time = timezone.now() + timedelta(hours=24)
 	token_instance.token = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
 	token_instance.save()
 	return token_instance
@@ -79,6 +79,8 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		# Get user register need info
 		if request.method == 'GET':
 			token_instance = get_object_or_404(VerifyToken.objects.all(), token=token)
+			if token_instance.is_expired:
+				return Response({'detail': 'Token Expired'}, status=status.HTTP_400_BAD_REQUEST)
 			serializer = BasicAccountSerializer(token_instance.account)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -86,6 +88,9 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		elif request.method == 'POST':
 			if request.data.get('password'):
 				token_instance = get_object_or_404(VerifyToken.objects.all(), token=token)
+				if token_instance.is_expired:
+					return Response({'detail': 'Token Expired'}, status=status.HTTP_400_BAD_REQUEST)
+
 				token_instance.account.set_password(request.data.get('password'))
 				token_instance.account.is_verified = True
 				token_instance.account.save()
@@ -114,7 +119,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			token_instance.account.is_verified = True
 			token_instance.account.save()
 
-			token_instance.expire_time = datetime.utcnow()
+			token_instance.expire_time = timezone.now() - timedelta(hours=24)
 			token_instance.save()
 
 			return Response(status=status.HTTP_200_OK)
@@ -136,19 +141,23 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			token_instance = get_object_or_404(token_queryset, token=token)
 			# check is_expired
 			if token_instance.is_expired:
-				return Response(status=status.HTTP_404_NOT_FOUND)
+				return Response({'detail': 'Token Expired'}, status=status.HTTP_400_BAD_REQUEST)
 			# else return 200
 			return Response(status=status.HTTP_200_OK)
 
-		# get token
+		# send email
 		if request.method == 'POST':
-			# if token not exist return 404 here
-			token_instance = get_object_or_404(token_queryset, token=token)
-			# check is_expired
-			if token_instance.is_expired:
-				return Response(status=status.HTTP_404_NOT_FOUND)
-			# else return 200
-			return Response(status=status.HTTP_200_OK)
+			if request.data.get('email'):
+				token_instance = get_user_verify_token(email=request.data.get('email'))
+				send_email(receiver_list=[request.data.get('email')],
+				           subject='ICOToday - Password Reset',
+				           template_name='PasswordReset',
+				           ctx={'token': token_instance.token}
+				           )
+				return Response(status=status.HTTP_200_OK)
+
+			else:
+				return Response(status=status.HTTP_400_BAD_REQUEST)
 
 		# change password
 		elif request.method == 'PUT':
@@ -160,7 +169,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			# set new password to user
 			token_instance.account.set_password(request.data['password'])
 			token_instance.account.save()
-			token_instance.expire_time = datetime.utcnow()
+			token_instance.expire_time = timezone.now() - timedelta(hours=24)
 			token_instance.save()
 			return Response(status=status.HTTP_200_OK)
 

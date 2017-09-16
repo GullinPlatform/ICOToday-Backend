@@ -33,7 +33,7 @@ account_verification = AccountRegisterViewSet.as_view({
 
 account_forget_password = AccountRegisterViewSet.as_view({
 	'get' : 'forget_password',  # Verify Token
-	'post': 'forget_password',  # Get Token
+	'post': 'forget_password',  # Get Token && Send email
 	'put' : 'forget_password',  # Change Pass
 })
 

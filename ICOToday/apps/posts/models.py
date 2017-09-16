@@ -36,8 +36,9 @@ class Post(models.Model):
 	# ICO Details
 	type = models.IntegerField(choices=TYPE_CHOICES, default=0)
 	coin_name = models.CharField(max_length=100, null=True, blank=True)
+	coin_unit = models.CharField(max_length=20, null=True, blank=True)
+	accept = models.CharField(max_length=100, null=True, blank=True)
 	ratio = models.FloatField(null=True, blank=True)
-	coin_type = models.CharField(max_length=20, null=True, blank=True)
 	maximum_goal = models.IntegerField(null=True, blank=True)
 	minimum_goal = models.IntegerField(null=True, blank=True)
 	equality_on_offer = models.FloatField(null=True, blank=True)

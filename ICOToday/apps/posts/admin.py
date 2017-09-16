@@ -11,12 +11,13 @@ class CommentsInline(admin.TabularInline):
 
 
 class PostAdmin(admin.ModelAdmin):
-	list_display = ('title', 'status', 'creator', 'start_datetime', 'end_datetime')
+	list_display = ('id', 'title', 'status', 'creator', 'start_datetime', 'end_datetime')
 
 	fieldsets = (
-		('Question Info', {'fields': ('title', 'status', 'creator', 'category')}),
-		('Details', {'fields': ('team', 'description_short', 'description_full', 'promote_image', 'logo_image')}),
-		('ICO Details', {'fields': ('maximum_goal', 'minimum_goal', 'coin_type', 'start_datetime', 'end_datetime', 'website', 'video_link', 'white_paper')}),
+		('Relation Info', {'fields': ('team', 'status', 'creator')}),
+		('Details', {'fields': ('title', 'logo_image', 'promote_image', 'category', 'description_short', 'description_full')}),
+		('ICO Details', {'fields': ('type', 'coin_name', 'maximum_goal', 'minimum_goal', 'coin_unit', 'start_datetime', 'end_datetime', 'ratio', 'equality_on_offer', 'accept')}),
+		('Supplement', {'fields': ('website', 'video_link', 'white_paper')}),
 		('Media Info', {'fields': ('medium', 'twitter', 'slack', 'telegram')}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)

@@ -332,13 +332,13 @@ class TeamViewSet(viewsets.ViewSet):
 					send_email(receiver_list=[user.email],
 					           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
 					           template_name='TeamAdvisorInvitation',
-					           ctx={'user': user, 'token': user_verify_token.token, 'team_name': team.name}
+					           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': team.name}
 					           )
 				else:
 					send_email(receiver_list=[user.email],
 					           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
 					           template_name='TeamMemberInvitation',
-					           ctx={'user': user, 'token': user_verify_token.token, 'team_name': team.name}
+					           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': team.name}
 					           )
 
 				return Response(status=status.HTTP_200_OK)

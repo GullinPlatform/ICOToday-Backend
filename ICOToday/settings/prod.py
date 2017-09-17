@@ -48,7 +48,8 @@ INSTALLED_APPS = [
 	# apps
 	'ICOToday.apps.accounts',
 	'ICOToday.apps.posts',
-	'ICOToday.apps.discussions'
+	'ICOToday.apps.discussions',
+	'ICOToday.apps.notifications'
 ]
 
 MIDDLEWARE = [

@@ -22,12 +22,15 @@ from django.conf import settings
 from .apps.accounts import urls as account_urls
 from .apps.posts import urls as post_urls
 from .apps.discussions import urls as discussion_urls
+from .apps.notifications import urls as notification_urls
 
 urlpatterns = [
 	url(r'^6y07cs0yq9/', admin.site.urls),
 	url(r'^account/', include(account_urls)),
 	url(r'^discussion/', include(discussion_urls)),
 	url(r'^post/', include(post_urls)),
+	url(r'^notification/', include(notification_urls)),
+
 ]
 
 if settings.DEBUG:

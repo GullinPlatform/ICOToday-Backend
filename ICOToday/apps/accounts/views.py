@@ -291,7 +291,6 @@ class AccountViewSet(viewsets.ViewSet):
 				return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class TeamViewSet(viewsets.ViewSet):
 	queryset = Team.objects.all()
 	parser_classes = (MultiPartParser, FormParser, JSONParser)

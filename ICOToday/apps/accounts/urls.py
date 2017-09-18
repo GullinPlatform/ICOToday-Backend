@@ -45,6 +45,11 @@ account_marked_posts = AccountViewSet.as_view({
 	'get': 'marked_posts'
 })
 
+account_two_factor = AccountViewSet.as_view({
+	'post': 'two_factor_auth',
+	'put' : 'two_factor_auth'
+})
+
 team_list = TeamViewSet.as_view({
 	'get': 'list'
 })
@@ -58,7 +63,7 @@ team_detail = TeamViewSet.as_view({
 })
 
 expert_application = ExpertApplicationViewSet.as_view({
-	'get': 'retrieve',
+	'get' : 'retrieve',
 	'post': 'create',
 	'put' : 'update',
 })
@@ -83,6 +88,8 @@ urlpatterns = [
 
 	url(r'^forget/$', account_forget_password, name='user-forget-password'),
 	url(r'^forget/(?P<token>[A-z0-9\-]+)/$', account_forget_password, name='user-forget-password'),
+
+	url(r'^2factor/$', account_two_factor, name='user-two-factor'),
 
 	url(r'^me/$', account_me, name='me'),
 

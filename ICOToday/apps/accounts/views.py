@@ -28,7 +28,7 @@ def send_email(receiver_list, subject, template_name, ctx):
 	email.send()
 
 
-def get_user_verify_token(user=None, email=None):
+def get_user_verify_token(user=None, email=None, only_digit=False):
 	if user:
 		token_instance, created = VerifyToken.objects.get_or_create(account_id=user.id)
 	elif email:
@@ -38,9 +38,33 @@ def get_user_verify_token(user=None, email=None):
 		return None
 
 	token_instance.expire_time = timezone.now() + timedelta(hours=24)
-	token_instance.token = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)])
+	if only_digit:
+		token_instance.token = ''.join([random.choice(string.digits) for n in xrange(6)])
+	else:
+		token_instance.token = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(16)])
 	token_instance.save()
 	return token_instance
+
+
+def verify_token(token=None, user=None):
+	if token and user:
+		token_instance = VerifyToken.objects.get(token=token, account_id=user.id)
+	elif token and not user:
+		token_instance = VerifyToken.objects.get(token=token)
+	else:
+		return False
+
+	if not token_instance:
+		return False
+
+	elif token_instance.is_expired:
+		return False
+
+	else:
+		token_instance.expire_time = timezone.now() - timedelta(days=10)
+		token_instance.token = ''
+		token_instance.save()
+		return token_instance
 
 
 class AccountRegisterViewSet(viewsets.ViewSet):
@@ -87,21 +111,21 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		# Invited user change password
 		elif request.method == 'POST':
 			if request.data.get('password'):
-				token_instance = get_object_or_404(VerifyToken.objects.all(), token=token)
-				if token_instance.is_expired:
-					return Response({'detail': 'Token Expired'}, status=status.HTTP_400_BAD_REQUEST)
+				token_instance = verify_token(token=token)
+				if token_instance:
+					token_instance.account.set_password(request.data.get('password'))
+					token_instance.account.is_verified = True
+					token_instance.account.save()
 
-				token_instance.account.set_password(request.data.get('password'))
-				token_instance.account.is_verified = True
-				token_instance.account.save()
+					# return auth token right away
+					jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+					jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+					payload = jwt_payload_handler(token_instance.account)
+					token = jwt_encode_handler(payload)
 
-				# return auth token right away
-				jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-				jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-				payload = jwt_payload_handler(token_instance.account)
-				token = jwt_encode_handler(payload)
-
-				return Response({'token': token}, status=status.HTTP_201_CREATED)
+					return Response({'token': token}, status=status.HTTP_201_CREATED)
+				else:
+					return Response({'detail': 'Token Invalid'}, status=status.HTTP_400_BAD_REQUEST)
 			else:
 				return Response({'detail': 'No password provided'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -111,16 +135,13 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			if not token:
 				return Response(status=status.HTTP_400_BAD_REQUEST)
 
-			token_instance = get_object_or_404(VerifyToken.objects.all(), token=token)
+			token_instance = verify_token(token=token)
 			# check is_expired
-			if token_instance.is_expired:
+			if not token_instance:
 				return Response({'message': 'Token is expired'}, status=status.HTTP_400_BAD_REQUEST)
 
 			token_instance.account.is_verified = True
 			token_instance.account.save()
-
-			token_instance.expire_time = timezone.now() - timedelta(hours=24)
-			token_instance.save()
 
 			return Response(status=status.HTTP_200_OK)
 		# Resend Email
@@ -162,10 +183,10 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		# change password
 		elif request.method == 'PUT':
 			# if token not exist return 404 here
-			token_instance = get_object_or_404(token_queryset, token=token)
+			token_instance = verify_token(token=token)
 			# check is_expired
-			if token_instance.is_expired:
-				return Response(status=status.HTTP_404_NOT_FOUND)
+			if not token_instance:
+				return Response(status=status.HTTP_400_BAD_REQUEST)
 			# set new password to user
 			token_instance.account.set_password(request.data['password'])
 			token_instance.account.save()
@@ -250,6 +271,26 @@ class AccountViewSet(viewsets.ViewSet):
 			serializer = PostSerializer(Post.objects.filter(team_id=request.user.info.team.id), many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 
+	def two_factor_auth(self, request):
+		# Send Email
+		if request.method == 'POST':
+			token_instance = get_user_verify_token(user=request.user, only_digit=True)
+			send_email(receiver_list=[request.user.email],
+			           subject='ICOToday - Verification Token',
+			           template_name='TwoFactorAuth',
+			           ctx={'token': token_instance.token})
+			return Response(status=status.HTTP_200_OK)
+
+		# Verify Token
+		elif request.method == 'PUT':
+			token_instance = verify_token(token=request.data.get('token'), user=request.user)
+
+			if token_instance:
+				return Response(status=status.HTTP_200_OK)
+			else:
+				return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
 
 class TeamViewSet(viewsets.ViewSet):
 	queryset = Team.objects.all()
@@ -323,7 +364,7 @@ class TeamViewSet(viewsets.ViewSet):
 				# if created user, add AccountInfo to team
 				team.members.add(info)
 				# give user just created a random password
-				user.set_password(''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(32)]))
+				user.set_password(''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(16)]))
 				user.save()
 
 				user_verify_token = get_user_verify_token(user)

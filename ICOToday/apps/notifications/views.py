@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.shortcuts import render
-
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, viewsets, status
 from rest_framework.response import Response

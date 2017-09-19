@@ -31,6 +31,10 @@ account_verification = AccountRegisterViewSet.as_view({
 	'post': 'email_verify',  # Resend Email
 })
 
+account_invite_email_resend = AccountRegisterViewSet.as_view({
+	'post' : 'invite_email_resend',
+})
+
 account_forget_password = AccountRegisterViewSet.as_view({
 	'get' : 'forget_password',  # Verify Token
 	'post': 'forget_password',  # Get Token && Send email
@@ -77,6 +81,7 @@ urlpatterns = [
 	url(r'^signup/$', account_register, name='user-register'),
 
 	url(r'^invited_signup/(?P<token>[A-z0-9\-]+)/$', account_invited_register, name='user-invited-register'),
+	url(r'^invited_resend/(?P<token>[A-z0-9\-]+)/$', account_invite_email_resend, name='user-invited-resend-email'),
 
 	url(r'^email_verify/$', account_verification, name='user-email-verify'),
 	url(r'^email_verify/(?P<token>[A-z0-9\-]+)/$', account_verification, name='user-email-verify'),

@@ -65,6 +65,7 @@ class AccountManager(BaseUserManager):
 
 class Account(AbstractBaseUser, PermissionsMixin):
 	TYPE_CHOICES = (
+		(-1, 'Not Choose'),
 		(0, 'ICO Company'),
 		(1, 'ICO Investor'),
 	)

@@ -1,7 +1,7 @@
 import random
 import string
 
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
@@ -83,6 +83,14 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			team = Team.objects.create(name=request.data.get('team_name'))
 			user.info.team_id = team.id
 			user.info.save()
+
+		# If refer
+		# if request.data.get('type') is 0:
+		# 	user.info.first_name = request.data.get('first_name')
+		# 	user.info.last_name = request.data.get('last_name')
+		# 	team = Team.objects.create(name=request.data.get('team_name'))
+		# 	user.info.team_id = team.id
+		# 	user.info.save()
 
 		# return token right away
 		jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER

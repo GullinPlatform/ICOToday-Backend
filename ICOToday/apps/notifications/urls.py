@@ -1,11 +1,12 @@
-import views
 from django.conf.urls import url
 
-notification_fetch = views.NotificationViewSet.as_view({
+from .views import NotificationViewSet
+
+notification_fetch = NotificationViewSet.as_view({
 	'get': 'fetch'
 })
 
-notification_read = views.NotificationViewSet.as_view({
+notification_read = NotificationViewSet.as_view({
 	'post': 'read'
 })
 

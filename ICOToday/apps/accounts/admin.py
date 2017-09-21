@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group as AdminGroup
 
 from .forms import AccountChangeForm, AccountCreationForm
-from .models import Account, AccountInfo, VerifyToken, Team, ExpertApplication
+from .models import Account, AccountInfo, VerifyToken, ExpertApplication
 
 
 class AccountInline(admin.TabularInline):
@@ -16,8 +19,8 @@ class AccountInline(admin.TabularInline):
 
 class AccountInfoInline(admin.TabularInline):
 	model = AccountInfo
-	fields = ('id', 'first_name', 'last_name', 'title', 'team', 'is_advisor')
-	readonly_fields = ('id', 'first_name', 'last_name', 'title', 'team', 'is_advisor')
+	fields = ('id', 'first_name', 'last_name', 'title', 'company', 'is_advisor')
+	readonly_fields = ('id', 'first_name', 'last_name', 'title', 'company', 'is_advisor')
 	show_change_link = True
 	extra = 0
 
@@ -26,10 +29,10 @@ class AccountAdmin(UserAdmin):
 	# The forms to add and change user instances
 	form = AccountChangeForm
 	add_form = AccountCreationForm
-	list_display = ('id', 'email', 'is_verified', 'type', 'created',)
+	list_display = ('id', 'email', 'is_verified', 'created',)
 	list_filter = ['is_staff', 'is_verified']
 	fieldsets = (
-		(None, {'fields': ('email', 'phone', 'password', 'info', 'type')}),
+		(None, {'fields': ('email', 'phone', 'password', 'info')}),
 		('Permissions', {'fields': ('is_staff', 'is_verified')}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
@@ -45,9 +48,9 @@ class AccountAdmin(UserAdmin):
 
 
 class AccountInfoAdmin(admin.ModelAdmin):
-	list_display = ('id', 'first_name', 'last_name', 'title', 'team', 'is_advisor')
+	list_display = ('id', 'first_name', 'last_name', 'type', 'title',)
 	fieldsets = (
-		('Personal info', {'fields': ('avatar', 'first_name', 'last_name', 'description', 'title', 'team', 'is_advisor')}),
+		('Personal info', {'fields': ('avatar', 'first_name', 'last_name', 'description', 'title', 'company',)}),
 		('Social Media', {'fields': ('linkedin', 'twitter', 'facebook', 'telegram')}),
 	)
 	search_fields = ['first_name', 'last_name']
@@ -62,15 +65,6 @@ class VerifyTokenAdmin(admin.ModelAdmin):
 	readonly_fields = ('is_expired', 'expire_time')
 
 
-class TeamAdmin(admin.ModelAdmin):
-	list_display = ('name', 'description', 'created')
-	fieldsets = [
-		[None, {'fields': ['name', 'description', ]}],
-		['Timestamp', {'fields': ['created', 'updated']}],
-	]
-	readonly_fields = ('created', 'updated')
-
-
 class ExpertApplicationAdmin(admin.ModelAdmin):
 	list_display = ('account', 'status', 'created')
 	fieldsets = [
@@ -83,6 +77,5 @@ class ExpertApplicationAdmin(admin.ModelAdmin):
 admin.site.register(Account, AccountAdmin)
 admin.site.register(AccountInfo, AccountInfoAdmin)
 admin.site.register(VerifyToken, VerifyTokenAdmin)
-admin.site.register(Team, TeamAdmin)
 admin.site.register(ExpertApplication, ExpertApplicationAdmin)
 admin.site.unregister(AdminGroup)

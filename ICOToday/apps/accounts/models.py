@@ -1,5 +1,6 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
@@ -8,19 +9,32 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 
 
 class AccountInfo(models.Model):
-	# Account Info
-	avatar = models.ImageField(upload_to='avatars', default='avatars/default.jpg', null=True, blank=True)
+	TYPE_CHOICES = (
+		(-1, 'Not Choose'),
+		(0, 'Company'),
+		(1, 'Investor'),
+		(2, 'Expert'),
+		(3, 'Advisor'),
+	)
+	# Account Type
+	type = models.IntegerField(choices=TYPE_CHOICES, default=-1)
 
+	# Personal Info
+	avatar = models.ImageField(upload_to='avatars', default='avatars/default.jpg', null=True, blank=True)
 	first_name = models.CharField(max_length=40, null=True, blank=True)
 	last_name = models.CharField(max_length=40, null=True, blank=True)
-
 	title = models.CharField(max_length=40, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
 
-	team = models.ForeignKey('Team', related_name='members', null=True, blank=True)
+	# Is Verified
+	is_verified = models.BooleanField(default=False)
 
-	is_advisor = models.BooleanField(default=False)
-	is_expert = models.BooleanField(default=False)
+	# My Company
+	company = models.ForeignKey('companies.Company', related_name='members', null=True, blank=True)
+	company_admin = models.ForeignKey('companies.Company', related_name='admins', null=True, blank=True)
+
+	# Interested Fields
+	interested = models.ManyToManyField('projects.ProjectTag', related_name='interested')
 
 	# Social Media
 	linkedin = models.CharField(max_length=100, null=True, blank=True)
@@ -64,16 +78,9 @@ class AccountManager(BaseUserManager):
 
 
 class Account(AbstractBaseUser, PermissionsMixin):
-	TYPE_CHOICES = (
-		(-1, 'Not Choose'),
-		(0, 'ICO Company'),
-		(1, 'ICO Investor'),
-	)
-
 	# Auth
 	email = models.EmailField(unique=True, null=True, blank=True)
 	phone = models.CharField(max_length=20, unique=True, null=True, blank=True)
-	type = models.IntegerField(choices=TYPE_CHOICES, default=0)
 
 	# Info
 	info = models.OneToOneField('AccountInfo', related_name='account')
@@ -129,19 +136,6 @@ class VerifyToken(models.Model):
 		return (timezone.now() - timedelta(hours=5)) > self.expire_time
 
 
-class Team(models.Model):
-	# Team Info
-	name = models.CharField(max_length=50, null=True)
-	description = models.TextField(null=True, blank=True)
-
-	# Timestamp
-	created = models.DateTimeField(auto_now_add=True)
-	updated = models.DateTimeField(auto_now=True)
-
-	def __str__(self):
-		return self.name
-
-
 class ExpertApplication(models.Model):
 	STATUS_CHOICES = (
 		(0, 'Processing'),
@@ -150,7 +144,7 @@ class ExpertApplication(models.Model):
 	)
 
 	# Info
-	account = models.OneToOneField('Account', related_name='expert_application')
+	account = models.OneToOneField('AccountInfo', related_name='expert_application')
 	detail = models.TextField()
 	status = models.IntegerField(default=0, choices=STATUS_CHOICES)
 	response = models.TextField()

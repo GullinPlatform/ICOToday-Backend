@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.db import models
 
 
-class Post(models.Model):
+class Project(models.Model):
 	STATUS_CHOICES = (
 		(0, 'Verifying'),
 		(1, 'Verified'),
@@ -18,15 +18,15 @@ class Post(models.Model):
 		(0, 'Pre-ICO'),
 		(1, 'ICO'),
 	)
-	creator = models.ForeignKey('accounts.Account', related_name='created_posts')
-	marked = models.ManyToManyField('accounts.Account', blank=True, related_name='marked_posts')
-	team = models.ForeignKey('accounts.Team', blank=True, related_name='posts')
+
+	marked = models.ManyToManyField('accounts.AccountInfo', blank=True, related_name='marked_posts')
+	company = models.ForeignKey('companies.Company', blank=True, related_name='posts')
 
 	# Information
 	title = models.CharField(max_length=100)
 	description_short = models.CharField(max_length=200, null=True, blank=True)
 	description_full = models.TextField()
-	tags = models.ManyToManyField('PostTag', related_name='posts')
+	tags = models.ManyToManyField('ProjectTag', related_name='posts')
 	category = models.CharField(max_length=100)
 
 	# Time
@@ -70,7 +70,7 @@ class Post(models.Model):
 	# relation
 	# files
 	class Meta:
-		ordering = ['-start_datetime']
+		ordering = ['start_datetime']
 
 	def __str__(self):
 		return self.title
@@ -79,25 +79,11 @@ class Post(models.Model):
 		return True if self.end_date > timezone.now() else False
 
 
-class PostTag(models.Model):
+class ProjectTag(models.Model):
 	tag = models.CharField(max_length=40)
 
 	def __str__(self):
 		return self.tag if self.tag else ' '
-
-
-class RatingDetail(models.Model):
-	rater = models.ForeignKey('accounts.Account', related_name='ratings')
-	post = models.ForeignKey('Post', related_name='rating_detail')
-	detail = models.TextField()
-	score = models.IntegerField(default=0)
-
-	# Timestamp
-	created = models.DateTimeField(auto_now_add=True)
-	updated = models.DateTimeField(auto_now=True)
-
-	def __str__(self):
-		return self.post.title + ' by ' + self.rater.email
 
 
 class PromotionApplication(models.Model):
@@ -108,8 +94,8 @@ class PromotionApplication(models.Model):
 	)
 
 	# Info
-	account = models.ForeignKey('accounts.Account', related_name='my_promotions')
-	team = models.ForeignKey('accounts.Team', related_name='promotions')
+	account = models.ForeignKey('accounts.AccountInfo', related_name='promotions')
+	company = models.ForeignKey('companies.Company', related_name='promotions')
 	detail = models.TextField()
 	status = models.IntegerField(default=0, choices=STATUS_CHOICES)
 	response = models.TextField()

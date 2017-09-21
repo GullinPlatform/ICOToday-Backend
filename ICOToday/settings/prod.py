@@ -47,10 +47,12 @@ INSTALLED_APPS = [
 	'storages',
 	# apps
 	'ICOToday.apps.accounts',
-	'ICOToday.apps.posts',
-	'ICOToday.apps.discussions',
+	'ICOToday.apps.companies',
+	'ICOToday.apps.projects',
+	'ICOToday.apps.feeds',
 	'ICOToday.apps.notifications',
-	'ICOToday.apps.wallets'
+	'ICOToday.apps.wallets',
+	'ICOToday.apps.conversation',
 ]
 
 MIDDLEWARE = [

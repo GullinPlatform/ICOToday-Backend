@@ -15,7 +15,7 @@ class WalletViewSet(viewsets.ViewSet):
 
 	def retrieve(self, request):
 		try:
-			wallet = request.user.wallet
+			wallet = request.user.info.wallet
 		except Wallet.DoesNotExist:
 			wallet = Wallet.objects.create(account_id=request.user.id)
 

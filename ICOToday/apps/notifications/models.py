@@ -5,22 +5,25 @@ from django.db import models
 
 
 class Notification(models.Model):
-	RELATED_LINK_CHOICES = (
+	RELATED_CHOICES = (
 		('refer', 'Refer'),
 		('official', 'Official Message'),
 		('comment', 'Comment'),
-		('refer', 'Refer'),
+		('wallet', 'Wallet'),
 		('subscribe', 'Subscribe'),
 	)
 
-	receiver = models.ForeignKey('accounts.Account', related_name='notifications')
-	sender = models.ForeignKey('accounts.Account', related_name='send_notifications', null=True, blank=True)
+	receiver = models.ForeignKey('accounts.AccountInfo', related_name='notifications')
+	sender = models.ForeignKey('accounts.AccountInfo', related_name='send_notifications', null=True, blank=True)
 
 	content = models.CharField(max_length=200)
-	related_link = models.CharField(max_length=200, null=True, blank=True, choices=RELATED_LINK_CHOICES)
+	related = models.CharField(max_length=200, null=True, blank=True, choices=RELATED_CHOICES)
 
 	read = models.BooleanField(default=False)
 	created = models.DateTimeField(auto_now_add=True)
 
 	def __unicode__(self):
 		return self.content
+
+	class Meta:
+		ordering = ['-created']

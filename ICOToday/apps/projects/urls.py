@@ -54,9 +54,9 @@ urlpatterns = [
 
 	url(r'^tags/$', get_post_tags, name='get_post_tags'),
 
-	url(r'^(?P<pk>[0-9]+)/$', post, name='post'),
-	url(r'^(?P<pk>[0-9]+)/rating/$', post_rating_detail, name='post-rating'),
-	url(r'^(?P<pk>[0-9]+)/comments/$', post_comments, name='post-comments'),
-	url(r'^(?P<pk>[0-9]+)/mark/$', post_mark, name='post_mark'),
+	url(r'^(?P<id>[0-9]+)/$', post, name='post'),
+	url(r'^(?P<id>[0-9]+)/rating/$', post_rating_detail, name='post-rating'),
+	url(r'^(?P<id>[0-9]+)/comments/$', post_comments, name='post-comments'),
+	url(r'^(?P<id>[0-9]+)/mark/$', post_mark, name='post_mark'),
 
 ]

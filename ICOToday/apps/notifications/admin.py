@@ -6,7 +6,13 @@ from django.contrib import admin
 
 
 class NotificationAdmin(admin.ModelAdmin):
-	list_display = ['sender', 'receiver', 'read', 'created']
+	list_display = ['sender', 'receiver', 'read', 'created', 'related']
+	fieldsets = (
+		('Permissions', {'fields': ('receiver', 'sender', 'content')}),
+		('Other', {'fields': ('read', 'related')}),
+		('Timestamp', {'fields': ('created', 'updated')})
+	)
+	readonly_fields = ('created', 'updated',)
 
 
 admin.site.register(Notification, NotificationAdmin)

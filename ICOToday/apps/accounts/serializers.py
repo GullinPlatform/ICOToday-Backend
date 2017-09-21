@@ -1,16 +1,47 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from rest_framework import serializers
 
-from .models import Account, Team, AccountInfo, ExpertApplication
+from .models import Account, AccountInfo, ExpertApplication
+from ..wallets.models import Wallet
 
 
-class BasicTeamSerializer(serializers.ModelSerializer):
+class AccountInfoSerializer(serializers.ModelSerializer):
+	"""
+	Everything
+	"""
+
 	class Meta:
-		model = Team
-		fields = ['id', 'name', 'description']
-		read_only_fields = ('created', 'updated',)
+		model = AccountInfo
+		fields = ['id', 'avatar', 'first_name', 'last_name', 'is_verified',
+		          'company', 'title', 'description', 'interested',
+		          'linkedin', 'twitter', 'telegram', 'facebook']
+
+
+class BasicAccountInfoSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = AccountInfo
+		fields = ['id', 'avatar', 'first_name', 'last_name',
+		          'company', 'title', 'description', 'is_advisor', 'is_expert',
+		          'linkedin', 'twitter', 'telegram', 'facebook', 'account']
+
+
+class MiniAccountInfoSerializer(serializers.ModelSerializer):
+	"""
+	Account info with name, avatar, and account id
+	"""
+
+	class Meta:
+		model = AccountInfo
+		fields = ['id', 'avatar', 'first_name', 'last_name', 'account']
 
 
 class AuthAccountSerializer(serializers.ModelSerializer):
+	"""
+	Only For Register User
+	"""
+
 	class Meta:
 		model = Account
 		exclude = ('user_permissions', 'groups', 'is_superuser', 'is_staff', 'is_active', 'info')
@@ -29,6 +60,7 @@ class AuthAccountSerializer(serializers.ModelSerializer):
 		info = AccountInfo.objects.create()
 		account.info = info
 		account.save()
+		Wallet.objects.create(account_id=account.id)
 		return account
 
 	def update(self, instance, validated_data):
@@ -37,42 +69,22 @@ class AuthAccountSerializer(serializers.ModelSerializer):
 		return instance
 
 
-class AccountInfoSerializer(serializers.ModelSerializer):
-	team = BasicTeamSerializer(allow_null=True, read_only=True)
-
-	class Meta:
-		model = AccountInfo
-		fields = ['id', 'avatar', 'first_name', 'last_name',
-		          'team', 'title', 'description', 'is_advisor', 'is_expert',
-		          'linkedin', 'twitter', 'telegram', 'facebook']
-
-
 class BasicAccountSerializer(serializers.ModelSerializer):
+	"""
+	Everything
+	"""
 	info = AccountInfoSerializer()
 
 	class Meta:
 		model = Account
-		fields = ['id', 'email', 'phone', 'type', 'is_verified', 'info']
-
-
-class BasicAccountInfoSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = AccountInfo
-		fields = ['id', 'avatar', 'first_name', 'last_name',
-		          'team', 'title', 'description', 'is_advisor', 'is_expert',
-		          'linkedin', 'twitter', 'telegram', 'facebook', 'account']
-
-
-class TeamSerializer(serializers.ModelSerializer):
-	members = BasicAccountInfoSerializer(allow_null=True, many=True)
-
-	class Meta:
-		model = Team
-		fields = ['id', 'name', 'description', 'members']
-		read_only_fields = ('created', 'updated',)
+		fields = ['id', 'email', 'phone', 'info']
 
 
 class ExpertApplicationSerializer(serializers.ModelSerializer):
+	"""
+	Everything
+	"""
+
 	class Meta:
 		model = ExpertApplication
 		fields = '__all__'

@@ -13,7 +13,7 @@ class Wallet(models.Model):
 	eth_wallet_address = models.CharField(max_length=50, blank=True, null=True)
 	icc_wallet_address = models.CharField(max_length=50, blank=True, null=True)
 
-	account = models.OneToOneField('accounts.Account', related_name='wallet')
+	account = models.OneToOneField('accounts.AccountInfo', related_name='wallet')
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)

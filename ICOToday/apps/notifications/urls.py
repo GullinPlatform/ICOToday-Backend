@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django.conf.urls import url
 
 from .views import NotificationViewSet
@@ -12,5 +15,5 @@ notification_read = NotificationViewSet.as_view({
 
 urlpatterns = [
 	url(r'^fetch/$', notification_fetch, name='notification-fetch'),
-	url(r'^read/(?P<pk>[0-9]+)/$', notification_read, name='notification-read'),
+	url(r'^read/(?P<id>[0-9]+)/$', notification_read, name='notification-read'),
 ]

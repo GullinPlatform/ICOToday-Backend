@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import random
 import string
-
 from datetime import timedelta
 
 from django.utils import timezone
@@ -15,11 +17,11 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated
 
-from .models import Account, VerifyToken, Team, AccountInfo, ExpertApplication
-from .serializers import AuthAccountSerializer, TeamSerializer, BasicTeamSerializer, BasicAccountSerializer, AccountInfoSerializer, ExpertApplicationSerializer
+from .models import Account, VerifyToken, AccountInfo, ExpertApplication
+from .serializers import AuthAccountSerializer, BasicAccountSerializer, BasicAccountInfoSerializer, AccountInfoSerializer, ExpertApplicationSerializer
 
-from ..posts.models import Post
-from ..posts.serializers import PostSerializer
+from ..projects.models import Project, ProjectTag
+from ..projects.serializers import ProjectSerializer
 
 from ..notifications.models import Notification
 from ..wallets.models import Wallet
@@ -93,13 +95,13 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		serializer.is_valid(raise_exception=True)
 		user = serializer.save()
 
-		# If ICO Company, have team name
-		if request.data.get('type') is 0:
-			user.info.first_name = request.data.get('first_name')
-			user.info.last_name = request.data.get('last_name')
-			team = Team.objects.create(name=request.data.get('team_name'))
-			user.info.team_id = team.id
-			user.info.save()
+		# # If ICO Company, have company name
+		# if request.data.get('type') is 0:
+		# 	user.info.first_name = request.data.get('first_name')
+		# 	user.info.last_name = request.data.get('last_name')
+		# 	company = Company.objects.create(name=request.data.get('company_name'))
+		# 	user.info.company_id = company.id
+		# 	user.info.save()
 
 		# If refer
 		if request.data.get('referrer'):
@@ -138,7 +140,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		return Response({'token': token}, status=status.HTTP_201_CREATED)
 
 	def invited_register(self, request, token):
-		# Check If token expired, return UserInfo
+		# Check If token expired, if not return UserInfo
 		if request.method == 'GET':
 			token_instance = get_object_or_404(VerifyToken.objects.all(), token=token)
 			if token_instance.is_expired:
@@ -204,18 +206,18 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 
 		if user_verify_token:
 			user = user_verify_token.account
-			team = user.info.team.name
-			if user.info.is_advisor:
+			company = user.info.company.name
+			if user.info.type == 2:  # Advisor
 				send_email(receiver_list=[user.email],
 				           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
 				           template_name='TeamAdvisorInvitation',
-				           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': team}
+				           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': company}
 				           )
 			else:
 				send_email(receiver_list=[user.email],
 				           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
 				           template_name='TeamMemberInvitation',
-				           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': team}
+				           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': company}
 				           )
 		return Response(status=status.HTTP_200_OK)
 
@@ -265,21 +267,32 @@ class AccountViewSet(viewsets.ViewSet):
 	parser_classes = (MultiPartParser, FormParser, JSONParser)
 	permission_classes = (IsAuthenticatedOrReadOnly,)
 
+	# TODO link url
+	def register_follow_up(self, request):
+		if not request.data.get('type'):
+			return Response(status=status.HTTP_400_BAD_REQUEST)
+
+		if request.data.get('type') == 0:  # Company
+			request.user.info.type = 0
+			request.user.info.save()
+		else:  # All others go Investor first
+			request.user.info.type = 1
+			request.user.info.save()
+
 	def retrieve(self, request, pk):
 		user = get_object_or_404(self.queryset, pk=pk)
 		serializer = BasicAccountSerializer(user)
 		return Response(serializer.data)
 
 	def destroy(self, request, pk=None):
-		if request.user.is_admin or request.user.pk == int(pk):
+		if request.user.is_superuser or request.user.pk == int(pk):
 			user = get_object_or_404(self.queryset, pk=pk)
 			user.delete()
 			return Response(status=status.HTTP_200_OK)
 		else:
 			return Response(status=status.HTTP_403_FORBIDDEN)
 
-	@staticmethod
-	def me(request):
+	def me(self, request):
 		if request.method == 'GET':
 			serializer = BasicAccountSerializer(request.user)
 			return Response(serializer.data)
@@ -294,8 +307,7 @@ class AccountViewSet(viewsets.ViewSet):
 				serializer.save()
 				return Response(serializer.data)
 
-	@staticmethod
-	def change_password(request):
+	def change_password(self, request):
 		# If password or old-password not in request body
 		if not request.data['old-password'] or request.data['password']:
 			# Return error message with status code 400
@@ -315,26 +327,26 @@ class AccountViewSet(viewsets.ViewSet):
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
 	def marked_posts(self, request, pk=None):
-		if pk:
+		if pk:  # Marked post from other user
 			account = get_object_or_404(self.queryset, pk=pk)
-			serializer = PostSerializer(account.marked_posts.all(), many=True)
+			serializer = ProjectSerializer(account.info.marked_posts.all(), many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
-		else:
-			serializer = PostSerializer(request.user.marked_posts.all(), many=True)
+		else:  # Marked post from me
+			serializer = ProjectSerializer(request.user.info.marked_posts.all(), many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 
-	def created_posts(self, request, pk=None):
-		if pk:
-			account = get_object_or_404(self.queryset, pk=pk)
-			if account.info.team:
-				serializer = PostSerializer(Post.objects.filter(team_id=account.info.team.id), many=True)
-				return Response(serializer.data, status=status.HTTP_200_OK)
-			else:
-				return Response([], status=status.HTTP_200_OK)
+	# TODO : Add URL
+	def add_interested(self, request):
+		if not request.data.get('interested'):
+			return Response(status=status.HTTP_400_BAD_REQUEST)
 
-		else:
-			serializer = PostSerializer(Post.objects.filter(team_id=request.user.info.team.id), many=True)
-			return Response(serializer.data, status=status.HTTP_200_OK)
+		for interest in request.data.get('interested'):
+			tag = ProjectTag.objects.filter(tag=interest).first()
+			if tag:
+				request.user.info.interested.add(tag)
+		return Response(status=status.HTTP_200_OK)
+
+	# def created_posts(self, request, pk=None):
 
 	def two_factor_auth(self, request):
 		# Send Email
@@ -355,106 +367,20 @@ class AccountViewSet(viewsets.ViewSet):
 			else:
 				return Response(status=status.HTTP_400_BAD_REQUEST)
 
+	def search(self, request, search_token):
+		if search_token:
+			if '@' in search_token:
+				token = search_token.split("@")[0]
+				accounts = AccountInfo.objects.filter(email__istartswith=token)
+			else:
+				tokens = search_token.split()
+				accounts = AccountInfo.objects.filter(first_name__istartswith=tokens[0])
+				accounts |= AccountInfo.objects.filter(last_name__istartswith=tokens[-1])
 
-class TeamViewSet(viewsets.ViewSet):
-	queryset = Team.objects.all()
-	parser_classes = (MultiPartParser, FormParser, JSONParser)
-	permission_classes = (IsAuthenticatedOrReadOnly,)
-
-	def list(self, request):
-		serializer = BasicTeamSerializer(self.queryset, many=True)
-		return Response(serializer.data)
-
-	def retrieve(self, request, pk=None):
-		team = get_object_or_404(self.queryset, pk=pk)
-		serializer = TeamSerializer(team)
-		return Response(serializer.data)
-
-	def create(self, request):
-		if request.data.get('name') and request.data.get('description'):
-			team = Team.objects.create(
-				name=request.data.get('name'),
-				description=request.data.get('description')
-			)
-			request.user.team = team
-			request.use.save()
-			return Response(status=status.HTTP_201_CREATED)
+			serializer = BasicAccountInfoSerializer(accounts, many=True)
+			return Response(serializer.data)
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
-
-	def update(self, request, pk):
-		team = get_object_or_404(self.queryset, pk=pk)
-
-		if request.data.get('name'):
-			team.name = request.data.get('name')
-
-		if request.data.get('description'):
-			team.description = request.data.get('description')
-
-		team.save()
-		return Response(status=status.HTTP_200_OK)
-
-	def add_team_member(self, request, pk):
-		# IMPORTANT: Here pk is Team Pk!
-		if request.method == 'PATCH':
-			team = get_object_or_404(self.queryset, pk=pk)
-			if request.data.get('email'):
-				# Must use == not is here, otherwise type dismatch
-				is_advisor = True if request.data.get('is_advisor') == 'true' else False
-				# Create AccountInfo first
-				info = AccountInfo.objects.create(
-					avatar=request.data.get('avatar'),
-					first_name=request.data.get('first_name'),
-					last_name=request.data.get('last_name'),
-					title=request.data.get('title'),
-					description=request.data.get('description'),
-					team_id=pk,
-					is_advisor=is_advisor,
-					linkedin=request.data.get('linkedin', ''),
-					twitter=request.data.get('twitter', ''),
-					facebook=request.data.get('facebook', ''),
-					telegram=request.data.get('telegram', ''),
-				)
-				# if user email duplicate, delete the AccountInfo just created and return 400
-				try:
-					user = Account.objects.create(
-						email=request.data.get('email'),
-						info_id=info.id,
-						type=0,  # ICO Company
-					)
-				except:
-					info.delete()
-					return Response({'detail': 'User with this email already exists'}, status=status.HTTP_400_BAD_REQUEST)
-
-				# if created user, add AccountInfo to team
-				team.members.add(info)
-				# give user just created a random password
-				user.set_password(''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(16)]))
-				user.save()
-
-				user_verify_token = get_user_verify_token(user)
-
-				if is_advisor:
-					send_email(receiver_list=[user.email],
-					           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
-					           template_name='TeamAdvisorInvitation',
-					           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': team.name}
-					           )
-				else:
-					send_email(receiver_list=[user.email],
-					           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
-					           template_name='TeamMemberInvitation',
-					           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': team.name}
-					           )
-
-				return Response(status=status.HTTP_200_OK)
-			else:
-				return Response(status=status.HTTP_400_BAD_REQUEST)
-		# IMPORTANT: Here pk is Account Pk!
-		elif request.method == 'DELETE':
-			info = get_object_or_404(AccountInfo.objects.all(), pk=pk)
-			info.team.members.remove(info)
-			return Response(status=status.HTTP_200_OK)
 
 
 class ExpertApplicationViewSet(viewsets.ViewSet):
@@ -464,9 +390,9 @@ class ExpertApplicationViewSet(viewsets.ViewSet):
 
 	def retrieve(self, request):
 		# Only Investor Allowed
-		if request.user.type == 1:
+		if request.user.info.type == 1:
 			try:
-				serializer = ExpertApplicationSerializer(request.user.expert_application)
+				serializer = ExpertApplicationSerializer(request.user.info.expert_application)
 				return Response(serializer.data, status=status.HTTP_200_OK)
 			except ExpertApplication.DoesNotExist:
 				return Response(status=status.HTTP_200_OK)
@@ -476,7 +402,7 @@ class ExpertApplicationViewSet(viewsets.ViewSet):
 	def create(self, request):
 		if request.data.get('detail'):
 			ExpertApplication.objects.create(
-				account_id=request.user.id,
+				account_id=request.user.info.id,
 				detail=request.data.get('detail')
 			)
 			return Response(status=status.HTTP_201_CREATED)
@@ -485,9 +411,9 @@ class ExpertApplicationViewSet(viewsets.ViewSet):
 
 	def update(self, request):
 		try:
-			application = request.user.expert_application
+			application = request.user.info.expert_application
 		except ExpertApplication.DoesNotExist:
-			return Response(status=status.HTTP_200_OK)
+			return Response(status=status.HTTP_400_BAD_REQUEST)
 
 		if request.data.get('detail'):
 			application.detail = request.data.get('detail')

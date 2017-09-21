@@ -20,8 +20,8 @@ import debug_toolbar
 from django.conf import settings
 
 from .apps.accounts import urls as account_urls
-from .apps.posts import urls as post_urls
-from .apps.discussions import urls as discussion_urls
+from .apps.projects import urls as post_urls
+from .apps.feeds import urls as discussion_urls
 from .apps.notifications import urls as notification_urls
 from .apps.wallets import urls as wallet_urls
 

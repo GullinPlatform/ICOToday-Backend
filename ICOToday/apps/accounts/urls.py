@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django.conf.urls import url
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
 
-from .views import AccountViewSet, AccountRegisterViewSet, TeamViewSet, ExpertApplicationViewSet
+from .views import AccountViewSet, AccountRegisterViewSet, CompanyViewSet, ExpertApplicationViewSet
 
 account_change_password = AccountViewSet.as_view({
 	'post': 'change_password'
@@ -40,10 +43,10 @@ account_forget_password = AccountRegisterViewSet.as_view({
 	'post': 'forget_password',  # Get Token && Send email
 	'put' : 'forget_password',  # Change Pass
 })
-
-account_created_posts = AccountViewSet.as_view({
-	'get': 'created_posts'
-})
+#
+# account_created_posts = AccountViewSet.as_view({
+# 	'get': 'created_posts'
+# })
 
 account_marked_posts = AccountViewSet.as_view({
 	'get': 'marked_posts'
@@ -54,17 +57,10 @@ account_two_factor = AccountViewSet.as_view({
 	'put' : 'two_factor_auth'
 })
 
-team_list = TeamViewSet.as_view({
-	'get': 'list'
+account_search = AccountViewSet.as_view({
+	'get': 'search'
 })
 
-team_detail = TeamViewSet.as_view({
-	'get'   : 'retrieve',
-	'post'  : 'create',
-	'put'   : 'update',
-	'patch' : 'add_team_member',
-	'delete': 'add_team_member',
-})
 
 expert_application = ExpertApplicationViewSet.as_view({
 	'get' : 'retrieve',
@@ -101,13 +97,10 @@ urlpatterns = [
 	url(r'^me/marked_posts/$', account_marked_posts, name='me-marked-posts'),
 	url(r'^(?P<pk>[0-9]+)/marked_posts/$', account_marked_posts, name='user-marked-posts'),
 
-	url(r'^me/created_posts/$', account_created_posts, name='me-created-posts'),
-	url(r'^(?P<pk>[0-9]+)/created_posts/$', account_created_posts, name='user-created-posts'),
+	url(r'^search/(?P<search_token>[A-z0-9\-]+)/$', account_search, name='user-search'),
 
-	# Team
-	url(r'^teams/$', team_list, name='team-list'),
-	url(r'^team/new/$', team_detail, name='team-new'),
-	url(r'^team/(?P<pk>[0-9]+)/$', team_detail, name='team-detail'),
+	# url(r'^me/created_posts/$', account_created_posts, name='me-created-posts'),
+	# url(r'^(?P<pk>[0-9]+)/created_posts/$', account_created_posts, name='user-created-posts'),
 
 	# Expert Application
 	url(r'^expert_apply/$', expert_application, name='expert-application'),

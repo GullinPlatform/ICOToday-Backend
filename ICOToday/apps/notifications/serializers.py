@@ -1,13 +1,18 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from rest_framework import serializers
 
 from models import Notification
-from ..accounts.serializers import BasicAccountSerializer
+from ..accounts.serializers import MiniAccountInfoSerializer
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-	receiver = BasicAccountSerializer()
-	sender = BasicAccountSerializer(allow_null=True)
+	receiver = MiniAccountInfoSerializer()
+	sender = MiniAccountInfoSerializer(allow_null=True)
 
 	class Meta:
 		model = Notification
-		fields = ('id', 'content', 'read', 'created', 'receiver', 'sender', 'related_link')
+		fields = ('id',  'receiver', 'sender',
+		          'content', 'related',
+		          'read', 'created', )

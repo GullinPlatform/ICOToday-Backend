@@ -42,6 +42,10 @@ class AccountInfo(models.Model):
 	telegram = models.CharField(max_length=100, null=True, blank=True)
 	facebook = models.CharField(max_length=100, null=True, blank=True)
 
+	# Timestamp
+	created = models.DateTimeField(auto_now_add=True)
+	updated = models.DateTimeField(auto_now=True)
+
 	def __str__(self):
 		return self.first_name + ' ' + self.last_name if self.first_name and self.last_name else str(self.id)
 

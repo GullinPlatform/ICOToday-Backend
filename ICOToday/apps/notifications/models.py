@@ -20,7 +20,10 @@ class Notification(models.Model):
 	related = models.CharField(max_length=200, null=True, blank=True, choices=RELATED_CHOICES)
 
 	read = models.BooleanField(default=False)
+
+	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
+	updated = models.DateTimeField(auto_now=True)
 
 	def __unicode__(self):
 		return self.content

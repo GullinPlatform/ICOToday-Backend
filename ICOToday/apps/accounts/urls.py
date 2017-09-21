@@ -69,30 +69,28 @@ expert_application = ExpertApplicationViewSet.as_view({
 })
 
 urlpatterns = [
-	# Account
+	# Account Detail
+	url(r'^me/$', account_me, name='me'),
 	url(r'^(?P<pk>[0-9]+)/$', account_detail, name='user-detail'),
-	# url(r'^avatar/$', account_avatar, name='user-avatar'),
 
-	url(r'^login/$', obtain_jwt_token),
+	# Login Signup and verification email
 	url(r'^signup/$', account_register, name='user-register'),
-
+	url(r'^login/$', obtain_jwt_token),
+	url(r'^check_login_status/$', verify_jwt_token),
+	url(r'^refresh_login_status/$', refresh_jwt_token),
 	url(r'^invited_signup/(?P<token>[A-z0-9\-]+)/$', account_invited_register, name='user-invited-register'),
 	url(r'^invited_resend/(?P<token>[A-z0-9\-]+)/$', account_invite_email_resend, name='user-invited-resend-email'),
-
 	url(r'^email_verify/$', account_verification, name='user-email-verify'),
 	url(r'^email_verify/(?P<token>[A-z0-9\-]+)/$', account_verification, name='user-email-verify'),
 
+	# Change Password
 	url(r'^change_pass/$', account_change_password, name='user-change-pass'),
-
-	url(r'^refresh/$', refresh_jwt_token),
-	url(r'^verify/$', verify_jwt_token),
 
 	url(r'^forget/$', account_forget_password, name='user-forget-password'),
 	url(r'^forget/(?P<token>[A-z0-9\-]+)/$', account_forget_password, name='user-forget-password'),
 
 	url(r'^2factor/$', account_two_factor, name='user-two-factor'),
 
-	url(r'^me/$', account_me, name='me'),
 
 	url(r'^me/marked_posts/$', account_marked_posts, name='me-marked-posts'),
 	url(r'^(?P<pk>[0-9]+)/marked_posts/$', account_marked_posts, name='user-marked-posts'),

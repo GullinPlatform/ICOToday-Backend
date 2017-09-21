@@ -93,15 +93,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 	def register(self, request):
 		serializer = AuthAccountSerializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
-		user = serializer.save()
-
-		# # If ICO Company, have company name
-		# if request.data.get('type') is 0:
-		# 	user.info.first_name = request.data.get('first_name')
-		# 	user.info.last_name = request.data.get('last_name')
-		# 	company = Company.objects.create(name=request.data.get('company_name'))
-		# 	user.info.company_id = company.id
-		# 	user.info.save()
+		account = serializer.save()
 
 		# If refer
 		if request.data.get('referrer'):
@@ -111,31 +103,28 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 				referrer.save()
 				Notification.objects.create(receiver_id=referrer.id,
 				                            content='A friend just joined ICOToday with your referral link! 5 ICOCoins have been deposited to your wallet.',
-				                            related_link='wallet')
-			except Account.DoesNotExist:
-				pass
-			except Wallet.DoesNotExist:
+				                            related='wallet')
+			except Account.DoesNotExist or Wallet.DoesNotExist:
 				pass
 
-		Wallet.objects.create(account_id=user.id)
-		user.wallet.icc_amount += 5
-		user.wallet.save()
-		Notification.objects.create(receiver_id=user.id,
+		account.info.wallet.icc_amount += 5
+		account.info.wallet.save()
+		Notification.objects.create(receiver_id=account.info.id,
 		                            content='Welcome to ICOToday. As one of our early users, we have deposited 5 ICOCoins to your wallet.',
-		                            related_link='wallet')
+		                            related='wallet')
 
 		# return token right away
 		jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 		jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-		payload = jwt_payload_handler(user)
+		payload = jwt_payload_handler(account)
 		token = jwt_encode_handler(payload)
 
-		user_verify_token = get_user_verify_token(user)
+		user_verify_token = get_user_verify_token(account)
 
-		send_email(receiver_list=[user.email],
+		send_email(receiver_list=[account.email],
 		           subject='ICOToday - Email Verification',
 		           template_name='EmailVerification',
-		           ctx={'user': user, 'token': user_verify_token.token})
+		           ctx={'user': account, 'token': user_verify_token.token})
 
 		return Response({'token': token}, status=status.HTTP_201_CREATED)
 
@@ -265,7 +254,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 class AccountViewSet(viewsets.ViewSet):
 	queryset = Account.objects.exclude(is_staff=1)
 	parser_classes = (MultiPartParser, FormParser, JSONParser)
-	permission_classes = (IsAuthenticatedOrReadOnly,)
+	permission_classes = (IsAuthenticated,)
 
 	# TODO link url
 	def register_follow_up(self, request):

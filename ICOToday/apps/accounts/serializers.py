@@ -41,7 +41,6 @@ class AuthAccountSerializer(serializers.ModelSerializer):
 	"""
 	Only For Register User
 	"""
-
 	class Meta:
 		model = Account
 		exclude = ('user_permissions', 'groups', 'is_superuser', 'is_staff', 'is_active', 'info')
@@ -50,9 +49,9 @@ class AuthAccountSerializer(serializers.ModelSerializer):
 
 	def create(self, validated_data):
 		if 'phone' in validated_data:
-			account = Account(phone=validated_data['phone'], type=validated_data['type'])
+			account = Account(phone=validated_data['phone'])
 		elif 'email' in validated_data:
-			account = Account(email=validated_data['email'], type=validated_data['type'])
+			account = Account(email=validated_data['email'])
 		else:
 			return False
 
@@ -60,14 +59,8 @@ class AuthAccountSerializer(serializers.ModelSerializer):
 		info = AccountInfo.objects.create()
 		account.info = info
 		account.save()
-		Wallet.objects.create(account_id=account.id)
+		Wallet.objects.create(account_id=account.info.id)
 		return account
-
-	def update(self, instance, validated_data):
-		instance.set_password(validated_data['password'])
-		instance.save()
-		return instance
-
 
 class BasicAccountSerializer(serializers.ModelSerializer):
 	"""

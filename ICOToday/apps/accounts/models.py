@@ -7,6 +7,8 @@ from datetime import timedelta
 from django.core.mail import send_mail
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
+from ..utils.upload_filename import user_avatar_upload
+
 
 class AccountInfo(models.Model):
 	TYPE_CHOICES = (
@@ -20,7 +22,7 @@ class AccountInfo(models.Model):
 	type = models.IntegerField(choices=TYPE_CHOICES, default=-1)
 
 	# Personal Info
-	avatar = models.ImageField(upload_to='avatars', default='avatars/default.jpg', null=True, blank=True)
+	avatar = models.ImageField(upload_to=user_avatar_upload, default='avatars/default.jpg', null=True, blank=True)
 	first_name = models.CharField(max_length=40, null=True, blank=True)
 	last_name = models.CharField(max_length=40, null=True, blank=True)
 	title = models.CharField(max_length=40, null=True, blank=True)

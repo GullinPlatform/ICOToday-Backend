@@ -3,11 +3,14 @@ from __future__ import unicode_literals
 
 from django.db import models
 
+from ..utils.upload_filename import company_icon_upload
+
 
 class Company(models.Model):
-	# Team Info
+	# Company Info
 	name = models.CharField(max_length=50, null=True)
 	description = models.TextField(null=True, blank=True)
+	company_icon = models.ImageField(upload_to=company_icon_upload)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)

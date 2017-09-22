@@ -1,7 +1,10 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django.utils import timezone
 from django.db import models
+
+from ..utils.upload_filename import project_promo_upload, project_icon_upload
 
 
 class Project(models.Model):
@@ -47,8 +50,8 @@ class Project(models.Model):
 	money_raised = models.IntegerField(null=True, blank=True)
 
 	# Supplements
-	promote_image = models.ImageField(upload_to='posts/images/', null=True, blank=True)
-	logo_image = models.ImageField(upload_to='posts/images/', null=True, blank=True)
+	promote_image = models.ImageField(upload_to=project_promo_upload, null=True, blank=True)
+	logo_image = models.ImageField(upload_to=project_icon_upload, null=True, blank=True)
 	white_paper = models.CharField(max_length=100, null=True, blank=True)
 	video_link = models.CharField(max_length=100, null=True, blank=True)
 	website = models.CharField(max_length=100, null=True, blank=True)
@@ -84,25 +87,3 @@ class ProjectTag(models.Model):
 
 	def __str__(self):
 		return self.tag if self.tag else ' '
-
-
-class PromotionApplication(models.Model):
-	STATUS_CHOICES = (
-		(0, 'Processing'),
-		(1, 'Approved'),
-		(2, 'Declined'),
-	)
-
-	# Info
-	account = models.ForeignKey('accounts.AccountInfo', related_name='promotions')
-	company = models.ForeignKey('companies.Company', related_name='promotions')
-	detail = models.TextField()
-	status = models.IntegerField(default=0, choices=STATUS_CHOICES)
-	response = models.TextField()
-
-	# Timestamp
-	created = models.DateTimeField(auto_now_add=True)
-	updated = models.DateTimeField(auto_now=True)
-
-	def __str__(self):
-		return self.team.name

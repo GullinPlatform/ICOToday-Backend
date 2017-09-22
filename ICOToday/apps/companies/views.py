@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
+from ..notifications.models import Notification
 from ..accounts.models import AccountInfo, Account
 
 from .models import Company
@@ -33,12 +34,8 @@ class CompanyViewSet(viewsets.ViewSet):
 		else:
 			return False
 
-	def list(self, request):
-		serializer = BasicCompanySerializer(self.queryset, many=True)
-		return Response(serializer.data)
-
-	def retrieve(self, request, company_pk=None):
-		company = get_object_or_404(self.queryset, pk=company_pk)
+	def retrieve(self, request, company_id=None):
+		company = get_object_or_404(self.queryset, id=company_id)
 		serializer = CompanySerializer(company)
 		return Response(serializer.data)
 
@@ -58,7 +55,8 @@ class CompanyViewSet(viewsets.ViewSet):
 			request.user.info.company_admin = company  # Creator is company admin
 			request.user.info.type = 0  # Change to Company User
 			request.use.info.save()
-			return Response(status=status.HTTP_201_CREATED)
+			serializer = BasicCompanySerializer(company)
+			return Response(serializer.data, status=status.HTTP_201_CREATED)
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -69,21 +67,19 @@ class CompanyViewSet(viewsets.ViewSet):
 		if not self._is_company_admin(request.user.info, company):
 			return Response({'detail': 'Only company admin can add edit company page'}, status=status.HTTP_403_FORBIDDEN)
 
-		if request.data.get('name'):
-			company.name = request.data.get('name')
+		serializer = BasicAccountInfoSerializer(company, data=request.data, partial=True)
+		if serializer.is_valid():
+			company = serializer.save()
 
-		if request.data.get('description'):
-			company.description = request.data.get('description')
+		serializer = BasicCompanySerializer(company)
+		return Response(serializer.data, status=status.HTTP_200_OK)
 
-		company.save()
-		return Response(status=status.HTTP_200_OK)
-
-	def members(self, request, company_pk=None):
-		company = get_object_or_404(self.queryset, pk=company_pk)
+	def members(self, request, company_id=None):
+		company = get_object_or_404(self.queryset, id=company_id)
 		serializer = BasicAccountInfoSerializer(company.members, many=True)
 		return Response(serializer.data)
 
-	def member_manage(self, request, account_info_id):
+	def member_manage(self, request, account_info_id=None):
 		# Check if user is company admin and does user have company
 		company = request.user.info.company
 		if not company:
@@ -141,14 +137,21 @@ class CompanyViewSet(viewsets.ViewSet):
 					           template_name='TeamMemberInvitation',
 					           ctx={'username': account.info.full_name(), 'token': token_instance.token, 'team_name': company.name}
 					           )
-
-				return Response(status=status.HTTP_200_OK)
+				# Send back new account info
+				serializer = BasicAccountInfoSerializer(account.info)
+				return Response(serializer.data, status=status.HTTP_200_OK)
 			# Add Existing User as Company Member
 			elif account_info_id:
 				info = get_object_or_404(AccountInfo.objects.all(), id=account_info_id)
-				info.company.members.add(info)
-				# TODO: send notification
-				return Response(status=status.HTTP_200_OK)
+				info.company = request.user.info.company
+				info.save()
+				Notification.objects.create(receiver_id=info.id,
+				                            sender_id=request.user.info.id,
+				                            content=company.name + ' has invited you to become their team member.',
+				                            related='company')
+				# send back new account info
+				serializer = BasicAccountInfoSerializer(info)
+				return Response(serializer.data, status=status.HTTP_200_OK)
 			else:
 				return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -162,14 +165,21 @@ class CompanyViewSet(viewsets.ViewSet):
 			info.company.members.remove(info)
 			info.type = 1  # Change to Investor User
 			info.save()
-			# TODO: send notification
+			Notification.objects.create(receiver_id=info.id,
+			                            sender_id=request.user.info.id,
+			                            content=company.name + ' has removed you from their team member list.',
+			                            related='company')
 			return Response(status=status.HTTP_200_OK)
 
-	def apply(self, request, company_id):
+	def apply(self, request, company_id=None):
 		# Apply to be Company Member
 		company = get_object_or_404(self.queryset, id=company_id)
 		company.pending_members.add(request.user.info)
-		# TODO: send notification
+		for admin in company.admins.all():
+			Notification.objects.create(receiver_id=admin.id,
+			                            sender_id=request.user.info.id,
+			                            content='want to join the company.',
+			                            related='user')
 		return Response(status=status.HTTP_200_OK)
 
 	def leave(self, request):
@@ -185,7 +195,7 @@ class CompanyViewSet(viewsets.ViewSet):
 		request.user.info.save()
 		return Response(status=status.HTTP_200_OK)
 
-	def member_application(self, request, account_info_id):
+	def member_application(self, request, account_info_id=None):
 		if not self._is_company_admin(request.user.info, request.user.info.company):
 			return Response({'detail': 'Only company admin can add company members'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -196,8 +206,13 @@ class CompanyViewSet(viewsets.ViewSet):
 			info.company = request.user.info.company_admin
 			info.type = 0  # Change to Company User
 			info.save()
-			# TODO: send notification
-			return Response(status=status.HTTP_200_OK)
+			Notification.objects.create(receiver_id=info.id,
+			                            sender_id=request.user.info.id,
+			                            content='You joined ' + info.company.name + '.',
+			                            related='company')
+			# Send new member back
+			serializer = BasicAccountInfoSerializer(info)
+			return Response(serializer.data, status=status.HTTP_200_OK)
 
 		# Reject team member application
 		elif request.method == 'DELETE':
@@ -205,22 +220,35 @@ class CompanyViewSet(viewsets.ViewSet):
 			info.company_pending = None
 			info.type = 1  # Change to Investor User
 			info.save()
-			# TODO: send notification
+			Notification.objects.create(receiver_id=info.id,
+			                            sender_id=request.user.info.id,
+			                            content='Your application to ' + info.company.name + ' is rejected.',
+			                            related='company')
 			return Response(status=status.HTTP_200_OK)
 
-	def add_company_admin(self, request, account_info_id):
+	def admins(self, request):
+		if request.user.info.company:
+			serializer = BasicAccountInfoSerializer(request.user.info.company.admins, many=True)
+			return Response(serializer.data, status=status.HTTP_200_OK)
+		else:
+			return Response({'detail': 'Your are not in a company'}, status=status.HTTP_403_FORBIDDEN)
+
+	def admin_manage(self, request, account_info_id=None):
 		if not self._is_company_admin(request.user.info, request.user.info.company):
 			return Response({'detail': 'Only company admin can add company admins'}, status=status.HTTP_403_FORBIDDEN)
 		info = get_object_or_404(AccountInfo.objects.all(), id=account_info_id)
 		info.company_admin = request.user.info.company_admin
 		info.save()
-		return Response(status=status.HTTP_200_OK)
+		# send back new account info
+		serializer = BasicAccountInfoSerializer(info)
+		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def search(self, request):
-		search_token = request.GET.get('search')
+		search_token = request.GET.get('token')
+		print r'^' + search_token + r' +'
 		if search_token:
-			companies = self.queryset.filter(name__regex=r'^' + search_token + r' +')
-			serializer = CompanySerializer(companies, many=True)
-			return Response(serializer.data)
+			companies = self.queryset.filter(name__iregex=r'^' + search_token + r'+')
+			serializer = BasicCompanySerializer(companies, many=True)
+			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
 			return Response(status=status.HTTP_200_OK)

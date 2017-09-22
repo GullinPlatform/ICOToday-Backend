@@ -7,7 +7,7 @@ from ..accounts.models import AccountInfo
 from .models import Company, PromotionApplication
 
 
-class CompanyMemberInline(admin.TabularInline):
+class CompanyMembersInline(admin.TabularInline):
 	model = AccountInfo
 	fields = ('id', 'first_name', 'last_name', 'title')
 	readonly_fields = ('id', 'first_name', 'last_name', 'title')
@@ -18,7 +18,7 @@ class CompanyMemberInline(admin.TabularInline):
 	verbose_name_plural = "Company Members"
 
 
-class CompanyAdminInline(admin.TabularInline):
+class CompanyAdminsInline(admin.TabularInline):
 	model = AccountInfo
 	fields = ('id', 'first_name', 'last_name', 'title')
 	readonly_fields = ('id', 'first_name', 'last_name', 'title')
@@ -32,11 +32,11 @@ class CompanyAdminInline(admin.TabularInline):
 class CompanyAdmin(admin.ModelAdmin):
 	list_display = ('name', 'description', 'created')
 	fieldsets = [
-		[None, {'fields': ['name', 'description', ]}],
+		[None, {'fields': ['name', 'company_icon', 'description', ]}],
 		['Timestamp', {'fields': ['created', 'updated']}],
 	]
 	readonly_fields = ('created', 'updated')
-	inlines = [CompanyMemberInline, CompanyAdminInline]
+	inlines = [CompanyMembersInline, CompanyAdminsInline]
 
 
 class PromotionApplicationAdmin(admin.ModelAdmin):

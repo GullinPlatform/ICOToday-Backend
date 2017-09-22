@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from rest_framework import serializers
 
-from .models import Project, ProjectTag, PromotionApplication
+from .models import Project, ProjectTag
 
 
 from ..companies.serializers import BasicCompanySerializer
@@ -36,9 +39,3 @@ class BasicProjectSerializer(serializers.ModelSerializer):
 
 		read_only_fields = ('created', 'updated', 'status')
 
-
-class PromotionApplicationSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = PromotionApplication
-		fields = '__all__'
-		read_only_fields = ('created', 'updated')

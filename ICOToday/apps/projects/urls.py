@@ -1,62 +1,66 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django.conf.urls import url
 
-from .views import PostViewSet
+from .views import ProjectViewSet, ProjectTagViewSet
 
-post = PostViewSet.as_view({
+project = ProjectViewSet.as_view({
 	'get'   : 'retrieve',
 	'patch' : 'update',
 	'delete': 'delete'
 })
 
-post_list = PostViewSet.as_view({
+project_list = ProjectViewSet.as_view({
 	'get' : 'list',
 	'post': 'create'
 })
 
-post_promo_list = PostViewSet.as_view({
+project_promo_list = ProjectViewSet.as_view({
 	'get': 'promo_list',
 })
 
-post_close = PostViewSet.as_view({
+project_close = ProjectViewSet.as_view({
 	'get': 'close',
 })
 
-post_comments = PostViewSet.as_view({
+project_comments = ProjectViewSet.as_view({
 	'get': 'comment_list'
 })
 
-post_mark = PostViewSet.as_view({
-	'post': 'mark_post'
+project_mark = ProjectViewSet.as_view({
+	'post': 'mark_project'
 })
 
-post_rating_detail = PostViewSet.as_view({
+project_rating_detail = ProjectViewSet.as_view({
 	'get': 'retrieve_rating_detail'
 })
 
-post_search = PostViewSet.as_view({
-	'get': 'filtered_list'
+project_search = ProjectViewSet.as_view({
+	'get': 'search'
 })
 
-search_posts_by_tag = PostViewSet.as_view({
+search_projects_by_tag = ProjectViewSet.as_view({
 	'get': 'search_by_tag'
 })
 
-get_post_tags = PostViewSet.as_view({
-	'get': 'get_tag_list'
+all_tags = ProjectTagViewSet.as_view({
+	'get': 'list'
 })
 
 urlpatterns = [
-	url(r'^$', post_list, name='post_list'),
-	url(r'^p/(?P<p>[0-9]+)/$', post_list, name='post_list_page'),
-	url(r'^promo/$', post_promo_list, name='post_promo_list'),
-	url(r'^close/$', post_close, name='post_close'),
-	url(r'^search/(?P<p>[0-9]+)/$', post_search, name='post_search'),
+	url(r'^$', project_list, name='project_list'),
+	url(r'^p/(?P<p>[0-9]+)/$', project_list, name='project_list_page'),
+	url(r'^promo/$', project_promo_list, name='project_promo_list'),
+	url(r'^close/$', project_close, name='project_close'),
+	url(r'^search/(?P<p>[0-9]+)/$', project_search, name='project_search'),
 
-	url(r'^tags/$', get_post_tags, name='get_post_tags'),
 
-	url(r'^(?P<id>[0-9]+)/$', post, name='post'),
-	url(r'^(?P<id>[0-9]+)/rating/$', post_rating_detail, name='post-rating'),
-	url(r'^(?P<id>[0-9]+)/comments/$', post_comments, name='post-comments'),
-	url(r'^(?P<id>[0-9]+)/mark/$', post_mark, name='post_mark'),
+	url(r'^(?P<id>[0-9]+)/$', project, name='project'),
+	url(r'^(?P<id>[0-9]+)/rating/$', project_rating_detail, name='project-rating'),
+	url(r'^(?P<id>[0-9]+)/comments/$', project_comments, name='project-comments'),
+	url(r'^(?P<id>[0-9]+)/mark/$', project_mark, name='project_mark'),
+
+	url(r'^tags/$', all_tags, name='project_tags'),
 
 ]

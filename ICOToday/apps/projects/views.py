@@ -1,5 +1,7 @@
-from django.utils import timezone, dateparse
-from django.db.models import Q
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import get_object_or_404
 
@@ -12,10 +14,11 @@ from .models import Project, ProjectTag
 
 from .serializers import ProjectSerializer, ProjectTagSerializer, BasicProjectSerializer
 from ..feeds.serializers import FeedSerializer
-from ..accounts.views import send_email
+
+from ..utils.send_email import send_email
 
 
-class PostViewSet(viewsets.ViewSet):
+class ProjectViewSet(viewsets.ViewSet):
 	queryset = Project.objects.all()
 	parser_classes = (MultiPartParser, FormParser, JSONParser, FileUploadParser)
 	permission_classes = (IsAuthenticatedOrReadOnly,)
@@ -24,15 +27,15 @@ class PostViewSet(viewsets.ViewSet):
 		queryset = self.queryset.exclude(status=0)
 		paginator = Paginator(queryset, 10)
 		try:
-			posts = paginator.page(p)
+			projects = paginator.page(p)
 		except PageNotAnInteger:
 			# If page is not an integer, deliver first page.
-			posts = paginator.page(1)
+			projects = paginator.page(1)
 		except EmptyPage:
 			# If page is out of range (e.g. 9999), deliver last page of results.
-			posts = paginator.page(paginator.num_pages)
+			projects = paginator.page(paginator.num_pages)
 
-		serializer = BasicProjectSerializer(posts, many=True)
+		serializer = BasicProjectSerializer(projects, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def promo_list(self, request):
@@ -40,24 +43,36 @@ class PostViewSet(viewsets.ViewSet):
 		serializer = BasicProjectSerializer(queryset, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
+	# TODO: Link URL
+	def statistic(self, request):
+		query = self.queryset.exclude(status=0)
+		now = timezone.now()
+		active = query.filter(start_datetime__lte=now, end_datetime__gte=now).count()
+		upcoming = query.filter(start_datetime__gte=now).count()
+		passed = query.filter(end_datetime__lte=now).count()
+
+		return Response({'active': active, 'upcoming': upcoming, 'passed': passed})
+
 	def close(self, request):
-		for post in self.queryset:
-			if post.time_passed():
-				post.status = 4
-				post.save()
+		for project in self.queryset:
+			if project.time_passed():
+				project.status = 4
+				project.save()
 		return Response(status=status.HTTP_200_OK)
 
-	def filtered_list(self, request, p=None):
+	def search(self, request, p=None):
 		query = self.queryset.exclude(status=0)
+		# Cache query in memory to improve performance
+		[q for q in query]
 		# First filter by status
 		if request.GET.get('status'):
-			post_status = request.GET.get('status')
+			project_status = request.GET.get('status')
 			now = timezone.now()
-			if post_status == 'active':
+			if project_status == 'active':
 				query = query.filter(start_datetime__lte=now, end_datetime__gte=now)
-			if post_status == 'upcoming':
+			if project_status == 'upcoming':
 				query = query.filter(start_datetime__gte=now)
-			if post_status == 'passed':
+			if project_status == 'passed':
 				query = query.filter(end_datetime__lte=now)
 		# Then filter by category
 		if request.GET.get('category'):
@@ -67,21 +82,21 @@ class PostViewSet(viewsets.ViewSet):
 			query = query.filter(type=type)
 		# Then search by keyword
 		if request.GET.get('keyword'):
-			for post in query:
-				if request.GET.get('keyword').lower() not in post.title.lower():
-					query = query.exclude(id=post.id)
+			for project in query:
+				if request.GET.get('keyword').lower() not in project.title.lower():
+					query = query.exclude(id=project.id)
 		# Then paginate
 		paginator = Paginator(query, 10)
 		try:
-			posts = paginator.page(p)
+			projects = paginator.page(p)
 		except PageNotAnInteger:
 			# If page is not an integer, deliver first page.
-			posts = paginator.page(1)
+			projects = paginator.page(1)
 		except EmptyPage:
 			# If page is out of range (e.g. 9999), deliver last page of results.
-			posts = paginator.page(paginator.num_pages)
+			projects = paginator.page(paginator.num_pages)
 
-		serializer = BasicProjectSerializer(posts, many=True)
+		serializer = BasicProjectSerializer(projects, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def create(self, request):
@@ -93,7 +108,7 @@ class PostViewSet(viewsets.ViewSet):
 			if form[key] == '' or form[key] == 'null':
 				form[key] = None
 
-		post = Project.objects.create(
+		project = Project.objects.create(
 			creator_id=request.user.id,
 			team_id=request.user.info.team.id,
 
@@ -122,76 +137,70 @@ class PostViewSet(viewsets.ViewSet):
 			slack=form.get('slack', None),
 			telegram=form.get('telegram', None),
 		)
-		# Subscribe for post creator
+		# Subscribe for project creator
 		for member in request.user.info.team.members.all():
 			try:
-				post.marked.add(member.account.info)
+				project.marked.add(member.account.info)
 			except:
 				pass
 		return Response(status=status.HTTP_201_CREATED)
 
 	def retrieve(self, request, id):
-		post = get_object_or_404(self.queryset, id=id)
-		serializer = ProjectSerializer(post)
+		project = get_object_or_404(self.queryset, id=id)
+		serializer = ProjectSerializer(project)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def retrieve_rating_detail(self, request, id):
 		pass
 
 	# TODO:
-	# post = get_object_or_404(self.queryset, id=id)
-	# serializer = RatingDetailSerializer(post.rating_detail, many=True)
+	# project = get_object_or_404(self.queryset, id=id)
+	# serializer = RatingDetailSerializer(project.rating_detail, many=True)
 	# return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def update(self, request, id):
-		post = get_object_or_404(self.queryset, id=id)
-		serializer = ProjectSerializer(post, data=request.data, partial=True)
+		project = get_object_or_404(self.queryset, id=id)
+		serializer = ProjectSerializer(project, data=request.data, partial=True)
 		if serializer.is_valid():
-			post = serializer.save()
+			project = serializer.save()
 
+			# Bulk send update emails
 			email_list = []
-			for marked in post.marked.all():
+			for marked in project.marked.all():
 				email_list.append(marked.account.email)
-
-			send_email(email_list, 'ICOToday - Official Update on ICO Project You Subscribe to', 'NewComment', {id: post.id})
+			send_email(email_list, 'ICOToday - Official Update on ICO Project You Subscribe to', 'ProjectUpdate', {id: project.id})
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
 			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 	def delete(self, request, id):
-		post = get_object_or_404(self.queryset, id=id)
-		if post.id == request.user.info.company_admin.id:
-			post.delete()
+		project = get_object_or_404(self.queryset, id=id)
+		if project.id == request.user.info.company_admin.id:
+			project.delete()
 		else:
 			return Response(status=status.HTTP_403_FORBIDDEN)
 
 	def comment_list(self, request, id):
-		post = get_object_or_404(Project.objects.all(), id=id)
-		discussions = post.discussions
+		project = get_object_or_404(Project.objects.all(), id=id)
+		discussions = project.discussions
 		serializer = FeedSerializer(discussions, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
-	def mark_post(self, request, id):
-		post = get_object_or_404(self.queryset, id=id)
-		if request.user.info in post.marked.all():
-			post.marked.remove(request.user.info)
+	def mark_project(self, request, id):
+		project = get_object_or_404(self.queryset, id=id)
+		if request.user.info in project.marked.all():
+			project.marked.remove(request.user.info)
 		else:
-			post.marked.add(request.user.info)
+			project.marked.add(request.user.info)
 		return Response(status=status.HTTP_200_OK)
 
 	def search_by_tag(self, request, tag):
 		tag = ProjectTag.objects.get(tag=tag)
 		if tag:
-			serializer = ProjectSerializer(tag.posts.all(), many=True)
+			serializer = ProjectSerializer(tag.projects.all(), many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
 			return Response(status=status.HTTP_404_NOT_FOUND)
-
-	def get_tag_list(self, request):
-		tags = ProjectTag.objects.all()
-		serializer = ProjectTagSerializer(tags, many=True)
-
-		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	# TODO:
 	def rate(self, request, id):
@@ -199,12 +208,22 @@ class PostViewSet(viewsets.ViewSet):
 
 	# 	# Is Expert
 	# 	if request.user.type == 3:
-	# 		post = get_object_or_404(self.queryset, id=id)
+	# 		project = get_object_or_404(self.queryset, id=id)
 	# 		if request.data.get('descriptions', False):
 	# 			RatingDetail.objects.create(
 	# 				rater_id=request.user.id,
 	# 				description=request.data.get('descriptions'),
-	# 				post_id=post.id
+	# 				project_id=project.id
 	# 			)
 	# 	else:
 	# 		return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class ProjectTagViewSet(viewsets.ViewSet):
+	queryset = ProjectTag.objects.all()
+	parser_classes = (MultiPartParser, FormParser, JSONParser)
+	permission_classes = (IsAuthenticatedOrReadOnly,)
+
+	def list(self, request):
+		serializer = ProjectTagSerializer(self.queryset, many=True)
+		return Response(serializer.data, status=status.HTTP_200_OK)

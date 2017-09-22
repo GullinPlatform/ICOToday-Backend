@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django.contrib import admin
 
 from .models import Project, ProjectTag
@@ -28,16 +31,6 @@ class PostAdmin(admin.ModelAdmin):
 class PostTagAdmin(admin.ModelAdmin):
 	fieldsets = (('Tag', {'fields': ('tag',)}),)
 	list_display = ('tag',)
-
-
-class RatingDetailAdmin(admin.ModelAdmin):
-	list_display = ('rater', 'post', 'created',)
-	fieldsets = (
-		('Info', {'fields': ('rater', 'post')}),
-		('Details', {'fields': ('detail',)}),
-		('Timestamp', {'fields': ('created', 'updated')})
-	)
-	readonly_fields = ('created', 'updated')
 
 
 admin.site.register(Project, PostAdmin)

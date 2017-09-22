@@ -4,81 +4,21 @@ from __future__ import unicode_literals
 import random
 import string
 
-from datetime import timedelta
-
-from django.utils import timezone
 from django.shortcuts import get_object_or_404
-from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
+from django.db import Error
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from ..accounts.models import AccountInfo, Account, VerifyToken
+from ..accounts.models import AccountInfo, Account
 
 from .models import Company
-from .serializers import CompanySerializer, BasicCompanySerializer
+from .serializers import CompanySerializer, BasicCompanySerializer, BasicAccountInfoSerializer
 
-
-def send_email(receiver_list, subject, template_name, ctx):
-	email = EmailMessage(subject, render_to_string('email/%s.html' % template_name, ctx), 'no-reply@icotoday.io', receiver_list)
-	email.content_subtype = 'html'
-	email.send()
-
-
-def get_user_verify_token(user=None, email=None, only_digit=False):
-	if user:
-		token_instance, created = VerifyToken.objects.get_or_create(account_id=user.id)
-	elif email:
-		user = get_object_or_404(Account.objects.all(), email=email)
-		token_instance, created = VerifyToken.objects.get_or_create(account_id=user.id)
-	else:
-		return None
-
-	token_instance.expire_time = timezone.now() + timedelta(hours=24)
-	if only_digit:
-		token_instance.token = ''.join([random.choice(string.digits) for n in xrange(6)])
-	else:
-		token_instance.token = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(16)])
-	token_instance.save()
-	return token_instance
-
-
-def verify_token(token=None, user=None):
-	if user:
-		try:
-			token_instance = VerifyToken.objects.get(account_id=user.id)
-			if token_instance.is_expired:
-				return False
-		except VerifyToken.DoesNotExist:
-			return False
-	elif token:
-		try:
-			token_instance = VerifyToken.objects.get(token=token)
-			if token_instance.is_expired:
-				return False
-		except VerifyToken.DoesNotExist:
-			return False
-	else:
-		return False
-
-	token_instance.expire_time = timezone.now() - timedelta(days=10)
-	token_instance.token = ''
-	token_instance.save()
-	return token_instance
-
-
-def refresh_token(token=None):
-	try:
-		token_instance = VerifyToken.objects.get(token=token)
-		token_instance.expire_time = timezone.now() + timedelta(days=1)
-		token_instance.token = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(16)])
-		token_instance.save()
-		return token_instance
-	except VerifyToken.DoesNotExist:
-		return False
+from ..utils.send_email import send_email
+from ..utils.verify_token import VerifyTokenUtils
 
 
 class CompanyViewSet(viewsets.ViewSet):
@@ -86,29 +26,48 @@ class CompanyViewSet(viewsets.ViewSet):
 	parser_classes = (MultiPartParser, FormParser, JSONParser)
 	permission_classes = (IsAuthenticatedOrReadOnly,)
 
+	@staticmethod
+	def _is_company_admin(account_info, company):
+		if account_info.company_admin.id is company.id:
+			return True
+		else:
+			return False
+
 	def list(self, request):
 		serializer = BasicCompanySerializer(self.queryset, many=True)
 		return Response(serializer.data)
 
-	def retrieve(self, request, pk=None):
-		company = get_object_or_404(self.queryset, pk=pk)
+	def retrieve(self, request, company_pk=None):
+		company = get_object_or_404(self.queryset, pk=company_pk)
 		serializer = CompanySerializer(company)
 		return Response(serializer.data)
 
 	def create(self, request):
+		company = request.user.info.company
+		if company:
+			return Response({'detail': 'User can only have one company'}, status=status.HTTP_403_FORBIDDEN)
+		if request.user.info.type != -1:
+			return Response({'detail': 'User already set account type'}, status=status.HTTP_403_FORBIDDEN)
+
 		if request.data.get('name') and request.data.get('description'):
 			company = Company.objects.create(
 				name=request.data.get('name'),
 				description=request.data.get('description')
 			)
-			request.user.company = company
-			request.use.save()
+			request.user.info.company = company
+			request.user.info.company_admin = company  # Creator is company admin
+			request.user.info.type = 0  # Change to Company User
+			request.use.info.save()
 			return Response(status=status.HTTP_201_CREATED)
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
-	def update(self, request, pk):
-		company = get_object_or_404(self.queryset, pk=pk)
+	def update(self, request):
+		company = request.user.info.company
+		if not company:
+			return Response(status=status.HTTP_400_BAD_REQUEST)
+		if not self._is_company_admin(request.user.info, company):
+			return Response({'detail': 'Only company admin can add edit company page'}, status=status.HTTP_403_FORBIDDEN)
 
 		if request.data.get('name'):
 			company.name = request.data.get('name')
@@ -116,13 +75,25 @@ class CompanyViewSet(viewsets.ViewSet):
 		if request.data.get('description'):
 			company.description = request.data.get('description')
 
-			company.save()
+		company.save()
 		return Response(status=status.HTTP_200_OK)
 
-	def add_company_member(self, request, pk):
-		# IMPORTANT: Here pk is Company Pk!
-		if request.method == 'PATCH':
-			company = get_object_or_404(self.queryset, pk=pk)
+	def members(self, request, company_pk=None):
+		company = get_object_or_404(self.queryset, pk=company_pk)
+		serializer = BasicAccountInfoSerializer(company.members, many=True)
+		return Response(serializer.data)
+
+	def member_manage(self, request, account_info_id):
+		# Check if user is company admin and does user have company
+		company = request.user.info.company
+		if not company:
+			return Response(status=status.HTTP_400_BAD_REQUEST)
+		if not self._is_company_admin(request.user.info, company):
+			return Response({'detail': 'Only company admin can add company members'}, status=status.HTTP_403_FORBIDDEN)
+
+		# Add Company Member to own company
+		if request.method == 'POST':
+			# Add New Company member and sent invite email
 			if request.data.get('email'):
 				# Must use == not is here, otherwise type dismatch
 				is_advisor = True if request.data.get('is_advisor') == 'true' else False
@@ -133,7 +104,7 @@ class CompanyViewSet(viewsets.ViewSet):
 					last_name=request.data.get('last_name'),
 					title=request.data.get('title'),
 					description=request.data.get('description'),
-					company_id=pk,
+					company_id=request.user.info.company.id,
 					is_advisor=is_advisor,
 					linkedin=request.data.get('linkedin', ''),
 					twitter=request.data.get('twitter', ''),
@@ -142,53 +113,114 @@ class CompanyViewSet(viewsets.ViewSet):
 				)
 				# if user email duplicate, delete the AccountInfo just created and return 400
 				try:
-					user = Account.objects.create(
+					account = Account.objects.create(
 						email=request.data.get('email'),
 						info_id=info.id,
 						type=0,  # ICO Company
 					)
-				except:
+				except Error:
 					info.delete()
 					return Response({'detail': 'User with this email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
 				# if created user, add AccountInfo to company
 				company.members.add(info)
 				# give user just created a random password
-				user.set_password(''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(16)]))
-				user.save()
+				account.set_password(''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(16)]))
+				account.save()
 
-				user_verify_token = get_user_verify_token(user)
-
+				token_instance = VerifyTokenUtils.generate_token_by_user(user=account)
 				if is_advisor:
-					send_email(receiver_list=[user.email],
-					           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
+					send_email(receiver_list=[account.email],
+					           subject='ICOToday - ' + account.info.full_name() + ', Your Team is Waiting You',
 					           template_name='TeamAdvisorInvitation',
-					           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': company.name}
+					           ctx={'username': account.info.full_name(), 'token': token_instance.token, 'team_name': company.name}
 					           )
 				else:
-					send_email(receiver_list=[user.email],
-					           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
+					send_email(receiver_list=[account.email],
+					           subject='ICOToday - ' + account.info.full_name() + ', Your Team is Waiting You',
 					           template_name='TeamMemberInvitation',
-					           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': company.name}
+					           ctx={'username': account.info.full_name(), 'token': token_instance.token, 'team_name': company.name}
 					           )
 
 				return Response(status=status.HTTP_200_OK)
+			# Add Existing User as Company Member
+			elif account_info_id:
+				info = get_object_or_404(AccountInfo.objects.all(), id=account_info_id)
+				info.company.members.add(info)
+				# TODO: send notification
+				return Response(status=status.HTTP_200_OK)
 			else:
 				return Response(status=status.HTTP_400_BAD_REQUEST)
-		# IMPORTANT: Here pk is Account Pk!
+
+		# Remove Company Member from own company
 		elif request.method == 'DELETE':
-			info = get_object_or_404(AccountInfo.objects.all(), pk=pk)
+			info = get_object_or_404(AccountInfo.objects.all(), id=account_info_id)
+
+			if self._is_company_admin(info, company):
+				return Response({'detail': 'You cannot remove another admin'}, status=status.HTTP_403_FORBIDDEN)
+
 			info.company.members.remove(info)
+			info.type = 1  # Change to Investor User
+			info.save()
+			# TODO: send notification
 			return Response(status=status.HTTP_200_OK)
 
-	# TODO: add company admin
-	def add_company_admin(self, request):
-		pass
+	def apply(self, request, company_id):
+		# Apply to be Company Member
+		company = get_object_or_404(self.queryset, id=company_id)
+		company.pending_members.add(request.user.info)
+		# TODO: send notification
+		return Response(status=status.HTTP_200_OK)
 
-	# TODO: search by company name
-	def search(self, request, search_token):
-		pass
+	def leave(self, request):
+		company = request.user.info.company
+		if not company:
+			return Response(status=status.HTTP_400_BAD_REQUEST)
+		if self._is_company_admin(request.user.info, company):
+			return Response({'detail': 'Admin are unable to leave company'}, status=status.HTTP_403_FORBIDDEN)
 
-	# post feed shouldn't be here, should be in feeds
-	# def feed(self, request):
-	# 	pass
+		# Quit Company
+		request.user.info.company = None
+		request.user.info.type = 1  # Change to Investor User
+		request.user.info.save()
+		return Response(status=status.HTTP_200_OK)
+
+	def member_application(self, request, account_info_id):
+		if not self._is_company_admin(request.user.info, request.user.info.company):
+			return Response({'detail': 'Only company admin can add company members'}, status=status.HTTP_403_FORBIDDEN)
+
+		# Approve team member application
+		if request.method == 'POST':
+			info = get_object_or_404(AccountInfo.objects.all(), id=account_info_id)
+			info.company_pending = None
+			info.company = request.user.info.company_admin
+			info.type = 0  # Change to Company User
+			info.save()
+			# TODO: send notification
+			return Response(status=status.HTTP_200_OK)
+
+		# Reject team member application
+		elif request.method == 'DELETE':
+			info = get_object_or_404(AccountInfo.objects.all(), id=account_info_id)
+			info.company_pending = None
+			info.type = 1  # Change to Investor User
+			info.save()
+			# TODO: send notification
+			return Response(status=status.HTTP_200_OK)
+
+	def add_company_admin(self, request, account_info_id):
+		if not self._is_company_admin(request.user.info, request.user.info.company):
+			return Response({'detail': 'Only company admin can add company admins'}, status=status.HTTP_403_FORBIDDEN)
+		info = get_object_or_404(AccountInfo.objects.all(), id=account_info_id)
+		info.company_admin = request.user.info.company_admin
+		info.save()
+		return Response(status=status.HTTP_200_OK)
+
+	def search(self, request):
+		search_token = request.GET.get('search')
+		if search_token:
+			companies = self.queryset.filter(name__regex=r'^' + search_token + r' +')
+			serializer = CompanySerializer(companies, many=True)
+			return Response(serializer.data)
+		else:
+			return Response(status=status.HTTP_200_OK)

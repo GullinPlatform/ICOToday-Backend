@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from rest_framework import serializers
 
-from .models import Company
+from .models import Company, PromotionApplication
 from ..accounts.serializers import BasicAccountInfoSerializer
 
 
@@ -22,3 +22,10 @@ class CompanySerializer(serializers.ModelSerializer):
 		model = Company
 		fields = ['id', 'name', 'description', 'members']
 		read_only_fields = ('created', 'updated',)
+
+
+class PromotionApplicationSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = PromotionApplication
+		fields = '__all__'
+		read_only_fields = ('created', 'updated')

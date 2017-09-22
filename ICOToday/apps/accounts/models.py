@@ -32,9 +32,10 @@ class AccountInfo(models.Model):
 	# My Company
 	company = models.ForeignKey('companies.Company', related_name='members', null=True, blank=True)
 	company_admin = models.ForeignKey('companies.Company', related_name='admins', null=True, blank=True)
+	company_pending = models.ForeignKey('companies.Company', related_name='pending_members', null=True, blank=True)
 
 	# Interested Fields
-	interested = models.ManyToManyField('projects.ProjectTag', related_name='interested')
+	interests = models.ManyToManyField('projects.ProjectTag', related_name='interests', blank=True)
 
 	# Social Media
 	linkedin = models.CharField(max_length=100, null=True, blank=True)
@@ -93,8 +94,6 @@ class Account(AbstractBaseUser, PermissionsMixin):
 	# # from inherit
 	is_staff = models.BooleanField(default=False)
 	is_active = models.BooleanField(default=True)
-	# # self defined
-	is_verified = models.BooleanField(default=False)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)

@@ -60,6 +60,11 @@ account_search = AccountViewSet.as_view({
 	'get': 'search'
 })
 
+account_interests = AccountViewSet.as_view({
+	'post': 'add_interests'
+})
+
+
 expert_application = ExpertApplicationViewSet.as_view({
 	'get' : 'retrieve',
 	'post': 'create',
@@ -96,7 +101,10 @@ urlpatterns = [
 	url(r'^(?P<pk>[0-9]+)/marked_projects/$', account_marked_projects, name='user-marked-projects'),
 
 	# Search User
-	url(r'^search/(?P<search_token>[A-z0-9\-]+)/$', account_search, name='user-search'),
+	url(r'^search/$', account_search, name='user-search'),
+
+	# Add Interests
+	url(r'^me/interests/$', account_interests, name='user-interests'),
 
 	# Expert Application
 	url(r'^expert_apply/$', expert_application, name='expert-application'),

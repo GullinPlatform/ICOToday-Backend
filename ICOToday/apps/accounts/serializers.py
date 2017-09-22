@@ -14,17 +14,17 @@ class AccountInfoSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = AccountInfo
-		fields = ['id', 'avatar', 'first_name', 'last_name', 'is_verified',
-		          'company', 'title', 'description', 'interested',
+		fields = ['id', 'account', 'type', 'avatar', 'first_name', 'last_name',
+		          'company', 'title', 'description', 'interests', 'is_verified',
 		          'linkedin', 'twitter', 'telegram', 'facebook']
 
 
 class BasicAccountInfoSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = AccountInfo
-		fields = ['id', 'avatar', 'first_name', 'last_name',
-		          'company', 'title', 'description', 'is_advisor', 'is_expert',
-		          'linkedin', 'twitter', 'telegram', 'facebook', 'account']
+		fields = ['id', 'account', 'type', 'avatar', 'first_name', 'last_name',
+		          'company', 'title', 'description', 'interests', 'is_verified',
+		          'linkedin', 'twitter', 'telegram', 'facebook']
 
 
 class MiniAccountInfoSerializer(serializers.ModelSerializer):
@@ -41,6 +41,7 @@ class AuthAccountSerializer(serializers.ModelSerializer):
 	"""
 	Only For Register User
 	"""
+
 	class Meta:
 		model = Account
 		exclude = ('user_permissions', 'groups', 'is_superuser', 'is_staff', 'is_active', 'info')
@@ -61,6 +62,7 @@ class AuthAccountSerializer(serializers.ModelSerializer):
 		account.save()
 		Wallet.objects.create(account_id=account.info.id)
 		return account
+
 
 class BasicAccountSerializer(serializers.ModelSerializer):
 	"""

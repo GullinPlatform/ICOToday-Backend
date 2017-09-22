@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 	'ICOToday.apps.notifications',
 	'ICOToday.apps.wallets',
 	'ICOToday.apps.conversation',
+	'ICOToday.apps.rest_framework_jwt',
 ]
 
 MIDDLEWARE = [
@@ -131,8 +132,11 @@ REST_FRAMEWORK = {
 		'rest_framework.permissions.IsAuthenticatedOrReadOnly',
 	],
 	'DEFAULT_AUTHENTICATION_CLASSES': [
-		'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-	]
+		'ICOToday.apps.rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+	],
+	'DEFAULT_RENDERER_CLASSES': (
+		'rest_framework.renderers.JSONRenderer',
+	)
 }
 
 # Cors Origin Settings
@@ -171,11 +175,11 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Restful JWT AUTH
 JWT_AUTH = {
-	'JWT_ENCODE_HANDLER'             : 'rest_framework_jwt.utils.jwt_encode_handler',
-	'JWT_DECODE_HANDLER'             : 'rest_framework_jwt.utils.jwt_decode_handler',
-	'JWT_PAYLOAD_HANDLER'            : 'rest_framework_jwt.utils.jwt_payload_handler',
-	'JWT_PAYLOAD_GET_USER_ID_HANDLER': 'rest_framework_jwt.utils.jwt_get_user_id_from_payload_handler',
-	'JWT_RESPONSE_PAYLOAD_HANDLER'   : 'rest_framework_jwt.utils.jwt_response_payload_handler',
+	'JWT_ENCODE_HANDLER'             : 'ICOToday.apps.rest_framework_jwt.utils.jwt_encode_handler',
+	'JWT_DECODE_HANDLER'             : 'ICOToday.apps.rest_framework_jwt.utils.jwt_decode_handler',
+	'JWT_PAYLOAD_HANDLER'            : 'ICOToday.apps.rest_framework_jwt.utils.jwt_payload_handler',
+	'JWT_PAYLOAD_GET_USER_ID_HANDLER': 'ICOToday.apps.rest_framework_jwt.utils.jwt_get_user_id_from_payload_handler',
+	'JWT_RESPONSE_PAYLOAD_HANDLER'   : 'ICOToday.apps.rest_framework_jwt.utils.jwt_response_payload_handler',
 
 	'JWT_PUBLIC_KEY'                 : open(os.path.join(BASE_DIR, 'settings/jwtRS256.key.pub')).read(),
 	'JWT_PRIVATE_KEY'                : open(os.path.join(BASE_DIR, 'settings/jwtRS256.key')).read(),

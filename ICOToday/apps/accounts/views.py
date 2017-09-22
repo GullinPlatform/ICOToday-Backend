@@ -11,7 +11,7 @@ from django.contrib.auth.hashers import check_password
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 
-from rest_framework_jwt.settings import api_settings
+from ..rest_framework_jwt.settings import api_settings
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser

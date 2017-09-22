@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.conf.urls import url
-from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token, verify_jwt_token
+from ..rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
 
 from .views import AccountViewSet, AccountRegisterViewSet, ExpertApplicationViewSet
 
@@ -76,7 +76,6 @@ urlpatterns = [
 	# Login Signup and verification email
 	url(r'^signup/$', account_register, name='user-register'),
 	url(r'^login/$', obtain_jwt_token),
-	url(r'^check_login_status/$', verify_jwt_token),
 	url(r'^refresh_login_status/$', refresh_jwt_token),
 	url(r'^invited_signup/(?P<token>[A-z0-9\-]+)/$', account_invited_register, name='user-invited-register'),
 	url(r'^invited_resend/(?P<token>[A-z0-9\-]+)/$', account_invite_email_resend, name='user-invited-resend-email'),

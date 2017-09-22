@@ -19,7 +19,7 @@ class Project(models.Model):
 		(1, 'ICO'),
 	)
 
-	marked = models.ManyToManyField('accounts.AccountInfo', blank=True, related_name='marked_posts')
+	marked = models.ManyToManyField('accounts.AccountInfo', blank=True, related_name='marked_projects')
 	company = models.ForeignKey('companies.Company', blank=True, related_name='posts')
 
 	# Information

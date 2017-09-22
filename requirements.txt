@@ -9,7 +9,6 @@ django-debug-toolbar==1.8
 django-ses==0.8.2
 django-storages==1.6.5
 djangorestframework==3.6.3
-djangorestframework-jwt==1.10.0
 idna==2.6
 olefile==0.44
 paramiko==2.2.1

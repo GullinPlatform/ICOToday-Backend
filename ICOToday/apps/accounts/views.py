@@ -15,12 +15,12 @@ from ..rest_framework_jwt.settings import api_settings
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .models import Account, VerifyToken, AccountInfo, ExpertApplication
 from .serializers import AuthAccountSerializer, BasicAccountSerializer, BasicAccountInfoSerializer, AccountInfoSerializer, ExpertApplicationSerializer
 
-from ..projects.models import Project, ProjectTag
+from ..projects.models import ProjectTag
 from ..projects.serializers import ProjectSerializer
 
 from ..notifications.models import Notification
@@ -42,11 +42,12 @@ def get_user_verify_token(user=None, email=None, only_digit=False):
 	else:
 		return None
 
-	token_instance.expire_time = timezone.now() + timedelta(hours=24)
 	if only_digit:
 		token_instance.token = ''.join([random.choice(string.digits) for n in xrange(6)])
 	else:
 		token_instance.token = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(16)])
+
+	token_instance.expire_time = timezone.now() + timedelta(hours=24)
 	token_instance.save()
 	return token_instance
 
@@ -119,7 +120,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		payload = jwt_payload_handler(account)
 		token = jwt_encode_handler(payload)
 
-		user_verify_token = get_user_verify_token(account)
+		user_verify_token = get_user_verify_token(user=account)
 
 		send_email(receiver_list=[account.email],
 		           subject='ICOToday - Email Verification',
@@ -176,12 +177,12 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		# Resend Email
 		elif request.method == 'POST':
 			if request.user.is_authenticated:
-				user_verify_token = get_user_verify_token(user=request.user)
+				token_instance = get_user_verify_token(user=request.user)
 
 				send_email(receiver_list=[request.user.email],
 				           subject='ICOToday - Email Verification',
 				           template_name='EmailVerification',
-				           ctx={'user': request.user, 'token': user_verify_token}
+				           ctx={'user': request.user, 'token': token_instance.token}
 				           )
 				return Response(status=status.HTTP_200_OK)
 			else:
@@ -191,22 +192,22 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		if not token:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
-		user_verify_token = refresh_token(token=token)
+		token_instance = refresh_token(token=token)
 
-		if user_verify_token:
-			user = user_verify_token.account
+		if token_instance:
+			user = token_instance.account
 			company = user.info.company.name
 			if user.info.type == 2:  # Advisor
 				send_email(receiver_list=[user.email],
 				           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
 				           template_name='TeamAdvisorInvitation',
-				           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': company}
+				           ctx={'username': user.info.full_name(), 'token': token_instance.token, 'team_name': company}
 				           )
 			else:
 				send_email(receiver_list=[user.email],
 				           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
 				           template_name='TeamMemberInvitation',
-				           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': company}
+				           ctx={'username': user.info.full_name(), 'token': token_instance.token, 'team_name': company}
 				           )
 		return Response(status=status.HTTP_200_OK)
 
@@ -250,6 +251,12 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			token_instance.save()
 			return Response(status=status.HTTP_200_OK)
 
+	def logout(self, request):
+		from ..rest_framework_jwt.settings import api_settings
+		response = Response()
+		response.delete_cookie(api_settings.JWT_AUTH_COOKIE)
+		return response
+
 
 class AccountViewSet(viewsets.ViewSet):
 	queryset = Account.objects.exclude(is_staff=1)
@@ -272,14 +279,6 @@ class AccountViewSet(viewsets.ViewSet):
 		user = get_object_or_404(self.queryset, pk=pk)
 		serializer = BasicAccountSerializer(user)
 		return Response(serializer.data)
-
-	def destroy(self, request, pk=None):
-		if request.user.is_superuser or request.user.pk == int(pk):
-			user = get_object_or_404(self.queryset, pk=pk)
-			user.delete()
-			return Response(status=status.HTTP_200_OK)
-		else:
-			return Response(status=status.HTTP_403_FORBIDDEN)
 
 	def me(self, request):
 		if request.method == 'GET':
@@ -315,13 +314,13 @@ class AccountViewSet(viewsets.ViewSet):
 			# If exception return with status 400
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
-	def marked_posts(self, request, pk=None):
+	def marked_projects(self, request, pk=None):
 		if pk:  # Marked post from other user
 			account = get_object_or_404(self.queryset, pk=pk)
-			serializer = ProjectSerializer(account.info.marked_posts.all(), many=True)
+			serializer = ProjectSerializer(account.info.marked_projects.all(), many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:  # Marked post from me
-			serializer = ProjectSerializer(request.user.info.marked_posts.all(), many=True)
+			serializer = ProjectSerializer(request.user.info.marked_projects.all(), many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 
 	# TODO : Add URL
@@ -335,8 +334,6 @@ class AccountViewSet(viewsets.ViewSet):
 				request.user.info.interested.add(tag)
 		return Response(status=status.HTTP_200_OK)
 
-	# def created_posts(self, request, pk=None):
-
 	def two_factor_auth(self, request):
 		# Send Email
 		if request.method == 'POST':
@@ -348,7 +345,7 @@ class AccountViewSet(viewsets.ViewSet):
 			return Response(status=status.HTTP_200_OK)
 
 		# Verify Token
-		elif request.method == 'PUT':
+		elif request.method == 'GET':
 			token_instance = verify_token(token=request.data.get('token'), user=request.user)
 
 			if token_instance:

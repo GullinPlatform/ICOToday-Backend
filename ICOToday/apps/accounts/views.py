@@ -321,14 +321,14 @@ class AccountViewSet(viewsets.ViewSet):
 		if search_token:
 			if '@' in search_token:
 				token = search_token.split("@")[0]
-				accounts = self.queryset.filter(email__regex=r'^' + token + r' +')
+				accounts = self.queryset.filter(email__iregex=r'^' + token + r'+')
 			else:
 				queryset = AccountInfo.objects.all()
 				# Cache query in memory to improve performance
 				[q for q in queryset]
 				tokens = search_token.split()
-				accounts = queryset.filter(first_name__regex=r'^' + tokens[0] + r' +')
-				accounts |= queryset.filter(last_name__regex=r'^' + tokens[-1] + r' +')
+				accounts = queryset.filter(first_name__iregex=r'^' + tokens[0] + r'+')
+				accounts |= queryset.filter(last_name__iregex=r'^' + tokens[-1] + r'+')
 
 			serializer = BasicAccountInfoSerializer(accounts, many=True)
 			return Response(serializer.data)

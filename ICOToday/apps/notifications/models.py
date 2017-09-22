@@ -11,6 +11,8 @@ class Notification(models.Model):
 		('comment', 'Comment'),
 		('wallet', 'Wallet'),
 		('subscribe', 'Subscribe'),
+		('company', 'Company'),
+		('user', 'User'),
 	)
 
 	receiver = models.ForeignKey('accounts.AccountInfo', related_name='notifications')

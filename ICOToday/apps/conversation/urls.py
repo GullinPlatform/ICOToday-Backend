@@ -24,8 +24,8 @@ conversation_read = ConversationViewSet.as_view({
 
 urlpatterns = [
 	url(r'^(?P<conversation_pk>[0-9]+)/$', conversation, name='conversation'),
-	url(r'^(?P<account_pk>[0-9]+)/$', conversation_start_conversation, name='conversation_start_conversation'),
+	url(r'^ac/(?P<account_pk>[0-9]+)/$', conversation_start_conversation, name='conversation_start_conversation'),
 
 	url(r'^(?P<conversation_pk>[0-9]+)/more/$', conversation_load_more, name='conversation_load_more'),
-	url(r'^(?P<conversation_pk>[0-9]+)/edit/$', conversation_read, name='conversation_read'),
+	url(r'^(?P<conversation_pk>[0-9]+)/read/$', conversation_read, name='conversation_read'),
 ]

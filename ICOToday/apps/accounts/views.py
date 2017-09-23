@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import check_password
 
-from ..rest_framework_jwt.settings import api_settings
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
@@ -21,6 +20,8 @@ from ..wallets.models import Wallet
 
 from ..utils.send_email import send_email
 from ..utils.verify_token import VerifyTokenUtils
+from ..utils.google_recaptcha import recaptcha_verify
+from ..utils.return_auth_token import return_auth_token
 
 
 class AccountRegisterViewSet(viewsets.ViewSet):
@@ -28,6 +29,10 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 	permission_classes = (AllowAny,)
 
 	def register(self, request):
+		# Validate Google reCAPTCHA
+		if not recaptcha_verify(request):
+			return Response(status=status.HTTP_400_BAD_REQUEST)
+
 		serializer = AuthAccountSerializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
 		account = serializer.save()
@@ -44,26 +49,22 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			except Account.DoesNotExist or Wallet.DoesNotExist:
 				pass
 
+		# Add Bonny to User Wallet
 		account.info.wallet.icc_amount += 5
 		account.info.wallet.save()
 		Notification.objects.create(receiver_id=account.info.id,
 		                            content='Welcome to ICOToday. As one of our early users, we have deposited 5 ICOCoins to your wallet.',
 		                            related='wallet')
 
-		# return token right away
-		jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-		jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-		payload = jwt_payload_handler(account)
-		token = jwt_encode_handler(payload)
-
+		# Send Verification Email
 		user_verify_token = VerifyTokenUtils.generate_token_by_user(user=account)
-
 		send_email(receiver_list=[account.email],
 		           subject='ICOToday - Email Verification',
 		           template_name='EmailVerification',
 		           ctx={'user': account, 'token': user_verify_token.token})
 
-		return Response({'token': token}, status=status.HTTP_201_CREATED)
+		# Use utils to set token in cookie in response
+		return return_auth_token(account)
 
 	def invited_register(self, request, token):
 		# Check If token expired, if not return UserInfo
@@ -77,29 +78,34 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 
 		# Invited Register AKA Change Password
 		elif request.method == 'POST':
-			if request.data.get('password'):
-				# Get token instance
-				token_instance = VerifyTokenUtils.get_token_by_token(token=token)
-				# Validate token
-				if VerifyTokenUtils.validate_token(token_instance=token_instance):
-					# Expire token
-					VerifyTokenUtils.expire_token(token_instance=token_instance)
-					token_instance.account.set_password(request.data.get('password'))
-					token_instance.account.save()
-					token_instance.account.info.is_verified = True
-					token_instance.account.info.save()
-
-					# return auth token right away
-					jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-					jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-					payload = jwt_payload_handler(token_instance.account)
-					token = jwt_encode_handler(payload)
-
-					return Response({'token': token}, status=status.HTTP_201_CREATED)
-				else:
-					return Response({'detail': 'Token Invalid'}, status=status.HTTP_400_BAD_REQUEST)
-			else:
+			# Check form data
+			if not request.data.get('password'):
 				return Response({'detail': 'No password provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+			# Get token instance
+			token_instance = VerifyTokenUtils.get_token_by_token(token=token)
+
+			# Validate token
+			if not VerifyTokenUtils.validate_token(token_instance=token_instance):
+				return Response({'detail': 'Token Invalid'}, status=status.HTTP_400_BAD_REQUEST)
+
+			# Expire token
+			VerifyTokenUtils.expire_token(token_instance=token_instance)
+			account = token_instance.account
+			account.set_password(request.data.get('password'))
+			account.save()
+			account.info.is_verified = True
+			account.info.save()
+
+			# Add Bonny to User Wallet
+			account.info.wallet.icc_amount += 5
+			account.info.wallet.save()
+			Notification.objects.create(receiver_id=account.info.id,
+			                            content='Welcome to ICOToday. As one of our early users, we have deposited 5 ICOCoins to your wallet.',
+			                            related='wallet')
+
+			# Use utils to set token in cookie in response
+			return return_auth_token(account)
 
 	def email_verify(self, request, token=None):
 		# Verify Token
@@ -216,6 +222,15 @@ class AccountViewSet(viewsets.ViewSet):
 	queryset = Account.objects.exclude(is_staff=1)
 	parser_classes = (MultiPartParser, FormParser, JSONParser)
 	permission_classes = (IsAuthenticated,)
+
+	def log_ip(self, request):
+		if request.user.info.last_login_ip == request.data.get('ip'):
+			return Response(status=status.HTTP_200_OK)
+		else:
+			request.user.info.last_login_ip = request.data.get('ip')
+			request.user.info.save()
+			# TODO: send warning email
+			return Response(status=status.HTTP_200_OK)
 
 	# TODO link url
 	def register_follow_up(self, request):

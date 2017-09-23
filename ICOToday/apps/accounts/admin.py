@@ -47,17 +47,18 @@ class AccountAdmin(UserAdmin):
 
 
 class AccountInfoAdmin(admin.ModelAdmin):
-	list_display = ('id', 'first_name', 'last_name', 'type', 'is_verified', 'updated')
+	list_display = ('id', 'first_name', 'last_name', 'type', 'is_verified', 'updated', 'last_login_ip')
 	fieldsets = (
 		('Personal Info', {'fields': ('avatar', 'first_name', 'last_name', 'title', 'description', 'interests')}),
 		('Verify Status', {'fields': ('is_verified',)}),
 		('Company Info', {'fields': ('company', 'company_admin', 'company_pending')}),
 		('Social Media', {'fields': ('linkedin', 'twitter', 'facebook', 'telegram')}),
+		('Security', {'fields': ('last_login_ip',)}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	list_filter = ['type', 'is_verified', 'company_admin']
 	search_fields = ['first_name', 'last_name']
-	readonly_fields = ('created', 'updated',)
+	readonly_fields = ('created', 'updated', 'last_login_ip')
 	inlines = [AccountInline]
 
 

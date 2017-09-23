@@ -11,7 +11,11 @@ account_change_password = AccountViewSet.as_view({
 })
 
 account_detail = AccountViewSet.as_view({
-	'get'   : 'retrieve'
+	'get': 'retrieve'
+})
+
+account_log_ip = AccountViewSet.as_view({
+	'post': 'log_ip'
 })
 
 account_me = AccountViewSet.as_view({
@@ -53,7 +57,7 @@ account_marked_projects = AccountViewSet.as_view({
 
 account_two_factor = AccountViewSet.as_view({
 	'post': 'two_factor_auth',  # Send Email
-	'get' : 'two_factor_auth'  # Verify Token
+	'get' : 'two_factor_auth',  # Verify Token
 })
 
 account_search = AccountViewSet.as_view({
@@ -64,7 +68,6 @@ account_interests = AccountViewSet.as_view({
 	'post': 'add_interests'
 })
 
-
 expert_application = ExpertApplicationViewSet.as_view({
 	'get' : 'retrieve',
 	'post': 'create',
@@ -74,9 +77,10 @@ expert_application = ExpertApplicationViewSet.as_view({
 urlpatterns = [
 	# Login Signup and Stay Login
 	url(r'^login/$', obtain_jwt_token),
+	url(r'^refresh_login_status/$', refresh_jwt_token),
 	url(r'^signup/$', account_register, name='user-register'),
 	url(r'^logout/$', account_logout, name='user-logout'),
-	url(r'^refresh_login_status/$', refresh_jwt_token),
+	url(r'^log_ip/$', account_log_ip),
 
 	# Account Detail
 	url(r'^me/$', account_me, name='me'),

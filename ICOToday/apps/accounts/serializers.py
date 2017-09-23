@@ -44,7 +44,7 @@ class AuthAccountSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Account
-		exclude = ('user_permissions', 'groups', 'is_superuser', 'is_staff', 'is_active', 'info')
+		exclude = ('user_permissions', 'groups', 'is_superuser', 'is_staff', 'info')
 		read_only_fields = ('created', 'updated',)
 		write_only_fields = ('password',)
 

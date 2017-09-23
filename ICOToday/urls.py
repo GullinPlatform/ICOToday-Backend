@@ -39,7 +39,4 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-	# static files (images, css, javascript, etc.)
-	urlpatterns += staticfiles_urlpatterns()
-	urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 	urlpatterns += [url(r'^__debug__/', include(debug_toolbar.urls))]

@@ -58,7 +58,7 @@ class VerifyTokenUtils():
 	def validate_token(token_instance=None):
 		if not token_instance:
 			return False
-		elif token_instance.is_expired():
+		elif token_instance.is_expired:
 			token_instance.token = ''
 			token_instance.save()
 			return False

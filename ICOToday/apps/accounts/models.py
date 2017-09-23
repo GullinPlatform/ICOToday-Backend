@@ -45,6 +45,9 @@ class AccountInfo(models.Model):
 	telegram = models.CharField(max_length=100, null=True, blank=True)
 	facebook = models.CharField(max_length=100, null=True, blank=True)
 
+	# Security
+	last_login_ip = models.GenericIPAddressField(null=True, blank=True)
+
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)

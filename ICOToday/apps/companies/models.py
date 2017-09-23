@@ -10,7 +10,7 @@ class Company(models.Model):
 	# Company Info
 	name = models.CharField(max_length=50, null=True)
 	description = models.TextField(null=True, blank=True)
-	company_icon = models.ImageField(upload_to=company_icon_upload)
+	company_icon = models.ImageField(upload_to=company_icon_upload, null=True, blank=True)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)

@@ -93,7 +93,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
 	phone = models.CharField(max_length=20, unique=True, null=True, blank=True)
 
 	# Info
-	info = models.OneToOneField('AccountInfo', related_name='account')
+	info = models.OneToOneField('AccountInfo', related_name='account', on_delete=models.CASCADE)
 
 	# Permission
 	# # from inherit

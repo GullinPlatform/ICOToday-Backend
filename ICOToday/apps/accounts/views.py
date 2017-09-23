@@ -37,6 +37,11 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		serializer.is_valid(raise_exception=True)
 		account = serializer.save()
 
+		account.info.first_name = request.data.get('first_name')
+		account.info.last_name = request.data.get('last_name')
+		account.info.last_login_ip = request.data.get('last_login_ip')
+		account.info.save()
+
 		# If refer
 		if request.data.get('referrer'):
 			try:
@@ -212,9 +217,8 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 				return Response(status=status.HTTP_200_OK)
 
 	def logout(self, request):
-		from ..rest_framework_jwt.settings import api_settings
 		response = Response()
-		response.delete_cookie(api_settings.JWT_AUTH_COOKIE)
+		response.delete_cookie('icotodaytoken')
 		return response
 
 
@@ -233,7 +237,7 @@ class AccountViewSet(viewsets.ViewSet):
 			return Response(status=status.HTTP_200_OK)
 
 	# TODO link url
-	def register_follow_up(self, request):
+	def set_account_type(self, request):
 		if not request.data.get('type'):
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -243,6 +247,7 @@ class AccountViewSet(viewsets.ViewSet):
 		else:  # All others go Investor first
 			request.user.info.type = 1
 			request.user.info.save()
+		return Response(status=status.HTTP_200_OK)
 
 	def retrieve(self, request, pk):
 		user = get_object_or_404(self.queryset, pk=pk)

@@ -68,6 +68,10 @@ account_interests = AccountViewSet.as_view({
 	'post': 'add_interests'
 })
 
+account_set_type = AccountViewSet.as_view({
+	'post': 'set_account_type'
+})
+
 expert_application = ExpertApplicationViewSet.as_view({
 	'get' : 'retrieve',
 	'post': 'create',
@@ -109,6 +113,7 @@ urlpatterns = [
 
 	# Add Interests
 	url(r'^me/interests/$', account_interests, name='user-interests'),
+	url(r'^me/set_type/$', account_set_type, name='user-set-type'),
 
 	# Expert Application
 	url(r'^expert_apply/$', expert_application, name='expert-application'),

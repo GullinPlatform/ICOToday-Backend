@@ -49,7 +49,7 @@ class AccountAdmin(UserAdmin):
 class AccountInfoAdmin(admin.ModelAdmin):
 	list_display = ('id', 'first_name', 'last_name', 'type', 'is_verified', 'updated', 'last_login_ip')
 	fieldsets = (
-		('Personal Info', {'fields': ('avatar', 'first_name', 'last_name', 'title', 'description', 'interests')}),
+		('Personal Info', {'fields': ('avatar', 'first_name', 'last_name', 'type', 'title', 'description', 'interests')}),
 		('Verify Status', {'fields': ('is_verified',)}),
 		('Company Info', {'fields': ('company', 'company_admin', 'company_pending')}),
 		('Social Media', {'fields': ('linkedin', 'twitter', 'facebook', 'telegram')}),

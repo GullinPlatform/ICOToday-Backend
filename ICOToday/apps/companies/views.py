@@ -46,15 +46,18 @@ class CompanyViewSet(viewsets.ViewSet):
 		if request.user.info.type != -1:
 			return Response({'detail': 'User already set account type'}, status=status.HTTP_403_FORBIDDEN)
 
+		print request.data
+
 		if request.data.get('name') and request.data.get('description'):
 			company = Company.objects.create(
 				name=request.data.get('name'),
-				description=request.data.get('description')
+				description=request.data.get('description'),
+				icon=request.data.get('icon'),
 			)
 			request.user.info.company = company
 			request.user.info.company_admin = company  # Creator is company admin
 			request.user.info.type = 0  # Change to Company User
-			request.use.info.save()
+			request.user.info.save()
 			serializer = BasicCompanySerializer(company)
 			return Response(serializer.data, status=status.HTTP_201_CREATED)
 		else:
@@ -248,7 +251,6 @@ class CompanyViewSet(viewsets.ViewSet):
 
 	def search(self, request):
 		search_token = request.GET.get('token')
-		print r'^' + search_token + r' +'
 		if search_token:
 			companies = self.queryset.filter(name__iregex=r'^' + search_token + r'+')
 			serializer = BasicCompanySerializer(companies, many=True)

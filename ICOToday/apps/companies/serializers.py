@@ -10,7 +10,7 @@ from ..accounts.serializers import BasicAccountInfoSerializer
 class BasicCompanySerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Company
-		fields = ['id', 'name', 'company_icon', 'description']
+		fields = ['id', 'name', 'icon', 'description', 'is_verified']
 		read_only_fields = ('created', 'updated',)
 
 
@@ -19,7 +19,7 @@ class CompanySerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Company
-		fields = ['id', 'name', 'company_icon', 'description', 'members']
+		fields = ['id', 'name', 'icon', 'description', 'members', 'is_verified']
 		read_only_fields = ('created', 'updated',)
 
 

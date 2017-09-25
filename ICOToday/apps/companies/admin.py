@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.contrib import admin
 
 from ..accounts.models import AccountInfo
-from .models import Company, PromotionApplication
+from .models import Company, PromotionApplication, CompanyVerification
 
 
 class CompanyMembersInline(admin.TabularInline):
@@ -30,9 +30,9 @@ class CompanyAdminsInline(admin.TabularInline):
 
 
 class CompanyAdmin(admin.ModelAdmin):
-	list_display = ('name', 'description', 'created')
+	list_display = ('name', 'description', 'is_verified', 'created')
 	fieldsets = [
-		[None, {'fields': ['name', 'company_icon', 'description', ]}],
+		[None, {'fields': ['name', 'icon', 'description', 'is_verified']}],
 		['Timestamp', {'fields': ['created', 'updated']}],
 	]
 	readonly_fields = ('created', 'updated')
@@ -41,6 +41,17 @@ class CompanyAdmin(admin.ModelAdmin):
 
 class PromotionApplicationAdmin(admin.ModelAdmin):
 	list_display = ('company', 'status', 'created')
+	fieldsets = [
+		[None, {'fields': ['company', 'account', 'detail', 'response']}],
+		['Status', {'fields': ['status']}],
+
+		['Timestamp', {'fields': ['created', 'updated']}],
+	]
+	readonly_fields = ('created', 'updated')
+
+
+class CompanyVerificationAdmin(admin.ModelAdmin):
+	list_display = ('id', 'company', 'created')
 	fieldsets = [
 		[None, {'fields': ['company', 'account', 'detail', 'response']}],
 		['Status', {'fields': ['status']}],

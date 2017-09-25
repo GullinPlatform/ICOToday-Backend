@@ -3,14 +3,15 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-from ..utils.upload_filename import company_icon_upload
+from ..utils.upload_filename import company_icon_upload, company_certificate_upload
 
 
 class Company(models.Model):
 	# Company Info
-	name = models.CharField(max_length=50, null=True, unique=True)
-	icon = models.ImageField(upload_to=company_icon_upload, null=True, blank=True)
-	description = models.TextField(null=True, blank=True)
+	name = models.CharField(max_length=50, unique=True)
+	icon = models.ImageField(upload_to=company_icon_upload)
+	description = models.TextField()
+	is_verified = models.BooleanField(default=False)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
@@ -40,3 +41,15 @@ class PromotionApplication(models.Model):
 
 	def __str__(self):
 		return self.team.name
+
+
+class CompanyVerification(models.Model):
+	company = models.ForeignKey('Company', related_name='verification')
+	certificate = models.FileField(upload_to=company_certificate_upload)
+
+	# Timestamp
+	created = models.DateTimeField(auto_now_add=True)
+	updated = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return self.company.name + ' certificate'

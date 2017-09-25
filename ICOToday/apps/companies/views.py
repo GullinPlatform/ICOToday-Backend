@@ -175,6 +175,9 @@ class CompanyViewSet(viewsets.ViewSet):
 		# Apply to be Company Member
 		company = get_object_or_404(self.queryset, id=company_id)
 		company.pending_members.add(request.user.info)
+		request.user.info.type = 1
+		request.user.info.save()
+
 		for admin in company.admins.all():
 			Notification.objects.create(receiver_id=admin.id,
 			                            sender_id=request.user.info.id,

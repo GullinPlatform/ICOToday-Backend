@@ -17,6 +17,7 @@ class AccountInfoSerializer(serializers.ModelSerializer):
 		fields = ['id', 'account', 'type', 'avatar', 'first_name', 'last_name',
 		          'company', 'title', 'description', 'interests', 'is_verified',
 		          'linkedin', 'twitter', 'telegram', 'facebook']
+		read_only_fields = ('type', 'company', 'is_verified', 'interests')
 
 
 class BasicAccountInfoSerializer(serializers.ModelSerializer):

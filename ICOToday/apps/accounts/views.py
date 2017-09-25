@@ -236,7 +236,6 @@ class AccountViewSet(viewsets.ViewSet):
 			# TODO: send warning email
 			return Response(status=status.HTTP_200_OK)
 
-	# TODO link url
 	def set_account_type(self, request):
 		if not request.data.get('type'):
 			return Response(status=status.HTTP_400_BAD_REQUEST)

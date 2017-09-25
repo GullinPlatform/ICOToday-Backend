@@ -8,9 +8,9 @@ from ..utils.upload_filename import company_icon_upload
 
 class Company(models.Model):
 	# Company Info
-	name = models.CharField(max_length=50, null=True)
+	name = models.CharField(max_length=50, null=True, unique=True)
+	icon = models.ImageField(upload_to=company_icon_upload, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
-	company_icon = models.ImageField(upload_to=company_icon_upload, null=True, blank=True)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)

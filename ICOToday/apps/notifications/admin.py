@@ -6,7 +6,7 @@ from django.contrib import admin
 
 
 class NotificationAdmin(admin.ModelAdmin):
-	list_display = ['sender', 'receiver', 'read', 'created', 'related']
+	list_display = ['receiver', 'sender', 'read', 'created', 'related']
 	fieldsets = (
 		('Permissions', {'fields': ('receiver', 'sender', 'content')}),
 		('Other', {'fields': ('read', 'related')}),

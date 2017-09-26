@@ -86,6 +86,8 @@ ROOT_URLCONF = 'ICOToday.urls'
 
 # Account customization
 AUTH_USER_MODEL = 'accounts.Account'
+# TODO change to ICOToday AccountInfo ID in production mode
+OFFICIAL_ACCOUNT_INFO_ID = 2
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

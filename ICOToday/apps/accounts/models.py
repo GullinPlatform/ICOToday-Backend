@@ -53,10 +53,17 @@ class AccountInfo(models.Model):
 	updated = models.DateTimeField(auto_now=True)
 
 	def __str__(self):
-		return self.first_name + ' ' + self.last_name if self.first_name and self.last_name else str(self.id)
+		return self.full_name()
 
 	def full_name(self):
-		return self.first_name + ' ' + self.last_name if self.first_name and self.last_name else str(self.id)
+		if self.first_name and self.last_name:
+			return self.first_name + ' ' + self.last_name
+		elif self.first_name:
+			return self.first_name
+		elif self.last_name:
+			return self.last_name
+		else:
+			return str(self.id)
 
 
 class AccountManager(BaseUserManager):

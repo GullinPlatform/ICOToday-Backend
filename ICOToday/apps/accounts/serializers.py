@@ -5,12 +5,21 @@ from rest_framework import serializers
 
 from .models import Account, AccountInfo, ExpertApplication
 from ..wallets.models import Wallet
+from ..companies.models import Company
+
+
+# For circular requirements
+class MiniCompanySerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Company
+		fields = ['name']
 
 
 class AccountInfoSerializer(serializers.ModelSerializer):
 	"""
 	Everything
 	"""
+	company = MiniCompanySerializer()
 
 	class Meta:
 		model = AccountInfo
@@ -35,7 +44,7 @@ class MiniAccountInfoSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = AccountInfo
-		fields = ['id', 'avatar', 'first_name', 'last_name', 'account']
+		fields = ['id', 'avatar', 'full_name', 'account']
 
 
 class AuthAccountSerializer(serializers.ModelSerializer):

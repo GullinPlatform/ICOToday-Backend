@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from rest_framework import serializers
 
 from .models import Company, PromotionApplication
-from ..accounts.serializers import BasicAccountInfoSerializer
+from ..accounts.serializers import MiniAccountInfoSerializer
 
 
 class BasicCompanySerializer(serializers.ModelSerializer):
@@ -15,7 +15,7 @@ class BasicCompanySerializer(serializers.ModelSerializer):
 
 
 class CompanySerializer(serializers.ModelSerializer):
-	members = BasicAccountInfoSerializer(allow_null=True, many=True)
+	members = MiniAccountInfoSerializer(allow_null=True, many=True)
 
 	class Meta:
 		model = Company

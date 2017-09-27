@@ -9,11 +9,9 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from .models import Account, AccountInfo, ExpertApplication
-from .serializers import AuthAccountSerializer, BasicAccountSerializer, BasicAccountInfoSerializer, AccountInfoSerializer, ExpertApplicationSerializer
+from .serializers import Account, AccountInfo, ExpertApplication, AuthAccountSerializer, BasicAccountSerializer, MiniAccountInfoSerializer, AccountInfoSerializer, ExpertApplicationSerializer
 
-from ..projects.models import ProjectTag
-from ..projects.serializers import ProjectSerializer
+from ..projects.serializers import ProjectTag,  ProjectSerializer
 
 from ..notifications.models import Notification
 from ..wallets.models import Wallet
@@ -263,6 +261,13 @@ class AccountViewSet(viewsets.ViewSet):
 				request.user.info.save()
 				return Response(status=status.HTTP_200_OK)
 			else:
+				data = request.data.copy()
+				del data['interests']
+				del data['account']
+				del data['is_verified']
+				del data['company']
+				del data['type']
+				del data['id']
 				serializer = AccountInfoSerializer(request.user.info, data=request.data, partial=True)
 				serializer.is_valid(raise_exception=True)
 				serializer.save()
@@ -349,7 +354,7 @@ class AccountViewSet(viewsets.ViewSet):
 				accounts = queryset.filter(first_name__iregex=r'^' + tokens[0] + r'+')
 				accounts |= queryset.filter(last_name__iregex=r'^' + tokens[-1] + r'+')
 
-			serializer = BasicAccountInfoSerializer(accounts, many=True)
+			serializer = MiniAccountInfoSerializer(accounts, many=True)
 			return Response(serializer.data)
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)

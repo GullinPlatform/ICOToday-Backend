@@ -13,10 +13,9 @@ from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from ..notifications.models import Notification
-from ..accounts.models import AccountInfo, Account
+from ..accounts.serializers import AccountInfo, Account, MiniAccountInfoSerializer
 
-from .models import Company
-from .serializers import CompanySerializer, BasicCompanySerializer, BasicAccountInfoSerializer
+from .serializers import Company, CompanySerializer, BasicCompanySerializer
 
 from ..utils.send_email import send_email
 from ..utils.verify_token import VerifyTokenUtils
@@ -70,16 +69,15 @@ class CompanyViewSet(viewsets.ViewSet):
 		if not self._is_company_admin(request.user.info, company):
 			return Response({'detail': 'Only company admin can add edit company page'}, status=status.HTTP_403_FORBIDDEN)
 
-		serializer = BasicAccountInfoSerializer(company, data=request.data, partial=True)
+		serializer = BasicCompanySerializer(company, data=request.data, partial=True)
 		if serializer.is_valid():
 			company = serializer.save()
 
-		serializer = BasicCompanySerializer(company)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def members(self, request, company_id=None):
 		company = get_object_or_404(self.queryset, id=company_id)
-		serializer = BasicAccountInfoSerializer(company.members, many=True)
+		serializer = MiniAccountInfoSerializer(company.members, many=True)
 		return Response(serializer.data)
 
 	def member_manage(self, request, account_info_id=None):
@@ -141,7 +139,7 @@ class CompanyViewSet(viewsets.ViewSet):
 					           ctx={'username': account.info.full_name(), 'token': token_instance.token, 'team_name': company.name}
 					           )
 				# Send back new account info
-				serializer = BasicAccountInfoSerializer(account.info)
+				serializer = MiniAccountInfoSerializer(account.info)
 				return Response(serializer.data, status=status.HTTP_200_OK)
 			# Add Existing User as Company Member
 			elif account_info_id:
@@ -153,7 +151,7 @@ class CompanyViewSet(viewsets.ViewSet):
 				                            content=company.name + ' has invited you to become their team member.',
 				                            related='company')
 				# send back new account info
-				serializer = BasicAccountInfoSerializer(info)
+				serializer = MiniAccountInfoSerializer(info)
 				return Response(serializer.data, status=status.HTTP_200_OK)
 			else:
 				return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -217,7 +215,7 @@ class CompanyViewSet(viewsets.ViewSet):
 			                            content='You joined ' + info.company.name + '.',
 			                            related='company')
 			# Send new member back
-			serializer = BasicAccountInfoSerializer(info)
+			serializer = MiniAccountInfoSerializer(info)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 
 		# Reject team member application
@@ -234,7 +232,7 @@ class CompanyViewSet(viewsets.ViewSet):
 
 	def admins(self, request):
 		if request.user.info.company:
-			serializer = BasicAccountInfoSerializer(request.user.info.company.admins, many=True)
+			serializer = MiniAccountInfoSerializer(request.user.info.company.admins, many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
 			return Response({'detail': 'Your are not in a company'}, status=status.HTTP_403_FORBIDDEN)
@@ -246,7 +244,7 @@ class CompanyViewSet(viewsets.ViewSet):
 		info.company_admin = request.user.info.company_admin
 		info.save()
 		# send back new account info
-		serializer = BasicAccountInfoSerializer(info)
+		serializer = MiniAccountInfoSerializer(info)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def search(self, request):

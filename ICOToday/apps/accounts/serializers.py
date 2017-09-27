@@ -12,29 +12,22 @@ from ..companies.models import Company
 class MiniCompanySerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Company
-		fields = ['name']
+		fields = ['id', 'name']
 
 
 class AccountInfoSerializer(serializers.ModelSerializer):
 	"""
 	Everything
 	"""
-	company = MiniCompanySerializer()
+	company = MiniCompanySerializer(read_only=True)
+	company_admin = MiniCompanySerializer(read_only=True)
 
 	class Meta:
 		model = AccountInfo
 		fields = ['id', 'account', 'type', 'avatar', 'first_name', 'last_name',
-		          'company', 'title', 'description', 'interests', 'is_verified',
+		          'company', 'company_admin', 'title', 'description', 'interests', 'is_verified',
 		          'linkedin', 'twitter', 'telegram', 'facebook']
-		read_only_fields = ('type', 'company', 'is_verified', 'interests')
-
-
-class BasicAccountInfoSerializer(serializers.ModelSerializer):
-	class Meta:
-		model = AccountInfo
-		fields = ['id', 'account', 'type', 'avatar', 'first_name', 'last_name',
-		          'company', 'title', 'description', 'interests', 'is_verified',
-		          'linkedin', 'twitter', 'telegram', 'facebook']
+		read_only_fields = ('type', 'is_verified', 'interests', 'id')
 
 
 class MiniAccountInfoSerializer(serializers.ModelSerializer):

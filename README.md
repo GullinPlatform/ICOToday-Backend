@@ -1,4 +1,4 @@
-# DeepComp Backend
+# ICOToday Backend
 
 ## Set up Script
 
@@ -25,7 +25,7 @@
 > python manage.py runserver
 ```
 
-##lAUNCHING TO AWS
+## LAUNCHING TO AWS
 ```
 Do prior steps + ...
 
@@ -49,14 +49,6 @@ sudo yum -y install tix-devel sqlite-devel db4-devel
 ### just try both - for some reason one didn't work for me ###
 easy_install MySQL-python
 pip install MySQL-python
-
-
-
-
-
-
-
-
 ```
 
 

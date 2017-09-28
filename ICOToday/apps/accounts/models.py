@@ -8,9 +8,25 @@ from django.core.mail import send_mail
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
 from ..utils.upload_filename import user_avatar_upload
+from ..wallets.models import Wallet
 
 
 class AccountInfo(models.Model):
+	"""
+	AccountInfo Model
+	Relations:
+	field name | key type | origin model
+	1) account OneToOneField accounts.Account
+	2) expert_application OneToOneField accounts.ExpertApplication
+	3) promotion_applications ForeignKey companies.PromotionApplication
+	4) messages ForeignKey conversations.Message
+	5) conversations ManyToManyField conversations.Conversation
+	6) feeds ForeignKey feeds.Feed
+	7) notifications ForeignKey notifications.Notification
+	8) sent_notifications ForeignKey notifications.Notification
+	9) marked_projects ManyToManyField projects.Project
+
+	"""
 	TYPE_CHOICES = (
 		(-1, 'Not Choose'),
 		(0, 'Company'),
@@ -28,6 +44,9 @@ class AccountInfo(models.Model):
 	title = models.CharField(max_length=40, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
 
+	# Wallet
+	wallet = models.OneToOneField('wallets.Wallet', related_name='account')
+
 	# Is Verified
 	is_verified = models.BooleanField(default=False)
 
@@ -37,7 +56,7 @@ class AccountInfo(models.Model):
 	company_pending = models.ForeignKey('companies.Company', related_name='pending_members', null=True, blank=True)
 
 	# Interested Fields
-	interests = models.ManyToManyField('projects.ProjectTag', related_name='interests', blank=True)
+	interests = models.ManyToManyField('projects.ProjectTag', related_name='accounts', blank=True)
 
 	# Social Media
 	linkedin = models.CharField(max_length=100, null=True, blank=True)
@@ -76,7 +95,8 @@ class AccountManager(BaseUserManager):
 		if not extra_fields.get('email') and not extra_fields.get('phone'):
 			raise ValueError('The email/phone must be set')
 
-		info = AccountInfo.objects.create()
+		wallet = Wallet.objects.create()
+		info = AccountInfo.objects.create(wallet=wallet)
 		account = self.model(**extra_fields)
 		account.set_password(password)
 		account.info_id = info.id
@@ -95,6 +115,12 @@ class AccountManager(BaseUserManager):
 
 
 class Account(AbstractBaseUser, PermissionsMixin):
+	"""
+	Account Model
+	Relations:
+	field name | key type | origin model
+	1) verify_token OneToOneField accounts.VerifyToken
+	"""
 	# Auth
 	email = models.EmailField(unique=True, null=True, blank=True)
 	phone = models.CharField(max_length=20, unique=True, null=True, blank=True)
@@ -142,7 +168,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
 
 class VerifyToken(models.Model):
-	account = models.ForeignKey('Account', related_name='verify_token')
+	account = models.OneToOneField('Account', related_name='verify_token')
 	token = models.CharField(max_length=200)
 	expire_time = models.DateTimeField(auto_now_add=True)
 
@@ -169,4 +195,4 @@ class ExpertApplication(models.Model):
 	updated = models.DateTimeField(auto_now=True)
 
 	def __str__(self):
-		return self.account.email
+		return self.account.full_name()

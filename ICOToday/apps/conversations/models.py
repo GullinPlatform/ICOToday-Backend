@@ -5,6 +5,11 @@ from django.db import models
 
 
 class Message(models.Model):
+	"""
+	Message Model
+	Relations:
+	field name | key type | origin model
+	"""
 	# Relation
 	conversation = models.ForeignKey('Conversation', related_name='messages')
 	creator = models.ForeignKey('accounts.AccountInfo', related_name='messages')
@@ -18,13 +23,19 @@ class Message(models.Model):
 	updated = models.DateTimeField(auto_now=True)
 
 	def __str__(self):
-		return '%d to %d at %s' % self.sender_id, self.receiver_id, self.created.strftime('%B %d, %Y')
+		return str(self.id)
 
 	class Meta:
 		ordering = ['-created']
 
 
 class Conversation(models.Model):
+	"""
+	Conversation Model
+	Relations:
+	field name | key type | origin model
+	1) messages ForeignKey conversations.Message
+	"""
 	users = models.ManyToManyField('accounts.AccountInfo', related_name='conversations')
 
 	def __str__(self):

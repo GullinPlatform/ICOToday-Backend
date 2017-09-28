@@ -4,16 +4,9 @@ from __future__ import unicode_literals
 from django.contrib import admin
 
 from .models import Project, ProjectTag
-from ..feeds.models import Feed
 
 
-class FeedInline(admin.TabularInline):
-	model = Feed
-	show_change_link = True
-	extra = 1
-
-
-class PostAdmin(admin.ModelAdmin):
+class ProjectAdmin(admin.ModelAdmin):
 	list_display = ('id', 'title', 'status', 'start_datetime', 'end_datetime')
 
 	fieldsets = (
@@ -24,7 +17,6 @@ class PostAdmin(admin.ModelAdmin):
 		('Media Info', {'fields': ('medium', 'twitter', 'slack', 'telegram')}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
-	inlines = [FeedInline]
 	readonly_fields = ('created', 'updated')
 
 
@@ -33,5 +25,5 @@ class PostTagAdmin(admin.ModelAdmin):
 	list_display = ('tag',)
 
 
-admin.site.register(Project, PostAdmin)
+admin.site.register(Project, ProjectAdmin)
 admin.site.register(ProjectTag, PostTagAdmin)

@@ -21,8 +21,8 @@ ICOToday/apps/wallets/migrations/*
 ICOToday/apps/companies/migrations/*
 !ICOToday/apps/companies/migrations/__init__.py
 
-ICOToday/apps/conversation/migrations/*
-!ICOToday/apps/conversation/migrations/__init__.py
+ICOToday/apps/conversations/migrations/*
+!ICOToday/apps/conversations/migrations/__init__.py
 
 ICOToday/media/
 ICOToday/tmp.sqlite3

@@ -23,7 +23,7 @@ class Project(models.Model):
 	)
 
 	marked = models.ManyToManyField('accounts.AccountInfo', blank=True, related_name='marked_projects')
-	company = models.ForeignKey('companies.Company', blank=True, related_name='posts')
+	company = models.OneToOneField('companies.Company', blank=True, related_name='project')
 
 	# Information
 	title = models.CharField(max_length=100)
@@ -70,8 +70,6 @@ class Project(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
 
-	# relation
-	# files
 	class Meta:
 		ordering = ['start_datetime']
 
@@ -83,6 +81,13 @@ class Project(models.Model):
 
 
 class ProjectTag(models.Model):
+	"""
+	ProjectTag Model
+	Relations:
+	field name | key type | origin model
+	1) accounts ManyToManyField accounts.AccountInfo
+	2) posts ManyToManyField projects.Project
+	"""
 	tag = models.CharField(max_length=40)
 
 	def __str__(self):

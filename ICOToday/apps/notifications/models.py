@@ -17,7 +17,7 @@ class Notification(models.Model):
 	)
 
 	receiver = models.ForeignKey('accounts.AccountInfo', related_name='notifications', on_delete=models.CASCADE, default=settings.OFFICIAL_ACCOUNT_INFO_ID)
-	sender = models.ForeignKey('accounts.AccountInfo', related_name='send_notifications', null=True, blank=True)
+	sender = models.ForeignKey('accounts.AccountInfo', related_name='sent_notifications', null=True, blank=True)
 
 	content = models.CharField(max_length=200)
 	related = models.CharField(max_length=200, null=True, blank=True, choices=RELATED_CHOICES)

@@ -30,6 +30,17 @@ class AccountInfoSerializer(serializers.ModelSerializer):
 		read_only_fields = ('type', 'is_verified', 'interests', 'id')
 
 
+class BasicAccountInfoSerializer(serializers.ModelSerializer):
+	"""
+	Account info with id, account_id, name, avatar, title, description and social media info
+	"""
+
+	class Meta:
+		model = AccountInfo
+		fields = ['id', 'avatar', 'full_name', 'account', 'title', 'description',
+		          'linkedin', 'twitter', 'telegram', 'facebook']
+
+
 class MiniAccountInfoSerializer(serializers.ModelSerializer):
 	"""
 	Account info with name, avatar, and account id
@@ -60,10 +71,10 @@ class AuthAccountSerializer(serializers.ModelSerializer):
 			return False
 
 		account.set_password(validated_data['password'])
-		info = AccountInfo.objects.create()
+		wallet = Wallet.objects.create()
+		info = AccountInfo.objects.create(wallet=wallet)
 		account.info = info
 		account.save()
-		Wallet.objects.create(account_id=account.info.id)
 		return account
 
 

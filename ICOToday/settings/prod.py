@@ -49,7 +49,7 @@ INSTALLED_APPS = [
 	'ICOToday.apps.feeds',
 	'ICOToday.apps.notifications',
 	'ICOToday.apps.wallets',
-	'ICOToday.apps.conversation',
+	'ICOToday.apps.conversations',
 	'ICOToday.apps.rest_framework_jwt',
 ]
 
@@ -87,7 +87,7 @@ ROOT_URLCONF = 'ICOToday.urls'
 # Account customization
 AUTH_USER_MODEL = 'accounts.Account'
 # TODO change to ICOToday AccountInfo ID in production mode
-OFFICIAL_ACCOUNT_INFO_ID = 2
+OFFICIAL_ACCOUNT_INFO_ID = 1
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

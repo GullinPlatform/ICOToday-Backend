@@ -20,7 +20,6 @@ class Feed(models.Model):
 	reply_to = models.ForeignKey('self', related_name='replies', null=True, blank=True, on_delete=models.CASCADE)
 
 	# Relations
-	project = models.ForeignKey('projects.Project', related_name='feeds', null=True, blank=True)
 	company = models.ForeignKey('companies.Company', related_name='feeds', null=True, blank=True)
 	rate = models.IntegerField(null=True, blank=True)
 

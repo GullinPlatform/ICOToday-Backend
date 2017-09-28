@@ -21,7 +21,7 @@ from django.conf import settings
 
 from .apps.accounts import urls as account_urls
 from .apps.companies import urls as company_urls
-from .apps.conversation import urls as message_urls
+from .apps.conversations import urls as message_urls
 from .apps.projects import urls as project_urls
 from .apps.feeds import urls as feed_urls
 from .apps.notifications import urls as notification_urls

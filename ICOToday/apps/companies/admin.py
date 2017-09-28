@@ -4,7 +4,14 @@ from __future__ import unicode_literals
 from django.contrib import admin
 
 from ..accounts.models import AccountInfo
-from .models import Company, PromotionApplication, CompanyVerification
+from .models import Company, PromotionApplication
+from ..feeds.models import Feed
+
+
+class FeedInline(admin.TabularInline):
+	model = Feed
+	show_change_link = True
+	extra = 1
 
 
 class CompanyMembersInline(admin.TabularInline):
@@ -36,22 +43,11 @@ class CompanyAdmin(admin.ModelAdmin):
 		['Timestamp', {'fields': ['created', 'updated']}],
 	]
 	readonly_fields = ('created', 'updated')
-	inlines = [CompanyMembersInline, CompanyAdminsInline]
+	inlines = [CompanyMembersInline, CompanyAdminsInline, FeedInline]
 
 
 class PromotionApplicationAdmin(admin.ModelAdmin):
 	list_display = ('company', 'status', 'created')
-	fieldsets = [
-		[None, {'fields': ['company', 'account', 'detail', 'response']}],
-		['Status', {'fields': ['status']}],
-
-		['Timestamp', {'fields': ['created', 'updated']}],
-	]
-	readonly_fields = ('created', 'updated')
-
-
-class CompanyVerificationAdmin(admin.ModelAdmin):
-	list_display = ('id', 'company', 'created')
 	fieldsets = [
 		[None, {'fields': ['company', 'account', 'detail', 'response']}],
 		['Status', {'fields': ['status']}],

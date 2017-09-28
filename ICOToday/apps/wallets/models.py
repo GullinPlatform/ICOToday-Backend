@@ -5,6 +5,13 @@ from django.db import models
 
 
 class Wallet(models.Model):
+	"""
+	Wallet Model
+	Relations:
+	field name | key type | origin model
+	1) account OneToOneField accounts.AccountInfo
+	2) company OneToOneField companies.Company
+	"""
 	btc_amount = models.FloatField(default=0.0)
 	eth_amount = models.FloatField(default=0.0)
 	icc_amount = models.FloatField(default=0.0)
@@ -12,8 +19,6 @@ class Wallet(models.Model):
 	btc_wallet_address = models.CharField(max_length=50, blank=True, null=True)
 	eth_wallet_address = models.CharField(max_length=50, blank=True, null=True)
 	icc_wallet_address = models.CharField(max_length=50, blank=True, null=True)
-
-	account = models.OneToOneField('accounts.AccountInfo', related_name='wallet')
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)

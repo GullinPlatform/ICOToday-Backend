@@ -10,8 +10,8 @@ from ..accounts.serializers import MiniAccountInfoSerializer
 class BasicCompanySerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Company
-		fields = ['id', 'name', 'icon', 'description', 'is_verified']
-		read_only_fields = ('created', 'updated',)
+		fields = ['id', 'name', 'icon', 'description']
+		read_only_fields = ['id']
 
 
 class CompanySerializer(serializers.ModelSerializer):
@@ -19,8 +19,8 @@ class CompanySerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Company
-		fields = ['id', 'name', 'icon', 'description', 'members', 'is_verified']
-		read_only_fields = ('created', 'updated',)
+		fields = ['id', 'name', 'icon', 'description', 'members', 'project']
+		read_only_fields = ['id', 'members', 'project']
 
 
 class PromotionApplicationSerializer(serializers.ModelSerializer):

@@ -6,7 +6,7 @@ def recaptcha_verify(request):
 	captcha_rs = data.get('verified')
 	url = "https://www.google.com/recaptcha/api/siteverify"
 	params = {
-		'secret'  : '6LervDEUAAAAAC1TIm14SMFlnKEmQTvOd2ZB9C5P',
+		'secret'  : '6LcRUjIUAAAAAJFwhfTQnKkyMMtqFzNCHHo5FOH_',
 		'response': captcha_rs
 	}
 	verify_rs = requests.get(url, params=params, verify=True)

@@ -13,7 +13,8 @@ from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from ..notifications.models import Notification
-from ..accounts.serializers import AccountInfo, Account, MiniAccountInfoSerializer
+from ..accounts.serializers import AccountInfo, Account, BasicAccountInfoSerializer, MiniAccountInfoSerializer
+from ..wallets.models import Wallet
 
 from .serializers import Company, CompanySerializer, BasicCompanySerializer
 
@@ -45,13 +46,13 @@ class CompanyViewSet(viewsets.ViewSet):
 		if request.user.info.type != -1:
 			return Response({'detail': 'User already set account type'}, status=status.HTTP_403_FORBIDDEN)
 
-		print request.data
-
 		if request.data.get('name') and request.data.get('description'):
+			wallet = Wallet.objects.create()
 			company = Company.objects.create(
 				name=request.data.get('name'),
 				description=request.data.get('description'),
 				icon=request.data.get('icon'),
+				wallet=wallet
 			)
 			request.user.info.company = company
 			request.user.info.company_admin = company  # Creator is company admin
@@ -62,22 +63,22 @@ class CompanyViewSet(viewsets.ViewSet):
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
-	def update(self, request):
+	def update(self, request, company_id=None):
 		company = request.user.info.company
 		if not company:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 		if not self._is_company_admin(request.user.info, company):
 			return Response({'detail': 'Only company admin can add edit company page'}, status=status.HTTP_403_FORBIDDEN)
 
-		serializer = BasicCompanySerializer(company, data=request.data, partial=True)
+		serializer = CompanySerializer(company, data=request.data, partial=True)
 		if serializer.is_valid():
-			company = serializer.save()
+			serializer.save()
 
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def members(self, request, company_id=None):
 		company = get_object_or_404(self.queryset, id=company_id)
-		serializer = MiniAccountInfoSerializer(company.members, many=True)
+		serializer = BasicAccountInfoSerializer(company.members, many=True)
 		return Response(serializer.data)
 
 	def member_manage(self, request, account_info_id=None):

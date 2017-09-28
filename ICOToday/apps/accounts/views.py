@@ -10,11 +10,9 @@ from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .serializers import Account, AccountInfo, ExpertApplication, AuthAccountSerializer, BasicAccountSerializer, MiniAccountInfoSerializer, AccountInfoSerializer, ExpertApplicationSerializer
-
-from ..projects.serializers import ProjectTag,  ProjectSerializer
+from ..projects.serializers import ProjectTag, ProjectSerializer
 
 from ..notifications.models import Notification
-from ..wallets.models import Wallet
 
 from ..utils.send_email import send_email
 from ..utils.verify_token import VerifyTokenUtils
@@ -28,8 +26,8 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 
 	def register(self, request):
 		# Validate Google reCAPTCHA
-		if not recaptcha_verify(request):
-			return Response(status=status.HTTP_400_BAD_REQUEST)
+		# if not recaptcha_verify(request):
+		# 	return Response(status=status.HTTP_400_BAD_REQUEST)
 
 		serializer = AuthAccountSerializer(data=request.data)
 		serializer.is_valid(raise_exception=True)

@@ -31,10 +31,10 @@ class AccountCreationForm(forms.ModelForm):
 		user = super(AccountCreationForm, self).save(commit=False)
 		user.set_password(self.cleaned_data["password1"])
 		if commit:
-			info = AccountInfo.objects.create()
+			wallet = Wallet.objects.create()
+			info = AccountInfo.objects.create(wallet=wallet)
 			user.info = info
 			user.save()
-			Wallet.objects.create(account_id=user.info.id)
 		return user
 
 

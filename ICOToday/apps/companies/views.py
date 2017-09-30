@@ -46,12 +46,10 @@ class CompanyViewSet(viewsets.ViewSet):
 		if request.user.info.type != -1:
 			return Response({'detail': 'User already set account type'}, status=status.HTTP_403_FORBIDDEN)
 
-		if request.data.get('name') and request.data.get('description'):
+		if request.data.get('name'):
 			wallet = Wallet.objects.create()
 			company = Company.objects.create(
 				name=request.data.get('name'),
-				description=request.data.get('description'),
-				icon=request.data.get('icon'),
 				wallet=wallet
 			)
 			request.user.info.company = company

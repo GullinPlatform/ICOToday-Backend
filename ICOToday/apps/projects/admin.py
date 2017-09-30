@@ -7,11 +7,11 @@ from .models import Project, ProjectTag
 
 
 class ProjectAdmin(admin.ModelAdmin):
-	list_display = ('id', 'title', 'status', 'start_datetime', 'end_datetime')
+	list_display = ('id', 'name', 'status', 'start_datetime', 'end_datetime')
 
 	fieldsets = (
-		('Relation Info', {'fields': ('company', 'status', 'creator')}),
-		('Details', {'fields': ('title', 'logo_image', 'promote_image', 'category', 'description_short', 'description_full')}),
+		('Relation Info', {'fields': ('company', 'status')}),
+		('Details', {'fields': ('name', 'logo_image', 'promote_image', 'category', 'description_short', 'description_full')}),
 		('ICO Details', {'fields': ('type', 'coin_name', 'maximum_goal', 'minimum_goal', 'coin_unit', 'start_datetime', 'end_datetime', 'ratio', 'equality_on_offer', 'accept')}),
 		('Supplement', {'fields': ('website', 'video_link', 'white_paper')}),
 		('Media Info', {'fields': ('medium', 'twitter', 'slack', 'telegram')}),

@@ -100,19 +100,18 @@ class ProjectViewSet(viewsets.ViewSet):
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def create(self, request):
-		if request.user.type != 0 or not request.user.is_verified:
+		if request.user.info.type != 0 or not request.user.info.is_verified:
 			return Response(status=status.HTTP_403_FORBIDDEN)
 
-		form = request.data
+		form = request.data.copy()
 		for key in form:
 			if form[key] == '' or form[key] == 'null':
 				form[key] = None
 
 		project = Project.objects.create(
-			creator_id=request.user.id,
-			team_id=request.user.info.team.id,
+			company_id=request.user.info.company.id,
 
-			title=form.get('title'),
+			name=request.user.info.company.name,
 			logo_image=form.get('logo_image'),
 			category=form.get('category'),
 			description_full=form.get('description_full'),
@@ -138,7 +137,7 @@ class ProjectViewSet(viewsets.ViewSet):
 			telegram=form.get('telegram', None),
 		)
 		# Subscribe for project creator
-		for member in request.user.info.team.members.all():
+		for member in request.user.info.company.members.all():
 			try:
 				project.marked.add(member.account.info)
 			except:

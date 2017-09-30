@@ -20,9 +20,6 @@ class Company(models.Model):
 	"""
 	# Company Info
 	name = models.CharField(max_length=50, unique=True)
-	icon = models.ImageField(upload_to=company_icon_upload)
-	description = models.TextField()
-	is_verified = models.BooleanField(default=False)
 
 	# Wallet
 	wallet = models.OneToOneField('wallets.Wallet', related_name='company')

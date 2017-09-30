@@ -26,7 +26,7 @@ class Project(models.Model):
 	company = models.OneToOneField('companies.Company', blank=True, related_name='project')
 
 	# Information
-	title = models.CharField(max_length=100)
+	name = models.CharField(max_length=100, unique=True)
 	description_short = models.CharField(max_length=200, null=True, blank=True)
 	description_full = models.TextField()
 	tags = models.ManyToManyField('ProjectTag', related_name='posts')
@@ -74,10 +74,12 @@ class Project(models.Model):
 		ordering = ['start_datetime']
 
 	def __str__(self):
-		return self.title
+		return self.name
 
 	def time_passed(self):
-		return True if self.end_date > timezone.now() else False
+		if not self.end_datetime:
+			return False
+		return True if self.end_datetime > timezone.now() else False
 
 
 class ProjectTag(models.Model):

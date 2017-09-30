@@ -11,8 +11,7 @@ project = ProjectViewSet.as_view({
 	'delete': 'delete'
 })
 
-project_list = ProjectViewSet.as_view({
-	'get' : 'list',
+project_create = ProjectViewSet.as_view({
 	'post': 'create'
 })
 
@@ -49,16 +48,14 @@ all_tags = ProjectTagViewSet.as_view({
 })
 
 urlpatterns = [
-	url(r'^$', project_list, name='project_list'),
-	url(r'^p/(?P<p>[0-9]+)/$', project_list, name='project_list_page'),
+	url(r'^$', project_create, name='project_create'),
+	url(r'^search/(?P<p>[0-9]+)/$', project_search, name='project_search'),
 	url(r'^promo/$', project_promo_list, name='project_promo_list'),
 	url(r'^close/$', project_close, name='project_close'),
-	url(r'^search/(?P<p>[0-9]+)/$', project_search, name='project_search'),
-
 
 	url(r'^(?P<id>[0-9]+)/$', project, name='project'),
 	url(r'^(?P<id>[0-9]+)/rating/$', project_rating_detail, name='project-rating'),
-	url(r'^(?P<id>[0-9]+)/comments/$', project_comments, name='project-comments'),
+	# url(r'^(?P<id>[0-9]+)/comments/$', project_comments, name='project-comments'),
 	url(r'^(?P<id>[0-9]+)/mark/$', project_mark, name='project_mark'),
 
 	url(r'^tags/$', all_tags, name='project_tags'),

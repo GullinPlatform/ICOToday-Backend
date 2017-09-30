@@ -5,7 +5,6 @@ from rest_framework import serializers
 
 from .models import Project, ProjectTag
 
-
 from ..companies.serializers import BasicCompanySerializer
 
 
@@ -22,7 +21,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Project
 		exclude = ['marked']
-		read_only_fields = ('created', 'updated', 'status')
+		read_only_fields = ['created', 'updated', 'status']
 
 
 class BasicProjectSerializer(serializers.ModelSerializer):
@@ -32,10 +31,14 @@ class BasicProjectSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Project
 		fields = ['id', 'company', 'description_short',
-		          'logo_image', 'promote_image', 'title', 'type', 'category',
-		          'status', 'tags', 'website', 'maximum_goal', 'minimum_goal', 'coin_unit','accept',
+		          'logo_image', 'promote_image', 'name', 'type', 'category',
+		          'status', 'tags', 'website', 'maximum_goal', 'minimum_goal', 'coin_unit', 'accept',
 		          'start_datetime', 'end_datetime', 'current', 'money_raised', 'equality_on_offer',
 		          'medium', 'twitter', 'slack', 'telegram']
+		read_only_fields = ['created', 'updated', 'status']
 
-		read_only_fields = ('created', 'updated', 'status')
 
+class MiniProjectSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Project
+		fields = ['id', 'company', 'description_short', 'logo_image']

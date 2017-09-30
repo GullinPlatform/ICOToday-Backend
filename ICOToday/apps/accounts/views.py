@@ -47,7 +47,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 				Notification.objects.create(receiver_id=referrer.id,
 				                            content='A friend just joined ICOToday with your referral link! 5 ICOCoins have been deposited to your wallet.',
 				                            related='wallet')
-			except Account.DoesNotExist or Wallet.DoesNotExist:
+			except Account.DoesNotExist:
 				pass
 
 		# Add Bonny to User Wallet

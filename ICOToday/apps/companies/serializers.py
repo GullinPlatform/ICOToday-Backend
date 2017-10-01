@@ -26,5 +26,5 @@ class CompanySerializer(serializers.ModelSerializer):
 class PromotionApplicationSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = PromotionApplication
-		fields = '__all__'
+		fields = ['company', 'duration', 'detail', 'status']
 		read_only_fields = ('created', 'updated')

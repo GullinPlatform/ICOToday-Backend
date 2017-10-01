@@ -3,8 +3,6 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-from ..utils.upload_filename import company_icon_upload, company_certificate_upload
-
 
 class Company(models.Model):
 	"""
@@ -40,11 +38,11 @@ class PromotionApplication(models.Model):
 	)
 
 	# Info
-	account = models.ForeignKey('accounts.AccountInfo', related_name='promotion_applications')
-	company = models.ForeignKey('companies.Company', related_name='promotion_applications')
-	detail = models.TextField()
+	company = models.ForeignKey('companies.Company', related_name='promotion_applications', on_delete=models.CASCADE)
+	duration = models.IntegerField(default=1)  # Unit: days
+	detail = models.TextField(null=True, blank=True)
 	status = models.IntegerField(default=0, choices=STATUS_CHOICES)
-	response = models.TextField()
+	response = models.TextField(null=True, blank=True)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
@@ -52,3 +50,6 @@ class PromotionApplication(models.Model):
 
 	def __str__(self):
 		return self.company.name
+
+	class Meta:
+		ordering = ['-created']

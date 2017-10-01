@@ -39,6 +39,10 @@ company_admin_manage = CompanyViewSet.as_view({
 	'post': 'admin_manage',
 })
 
+company_wallet = CompanyViewSet.as_view({
+	'get': 'wallet',
+})
+
 company_member_application_manage = CompanyViewSet.as_view({
 	'post'  : 'member_application',
 	'delete': 'member_application',
@@ -46,6 +50,11 @@ company_member_application_manage = CompanyViewSet.as_view({
 
 company_search = CompanyViewSet.as_view({
 	'get': 'search',
+})
+
+company_promotion_application = CompanyViewSet.as_view({
+	'get': 'promotion_application',
+	'post': 'promotion_application',
 })
 
 urlpatterns = [
@@ -61,6 +70,9 @@ urlpatterns = [
 	url(r'^member/(?P<account_info_id>[0-9]+)/$', company_member_manage, name='company-member-add-delete'),
 	url(r'^member/approve/(?P<account_info_id>[0-9]+)/$', company_member_application_manage, name='company-member-approve-reject'),
 	url(r'^member/admin/(?P<account_info_id>[0-9]+)/$', company_admin_manage, name='company-add-admin'),
+	url(r'^wallet/$', company_wallet, name='company-wallet'),
+
+	url(r'^promotion/$', company_promotion_application, name='company-promotion-application'),
 
 	url(r'^search/$', company_search, name='company-search'),
 ]

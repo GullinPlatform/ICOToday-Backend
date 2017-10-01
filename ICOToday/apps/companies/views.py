@@ -14,9 +14,9 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from ..notifications.models import Notification
 from ..accounts.serializers import AccountInfo, Account, BasicAccountInfoSerializer, MiniAccountInfoSerializer
-from ..wallets.models import Wallet
+from ..wallets.serializers import WalletSerializer, Wallet
 
-from .serializers import Company, CompanySerializer, BasicCompanySerializer
+from .serializers import Company, CompanySerializer, BasicCompanySerializer, PromotionApplication, PromotionApplicationSerializer
 
 from ..utils.send_email import send_email
 from ..utils.verify_token import VerifyTokenUtils
@@ -198,7 +198,7 @@ class CompanyViewSet(viewsets.ViewSet):
 		request.user.info.save()
 		return Response(status=status.HTTP_200_OK)
 
-	def member_application(self, request, account_info_id=None):
+	def member_application(self, request, account_infid=None):
 		if not self._is_company_admin(request.user.info, request.user.info.company):
 			return Response({'detail': 'Only company admin can add company members'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -254,3 +254,38 @@ class CompanyViewSet(viewsets.ViewSet):
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
 			return Response(status=status.HTTP_200_OK)
+
+	def wallet(self, request):
+		company = request.user.info.company
+		if not company:
+			return Response(status=status.HTTP_400_BAD_REQUEST)
+		if not self._is_company_admin(request.user.info, company):
+			return Response({'detail': 'Only company admin can add company members'}, status=status.HTTP_403_FORBIDDEN)
+
+		serializer = WalletSerializer(company.wallet)
+		return Response(serializer.data, status=status.HTTP_200_OK)
+
+	def promotion_application(self, request):
+		if request.method == 'GET':
+			company = request.user.info.company
+
+			if not company or not company.promotion_applications.count():
+				return Response(status=status.HTTP_400_BAD_REQUEST)
+
+			serializer = PromotionApplicationSerializer(company.promotion_applications.first())
+			return Response(serializer.data)
+
+		elif request.method == 'POST':
+			company = request.user.info.company
+			if not company:
+				return Response(status=status.HTTP_400_BAD_REQUEST)
+			if not self._is_company_admin(request.user.info, company):
+				return Response({'detail': 'Only company admin can submit promotion application'}, status=status.HTTP_403_FORBIDDEN)
+
+			PromotionApplication.objects.create(
+				company_id=company.id,
+				duration=request.data.get('duration'),
+				detail=request.data.get('detail'),
+			)
+			serializer = PromotionApplicationSerializer(company.promotion_applications.first())
+			return Response(serializer.data)

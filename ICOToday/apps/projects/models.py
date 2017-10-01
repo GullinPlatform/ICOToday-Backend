@@ -15,6 +15,7 @@ class Project(models.Model):
 		(3, 'Promoting'),
 		(4, 'Premium'),
 		(5, 'Closed'),
+		(6, 'Rejected'),
 	)
 
 	TYPE_CHOICES = (

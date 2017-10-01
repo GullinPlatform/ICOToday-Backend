@@ -19,14 +19,6 @@ def _filename(instance, filename, _prefix):
 	return '%s/%s/%s.%s.%s' % (_instance_id, _prefix, file_name, _post_fix, file_extension)
 
 
-def company_icon_upload(instance, filename):
-	return 'company/' + _filename(instance, filename, r'icon')
-
-
-def company_certificate_upload(instance, filename):
-	return 'company/' + _filename(instance, filename, r'certificate')
-
-
 def user_avatar_upload(instance, filename):
 	return 'user/' + _filename(instance, filename, r'avatar')
 

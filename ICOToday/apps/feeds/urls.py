@@ -6,7 +6,6 @@ from django.conf.urls import url
 from .views import FeedViewSet
 
 feed = FeedViewSet.as_view({
-	'get' : 'list',
 	'post': 'create',
 })
 
@@ -14,14 +13,28 @@ feed_reply = FeedViewSet.as_view({
 	'post': 'reply',
 })
 
-feed_edit = FeedViewSet.as_view({
-	'patch' : 'update',
+feed_delete = FeedViewSet.as_view({
 	'delete': 'delete'
 })
 
-urlpatterns = [
-	url(r'^(?P<project_id>[0-9]+)/$', feed, name='comment'),
+my_feeds = FeedViewSet.as_view({
+	'get': 'my_feeds',
+})
 
-	url(r'^(?P<comment_id>[0-9]+)/reply/$', feed_reply, name='comment_reply'),
-	url(r'^(?P<comment_id>[0-9]+)/edit/$', feed_edit, name='comment_edit'),
+project_feeds = FeedViewSet.as_view({
+	'get': 'project_feeds',
+})
+
+user_feeds = FeedViewSet.as_view({
+	'get': 'user_feeds',
+})
+
+urlpatterns = [
+	url(r'^new/$', feed, name='feed'),
+	url(r'^(?P<feed_id>[0-9]+)/delete/$', feed_delete, name='feed-delete'),
+	url(r'^(?P<feed_id>[0-9]+)/reply/$', feed_reply, name='feed-reply'),
+
+	url(r'^my/$', my_feeds, name='my-feed'),
+	url(r'^project/(?P<project_id>[0-9]+)$', project_feeds, name='project-feed'),
+	url(r'^user/(?P<account_info_id>[0-9]+)$', user_feeds, name='account_info_id-feed'),
 ]

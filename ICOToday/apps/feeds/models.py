@@ -21,7 +21,6 @@ class Feed(models.Model):
 
 	# Relations
 	company = models.ForeignKey('companies.Company', related_name='feeds', null=True, blank=True)
-	rate = models.IntegerField(null=True, blank=True)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)

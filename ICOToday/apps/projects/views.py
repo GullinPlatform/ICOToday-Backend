@@ -23,21 +23,6 @@ class ProjectViewSet(viewsets.ViewSet):
 	parser_classes = (MultiPartParser, FormParser, JSONParser, FileUploadParser)
 	permission_classes = (IsAuthenticatedOrReadOnly,)
 
-	def list(self, request, p=None):
-		queryset = self.queryset.exclude(status=0)
-		paginator = Paginator(queryset, 10)
-		try:
-			projects = paginator.page(p)
-		except PageNotAnInteger:
-			# If page is not an integer, deliver first page.
-			projects = paginator.page(1)
-		except EmptyPage:
-			# If page is out of range (e.g. 9999), deliver last page of results.
-			projects = paginator.page(paginator.num_pages)
-
-		serializer = BasicProjectSerializer(projects, many=True)
-		return Response(serializer.data, status=status.HTTP_200_OK)
-
 	def promo_list(self, request):
 		queryset = self.queryset.filter(status=3)
 		serializer = BasicProjectSerializer(queryset, many=True)

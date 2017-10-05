@@ -25,7 +25,6 @@ class AccountInfo(models.Model):
 	7) notifications ForeignKey notifications.Notification
 	8) sent_notifications ForeignKey notifications.Notification
 	9) marked_projects ManyToManyField projects.Project
-
 	"""
 	TYPE_CHOICES = (
 		(-1, 'Not Choose'),

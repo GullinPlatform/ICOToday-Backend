@@ -34,10 +34,11 @@ class BasicAccountInfoSerializer(serializers.ModelSerializer):
 	"""
 	Account info with id, account_id, name, avatar, title, description and social media info
 	"""
+	company = MiniCompanySerializer(read_only=True)
 
 	class Meta:
 		model = AccountInfo
-		fields = ['id', 'avatar', 'full_name', 'account', 'title', 'description',
+		fields = ['id', 'avatar', 'full_name', 'account', 'title', 'description', 'company',
 		          'linkedin', 'twitter', 'telegram', 'facebook']
 
 

@@ -2,75 +2,117 @@
 from __future__ import unicode_literals
 
 from django.shortcuts import get_object_or_404
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from ..projects.models import Project
-from .models import Feed
-from .serializers import ReplySerializer, FeedSerializer
-from ..accounts.views import send_email
+from ..companies.models import Company
+from .serializers import Feed, ReplySerializer, FeedSerializer
+
+from ..accounts.views import send_email, AccountInfo
 
 
 class FeedViewSet(viewsets.ViewSet):
 	queryset = Feed.objects.all()
 	parser_classes = (MultiPartParser, FormParser, JSONParser)
-	permission_classes = (IsAuthenticated,)
+	permission_classes = (IsAuthenticatedOrReadOnly,)
 
-	def list(self, request, project_id):
-		post = get_object_or_404(Project.objects.all(), id=project_id)
-		serializer = FeedSerializer(post.comments.filter(reply_to=None), many=True)
+	def my_feeds(self, request, page=None):
+		import itertools
+		from operator import attrgetter
+		my_feeds_queryset = request.user.info.feeds.filter(reply_to=None)
+
+		marked_project_feed = []
+
+		for project in request.user.info.marked_projects.all():
+			marked_project_feed = itertools.chain(marked_project_feed, project.company.feeds.all())
+
+		result_list = sorted(
+			itertools.chain(my_feeds_queryset, marked_project_feed),
+			key=attrgetter('created'),
+			reverse=True)
+
+		paginator = Paginator(result_list, 10)
+
+		try:
+			feeds = paginator.page(page)
+		except PageNotAnInteger:
+			# If page is not an integer, deliver first page.
+			feeds = paginator.page(1)
+		except EmptyPage:
+			# If page is out of range (e.g. 9999), deliver last page of results.
+			feeds = paginator.page(paginator.num_pages)
+
+		serializer = FeedSerializer(feeds, many=True)
+
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
-	def create(self, request, project_id):
-		serializer = FeedSerializer(data=request.data, context={'creator_id': request.user.info.id, 'project_id': project_id})
-		serializer.is_valid(raise_exception=True)
-		serializer.save()
+	def project_feeds(self, request, project_id):
+		project = get_object_or_404(Project.objects.all(), id=project_id)
+		serializer = FeedSerializer(project.company.feeds.filter(reply_to=None), many=True)
+		return Response(serializer.data, status=status.HTTP_200_OK)
 
-		# Send Email
-		project = Project.objects.get(id=project_id)
+	def user_feeds(self, request, user_id):
+		account_info = get_object_or_404(AccountInfo.objects.all(), id=user_id)
+		serializer = FeedSerializer(account_info.feeds.filter(reply_to=None), many=True)
+		return Response(serializer.data, status=status.HTTP_200_OK)
 
-		email_list = []
-		for marked in project.marked.all():
-			email_list.append(marked.email)
-		if request.user.info in project.team.members.all():
-			send_email(email_list, 'ICOToday - Official Team Member Posted a Comment in ICO Project', 'NewComment', {id: project_id})
+	def create(self, request):
+		company_id = request.data.get('company_id')
+		if company_id:
+			serializer = FeedSerializer(data=request.data, context={'creator_id': request.user.info.id, 'company_id': company_id})
+			serializer.is_valid(raise_exception=True)
+			serializer.save()
+
+			# Send Email
+			project = Company.objects.get(id=company_id).project
+			email_list = []
+			# TODO: email
+			for marked in project.marked.all():
+				email_list.append(marked.email)
+			if request.user.info in project.team.members.all():
+				send_email(email_list, 'ICOToday - Official Team Member Posted a Comment in ICO Project', 'NewComment', {id: project.id})
+			else:
+				send_email(email_list, 'ICOToday - New Comment on ICO You Subscribe to', 'NewComment', {id: project.id})
+
 		else:
-			send_email(email_list, 'ICOToday - New Comment on ICO You Subscribe to', 'NewComment', {id: project_id})
+			serializer = FeedSerializer(data=request.data, context={'creator_id': request.user.info.id})
+			serializer.is_valid(raise_exception=True)
+			serializer.save()
 
 		return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-	def update(self, request, comment_id):
-		comment = get_object_or_404(self.queryset, id=comment_id)
-		if request.data.get('content', None) and comment.creator_id is request.user.info.id:
-			serializer = FeedSerializer(comment, data=request.data, partial=True)
-			serializer.is_valid(raise_exception=True)
-			serializer.save()
-			return Response(serializer.data, status=status.HTTP_200_OK)
-		else:
-			return Response(status=status.HTTP_400_BAD_REQUEST)
-
-	def delete(self, request, comment_id):
-		comment = get_object_or_404(self.queryset, id=comment_id)
-		if comment.creator_id is request.user.info.id:
-			comment.delete()
+	def delete(self, request, feed_id):
+		feed = get_object_or_404(self.queryset, id=feed_id)
+		if feed.creator_id is request.user.info.id:
+			feed.delete()
 			return Response(status=status.HTTP_200_OK)
 		else:
 			return Response(status=status.HTTP_403_FORBIDDEN)
 
-	def reply(self, request, comment_id):
-		comment = get_object_or_404(self.queryset, id=comment_id)
+	def reply(self, request, feed_id):
+		company_id = request.data.get('company_id')
+		if company_id:
+			serializer = ReplySerializer(data=request.data,
+			                             context={'creator_id' : request.user.info.id,
+			                                      'company_id' : company_id,
+			                                      'reply_to_id': feed_id})
+			serializer.is_valid(raise_exception=True)
+			serializer.save()
+		else:
+			serializer = ReplySerializer(data=request.data,
+			                             context={'creator_id' : request.user.info.id,
+			                                      'reply_to_id': feed_id})
+			serializer.is_valid(raise_exception=True)
+			serializer.save()
 
-		serializer = ReplySerializer(data=request.data,
-		                             context={'creator_id' : request.user.info.id,
-		                                      'post_id'    : comment.post_id,
-		                                      'reply_to_id': comment_id})
-		serializer.is_valid(raise_exception=True)
-		serializer.save()
-
+		# TODO: send notification and email
+		# feed = get_object_or_404(self.queryset, id=feed_id)
 		# Send Email
-		send_email([comment.creator.email], 'ICOToday - New Reply on Your Comment', 'NewComment', {id: comment.post_id})
+		# send_email([feed.creator.account.email], 'ICOToday - New Reply on Your Comment', 'NewComment')
 
 		return Response(serializer.data, status=status.HTTP_201_CREATED)

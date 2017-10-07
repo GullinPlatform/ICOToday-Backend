@@ -21,8 +21,8 @@ my_feeds = FeedViewSet.as_view({
 	'get': 'my_feeds',
 })
 
-project_feeds = FeedViewSet.as_view({
-	'get': 'project_feeds',
+company_feeds = FeedViewSet.as_view({
+	'get': 'company_feeds',
 })
 
 user_feeds = FeedViewSet.as_view({
@@ -35,6 +35,6 @@ urlpatterns = [
 	url(r'^(?P<feed_id>[0-9]+)/reply/$', feed_reply, name='feed-reply'),
 
 	url(r'^my/$', my_feeds, name='my-feed'),
-	url(r'^project/(?P<project_id>[0-9]+)$', project_feeds, name='project-feed'),
-	url(r'^user/(?P<account_info_id>[0-9]+)$', user_feeds, name='account_info_id-feed'),
+	url(r'^company/(?P<company_id>[0-9]+)/$', company_feeds, name='company-feed'),
+	url(r'^user/(?P<account_info_id>[0-9]+)/$', user_feeds, name='account_info_id-feed'),
 ]

@@ -28,3 +28,6 @@ class Feed(models.Model):
 
 	def __str__(self):
 		return self.content[:15]
+
+	class Meta:
+		ordering = ['-created']

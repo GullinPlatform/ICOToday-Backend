@@ -51,9 +51,9 @@ class FeedViewSet(viewsets.ViewSet):
 
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
-	def project_feeds(self, request, project_id):
-		project = get_object_or_404(Project.objects.all(), id=project_id)
-		serializer = FeedSerializer(project.company.feeds.filter(reply_to=None), many=True)
+	def company_feeds(self, request, company_id):
+		company = get_object_or_404(Company.objects.all(), id=company_id)
+		serializer = FeedSerializer(company.feeds.filter(reply_to=None), many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 	def user_feeds(self, request, user_id):
@@ -73,8 +73,8 @@ class FeedViewSet(viewsets.ViewSet):
 			email_list = []
 			# TODO: email
 			for marked in project.marked.all():
-				email_list.append(marked.email)
-			if request.user.info in project.team.members.all():
+				email_list.append(marked.account.email)
+			if request.user.info in project.company.members.all():
 				send_email(email_list, 'ICOToday - Official Team Member Posted a Comment in ICO Project', 'NewComment', {id: project.id})
 			else:
 				send_email(email_list, 'ICOToday - New Comment on ICO You Subscribe to', 'NewComment', {id: project.id})

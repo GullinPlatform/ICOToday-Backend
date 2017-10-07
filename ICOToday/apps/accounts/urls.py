@@ -69,7 +69,7 @@ account_interests = AccountViewSet.as_view({
 })
 
 account_set_type = AccountViewSet.as_view({
-	'post': 'set_account_type'
+	'put': 'set_account_type'
 })
 
 expert_application = ExpertApplicationViewSet.as_view({

@@ -16,7 +16,7 @@ class ProjectTagSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
 	tags = ProjectTagSerializer(required=False, allow_null=True, many=True, read_only=True)
-	team = BasicCompanySerializer(required=False, allow_null=True, read_only=True)
+	company = BasicCompanySerializer(required=False, allow_null=True, read_only=True)
 
 	class Meta:
 		model = Project
@@ -26,11 +26,11 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 class BasicProjectSerializer(serializers.ModelSerializer):
 	tags = ProjectTagSerializer(required=False, allow_null=True, many=True)
-	team = BasicCompanySerializer(allow_null=True)
+	company = BasicCompanySerializer(allow_null=True)
 
 	class Meta:
 		model = Project
-		fields = ['id', 'company', 'description_short',
+		fields = ['id', 'company', 'description_short', 'company',
 		          'logo_image', 'promote_image', 'name', 'type', 'category',
 		          'status', 'tags', 'website', 'maximum_goal', 'minimum_goal', 'coin_unit', 'accept',
 		          'start_datetime', 'end_datetime', 'current', 'money_raised', 'equality_on_offer',

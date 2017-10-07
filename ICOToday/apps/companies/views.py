@@ -198,7 +198,7 @@ class CompanyViewSet(viewsets.ViewSet):
 		request.user.info.save()
 		return Response(status=status.HTTP_200_OK)
 
-	def member_application(self, request, account_infid=None):
+	def member_application(self, request, account_info_id=None):
 		if not self._is_company_admin(request.user.info, request.user.info.company):
 			return Response({'detail': 'Only company admin can add company members'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -288,4 +288,18 @@ class CompanyViewSet(viewsets.ViewSet):
 				detail=request.data.get('detail'),
 			)
 			serializer = PromotionApplicationSerializer(company.promotion_applications.first())
+			return Response(serializer.data)
+
+		elif request.method == 'PUT':
+			company = request.user.info.company
+			if not company:
+				return Response(status=status.HTTP_400_BAD_REQUEST)
+			if not self._is_company_admin(request.user.info, company):
+				return Response({'detail': 'Only company admin can submit promotion application'}, status=status.HTTP_403_FORBIDDEN)
+
+			promotion_applications = company.promotion_applications.first()
+			promotion_applications.duration = request.data.get('duration')
+			promotion_applications.detail = request.data.get('detail')
+			promotion_applications.save()
+			serializer = PromotionApplicationSerializer(promotion_applications)
 			return Response(serializer.data)

@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import check_password
+from django.conf import settings
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -44,7 +45,8 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 				referrer = Account.objects.get(email=request.data.get('referrer'))
 				referrer.wallet.icc_amount += 5
 				referrer.save()
-				Notification.objects.create(receiver_id=referrer.id,
+				Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
+				                            receiver_id=referrer.id,
 				                            content='A friend just joined ICOToday with your referral link! 5 ICOCoins have been deposited to your wallet.',
 				                            related='wallet')
 			except Account.DoesNotExist:
@@ -53,7 +55,8 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		# Add Bonny to User Wallet
 		account.info.wallet.icc_amount += 5
 		account.info.wallet.save()
-		Notification.objects.create(receiver_id=account.info.id,
+		Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
+		                            receiver_id=account.info.id,
 		                            content='Welcome to ICOToday. As one of our early users, we have deposited 5 ICOCoins to your wallet.',
 		                            related='wallet')
 
@@ -101,7 +104,8 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			# Add Bonny to User Wallet
 			account.info.wallet.icc_amount += 5
 			account.info.wallet.save()
-			Notification.objects.create(receiver_id=account.info.id,
+			Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
+			                            receiver_id=account.info.id,
 			                            content='Welcome to ICOToday. As one of our early users, we have deposited 5 ICOCoins to your wallet.',
 			                            related='wallet')
 

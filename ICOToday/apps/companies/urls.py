@@ -55,6 +55,7 @@ company_search = CompanyViewSet.as_view({
 company_promotion_application = CompanyViewSet.as_view({
 	'get': 'promotion_application',
 	'post': 'promotion_application',
+	'put': 'promotion_application',
 })
 
 urlpatterns = [

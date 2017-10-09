@@ -4,17 +4,12 @@
 
 ```
 > # Clone
-> git clone https://github.com/zhxsxuan/DeepCompBackend.git
-> cd DeepCompBackend
-> git checkout dev
-> # Create local folder for virtual env
-> mkdir -p local
-> cd local
+> git clone https://github.com/C0deZLee/ICOToday-Backend.git
 > # Create virtualenv and activate
-> virtualenv -p python3 env
+> virtualenv env
 > source env/bin/activate
+> cd ICOToday-Backend
 > # Install requirements
-> cd ../DeepComp
 > pip install -r requirements.txt
 > # Migrate database
 > python manage.py makemigrations

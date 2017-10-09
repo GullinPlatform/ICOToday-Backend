@@ -1,87 +1,24 @@
-import random
-import string
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
-from datetime import timedelta
-
-from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import check_password
-from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
+from django.conf import settings
 
-from rest_framework_jwt.settings import api_settings
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from .models import Account, VerifyToken, Team, AccountInfo, ExpertApplication
-from .serializers import AuthAccountSerializer, TeamSerializer, BasicTeamSerializer, BasicAccountSerializer, AccountInfoSerializer, ExpertApplicationSerializer
-
-from ..posts.models import Post
-from ..posts.serializers import PostSerializer
+from .serializers import Account, AccountInfo, ExpertApplication, AuthAccountSerializer, BasicAccountSerializer, MiniAccountInfoSerializer, AccountInfoSerializer, ExpertApplicationSerializer
+from ..projects.serializers import ProjectTag, ProjectSerializer
 
 from ..notifications.models import Notification
-from ..wallets.models import Wallet
 
-
-def send_email(receiver_list, subject, template_name, ctx):
-	email = EmailMessage(subject, render_to_string('email/%s.html' % template_name, ctx), 'no-reply@icotoday.io', receiver_list)
-	email.content_subtype = 'html'
-	email.send()
-
-
-def get_user_verify_token(user=None, email=None, only_digit=False):
-	if user:
-		token_instance, created = VerifyToken.objects.get_or_create(account_id=user.id)
-	elif email:
-		user = get_object_or_404(Account.objects.all(), email=email)
-		token_instance, created = VerifyToken.objects.get_or_create(account_id=user.id)
-	else:
-		return None
-
-	token_instance.expire_time = timezone.now() + timedelta(hours=24)
-	if only_digit:
-		token_instance.token = ''.join([random.choice(string.digits) for n in xrange(6)])
-	else:
-		token_instance.token = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(16)])
-	token_instance.save()
-	return token_instance
-
-
-def verify_token(token=None, user=None):
-	if user:
-		try:
-			token_instance = VerifyToken.objects.get(account_id=user.id)
-			if token_instance.is_expired:
-				return False
-		except VerifyToken.DoesNotExist:
-			return False
-	elif token:
-		try:
-			token_instance = VerifyToken.objects.get(token=token)
-			if token_instance.is_expired:
-				return False
-		except VerifyToken.DoesNotExist:
-			return False
-	else:
-		return False
-
-	token_instance.expire_time = timezone.now() - timedelta(days=10)
-	token_instance.token = ''
-	token_instance.save()
-	return token_instance
-
-
-def refresh_token(token=None):
-	try:
-		token_instance = VerifyToken.objects.get(token=token)
-		token_instance.expire_time = timezone.now() + timedelta(days=1)
-		token_instance.token = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(16)])
-		token_instance.save()
-		return token_instance
-	except VerifyToken.DoesNotExist:
-		return False
+from ..utils.send_email import send_email
+from ..utils.verify_token import VerifyTokenUtils
+from ..utils.google_recaptcha import recaptcha_verify
+from ..utils.return_auth_token import return_auth_token
 
 
 class AccountRegisterViewSet(viewsets.ViewSet):
@@ -89,83 +26,91 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 	permission_classes = (AllowAny,)
 
 	def register(self, request):
+		# Validate Google reCAPTCHA
+		# if not recaptcha_verify(request):
+		# 	return Response(status=status.HTTP_400_BAD_REQUEST)
+
 		serializer = AuthAccountSerializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
-		user = serializer.save()
+		account = serializer.save()
 
-		# If ICO Company, have team name
-		if request.data.get('type') is 0:
-			user.info.first_name = request.data.get('first_name')
-			user.info.last_name = request.data.get('last_name')
-			team = Team.objects.create(name=request.data.get('team_name'))
-			user.info.team_id = team.id
-			user.info.save()
+		account.info.first_name = request.data.get('first_name')
+		account.info.last_name = request.data.get('last_name')
+		account.info.last_login_ip = request.data.get('last_login_ip')
+		account.info.save()
 
 		# If refer
 		if request.data.get('referrer'):
 			try:
 				referrer = Account.objects.get(email=request.data.get('referrer'))
-				referrer.wallet.icc_amount += 5
+				referrer.info.wallet.ict_amount += 5
 				referrer.save()
-				Notification.objects.create(receiver_id=referrer.id,
+				Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
+				                            receiver_id=referrer.info.id,
 				                            content='A friend just joined ICOToday with your referral link! 5 ICOCoins have been deposited to your wallet.',
-				                            related_link='wallet')
+				                            related='wallet')
 			except Account.DoesNotExist:
 				pass
-			except Wallet.DoesNotExist:
-				pass
 
-		Wallet.objects.create(account_id=user.id)
-		user.wallet.icc_amount += 5
-		user.wallet.save()
-		Notification.objects.create(receiver_id=user.id,
+		# Add Bonny to User Wallet
+		account.info.wallet.ict_amount += 5
+		account.info.wallet.save()
+		Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
+		                            receiver_id=account.info.id,
 		                            content='Welcome to ICOToday. As one of our early users, we have deposited 5 ICOCoins to your wallet.',
-		                            related_link='wallet')
+		                            related='wallet')
 
-		# return token right away
-		jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-		jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-		payload = jwt_payload_handler(user)
-		token = jwt_encode_handler(payload)
-
-		user_verify_token = get_user_verify_token(user)
-
-		send_email(receiver_list=[user.email],
+		# Send Verification Email
+		user_verify_token = VerifyTokenUtils.generate_token_by_user(user=account)
+		send_email(receiver_list=[account.email],
 		           subject='ICOToday - Email Verification',
 		           template_name='EmailVerification',
-		           ctx={'user': user, 'token': user_verify_token.token})
+		           ctx={'user': account, 'token': user_verify_token.token})
 
-		return Response({'token': token}, status=status.HTTP_201_CREATED)
+		# Use utils to set token in cookie in response
+		return return_auth_token(account)
 
 	def invited_register(self, request, token):
-		# Check If token expired, return UserInfo
+		# Check If token expired, if not return UserInfo
 		if request.method == 'GET':
-			token_instance = get_object_or_404(VerifyToken.objects.all(), token=token)
-			if token_instance.is_expired:
+			token_instance = VerifyTokenUtils.get_token_by_token(token=token)
+			if not VerifyTokenUtils.validate_token(token_instance=token_instance):
 				return Response({'detail': 'Token Expired'}, status=status.HTTP_400_BAD_REQUEST)
+
 			serializer = BasicAccountSerializer(token_instance.account)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 
 		# Invited Register AKA Change Password
 		elif request.method == 'POST':
-			if request.data.get('password'):
-				token_instance = verify_token(token=token)
-				if token_instance:
-					token_instance.account.set_password(request.data.get('password'))
-					token_instance.account.is_verified = True
-					token_instance.account.save()
-
-					# return auth token right away
-					jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-					jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-					payload = jwt_payload_handler(token_instance.account)
-					token = jwt_encode_handler(payload)
-
-					return Response({'token': token}, status=status.HTTP_201_CREATED)
-				else:
-					return Response({'detail': 'Token Invalid'}, status=status.HTTP_400_BAD_REQUEST)
-			else:
+			# Check form data
+			if not request.data.get('password'):
 				return Response({'detail': 'No password provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+			# Get token instance
+			token_instance = VerifyTokenUtils.get_token_by_token(token=token)
+
+			# Validate token
+			if not VerifyTokenUtils.validate_token(token_instance=token_instance):
+				return Response({'detail': 'Token Invalid'}, status=status.HTTP_400_BAD_REQUEST)
+
+			# Expire token
+			VerifyTokenUtils.expire_token(token_instance=token_instance)
+			account = token_instance.account
+			account.set_password(request.data.get('password'))
+			account.save()
+			account.info.is_verified = True
+			account.info.save()
+
+			# Add Bonny to User Wallet
+			account.info.wallet.ict_amount += 5
+			account.info.wallet.save()
+			Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
+			                            receiver_id=account.info.id,
+			                            content='Welcome to ICOToday. As one of our early users, we have deposited 5 ICOCoins to your wallet.',
+			                            related='wallet')
+
+			# Use utils to set token in cookie in response
+			return return_auth_token(account)
 
 	def email_verify(self, request, token=None):
 		# Verify Token
@@ -173,25 +118,32 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			if not token:
 				return Response(status=status.HTTP_400_BAD_REQUEST)
 
-			token_instance = verify_token(token=token)
-			# check is_expired
-			if not token_instance:
-				return Response({'message': 'Token is expired'}, status=status.HTTP_400_BAD_REQUEST)
+			# Get token instance
+			token_instance = VerifyTokenUtils.get_token_by_token(token=token)
+			# Validate token
+			if VerifyTokenUtils.validate_token(token_instance=token_instance):
+				# Expire token
+				VerifyTokenUtils.expire_token(token_instance=token_instance)
+			else:
+				return Response({'message': 'Token Invalid'}, status=status.HTTP_400_BAD_REQUEST)
 
-			token_instance.account.is_verified = True
-			token_instance.account.save()
+			token_instance.account.info.is_verified = True
+			token_instance.account.info.save()
 
 			return Response(status=status.HTTP_200_OK)
-		# Resend Email
+		# Resend Verify Email
 		elif request.method == 'POST':
-			if request.user.is_authenticated:
-				user_verify_token = get_user_verify_token(user=request.user)
+			if request.user.is_authenticated and not request.user.info.is_verified:
+				token_instance = VerifyTokenUtils.get_token_by_user(user=request.user)
+				# If Expire token
+				if not VerifyTokenUtils.validate_token(token_instance=token_instance):
+					# Refresh token
+					VerifyTokenUtils.refresh_token(token_instance=token_instance)
 
 				send_email(receiver_list=[request.user.email],
 				           subject='ICOToday - Email Verification',
 				           template_name='EmailVerification',
-				           ctx={'user': request.user, 'token': user_verify_token}
-				           )
+				           ctx={'user': request.user, 'token': token_instance.token})
 				return Response(status=status.HTTP_200_OK)
 			else:
 				return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -200,86 +152,107 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		if not token:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
-		user_verify_token = refresh_token(token=token)
+		token_instance = VerifyTokenUtils.get_token_by_user(user=request.user)
+		# If Expire token
+		if not VerifyTokenUtils.validate_token(token_instance=token_instance):
+			# Refresh token
+			VerifyTokenUtils.refresh_token(token_instance=token_instance)
 
-		if user_verify_token:
-			user = user_verify_token.account
-			team = user.info.team.name
-			if user.info.is_advisor:
+		if token_instance:
+			user = token_instance.account
+			company = user.info.company.name
+			if user.info.type == 2:  # Advisor
 				send_email(receiver_list=[user.email],
 				           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
 				           template_name='TeamAdvisorInvitation',
-				           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': team}
+				           ctx={'username': user.info.full_name(), 'token': token_instance.token, 'team_name': company}
 				           )
 			else:
 				send_email(receiver_list=[user.email],
 				           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
 				           template_name='TeamMemberInvitation',
-				           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': team}
+				           ctx={'username': user.info.full_name(), 'token': token_instance.token, 'team_name': company}
 				           )
 		return Response(status=status.HTTP_200_OK)
 
 	def forget_password(self, request, token=None):
-		token_queryset = VerifyToken.objects.all()
 		# verify token
 		if request.method == 'GET':
-			# if token not exist return 404 here
-			token_instance = get_object_or_404(token_queryset, token=token)
-			# check is_expired
-			if token_instance.is_expired:
-				return Response({'detail': 'Token Expired'}, status=status.HTTP_400_BAD_REQUEST)
-			# else return 200
-			return Response(status=status.HTTP_200_OK)
+			# Get token by token
+			token_instance = VerifyTokenUtils.get_token_by_token(token=token)
+			# Validate
+			if VerifyTokenUtils.validate_token(token_instance=token_instance):
+				return Response(status=status.HTTP_200_OK)
+			else:
+				return Response({'detail': 'Token Invalid'}, status=status.HTTP_400_BAD_REQUEST)
 
 		# send email
 		if request.method == 'POST':
-			if request.data.get('email'):
-				token_instance = get_user_verify_token(email=request.data.get('email'))
-				send_email(receiver_list=[request.data.get('email')],
-				           subject='ICOToday - Password Reset',
-				           template_name='PasswordReset',
-				           ctx={'token': token_instance.token}
-				           )
-				return Response(status=status.HTTP_200_OK)
-
-			else:
+			email = request.data.get('email')
+			if not email:
 				return Response(status=status.HTTP_400_BAD_REQUEST)
+
+			token_instance = VerifyTokenUtils.generate_token_by_email(email=email)
+
+			send_email(receiver_list=[email],
+			           subject='ICOToday - Password Reset',
+			           template_name='PasswordReset',
+			           ctx={'token': token_instance.token}
+			           )
+			return Response(status=status.HTTP_200_OK)
 
 		# change password
 		elif request.method == 'PUT':
 			# if token not exist return 404 here
-			token_instance = verify_token(token=token)
-			# check is_expired
-			if not token_instance:
-				return Response(status=status.HTTP_400_BAD_REQUEST)
-			# set new password to user
-			token_instance.account.set_password(request.data['password'])
-			token_instance.account.save()
-			token_instance.expire_time = timezone.now() - timedelta(hours=24)
-			token_instance.save()
-			return Response(status=status.HTTP_200_OK)
+			token_instance = VerifyTokenUtils.get_token_by_token(token=token)
+
+			if not VerifyTokenUtils.validate_token(token_instance=token_instance):
+				return Response({'detail': 'Token Invalid'}, status=status.HTTP_400_BAD_REQUEST)
+			else:
+				# set new password to user
+				token_instance.account.set_password(request.data['password'])
+				token_instance.account.save()
+				VerifyTokenUtils.expire_token(token_instance=token_instance)
+				return Response(status=status.HTTP_200_OK)
+
+	def logout(self, request):
+		response = Response()
+		response.delete_cookie('icotodaytoken')
+		return response
 
 
 class AccountViewSet(viewsets.ViewSet):
-	queryset = Account.objects.exclude(is_staff=1)
+	queryset = Account.objects.all()
 	parser_classes = (MultiPartParser, FormParser, JSONParser)
-	permission_classes = (IsAuthenticatedOrReadOnly,)
+	permission_classes = (IsAuthenticated,)
+
+	def log_ip(self, request):
+		if request.user.info.last_login_ip == request.data.get('ip'):
+			return Response(status=status.HTTP_200_OK)
+		else:
+			request.user.info.last_login_ip = request.data.get('ip')
+			request.user.info.save()
+			# TODO: send warning email
+			return Response(status=status.HTTP_200_OK)
+
+	def set_account_type(self, request):
+		if not request.data.get('type'):
+			return Response(status=status.HTTP_400_BAD_REQUEST)
+
+		if request.data.get('type') == 0:  # Company
+			request.user.info.type = 0
+			request.user.info.save()
+		else:  # All others go Investor first
+			request.user.info.type = 1
+			request.user.info.save()
+		return Response(status=status.HTTP_200_OK)
 
 	def retrieve(self, request, pk):
 		user = get_object_or_404(self.queryset, pk=pk)
 		serializer = BasicAccountSerializer(user)
 		return Response(serializer.data)
 
-	def destroy(self, request, pk=None):
-		if request.user.is_admin or request.user.pk == int(pk):
-			user = get_object_or_404(self.queryset, pk=pk)
-			user.delete()
-			return Response(status=status.HTTP_200_OK)
-		else:
-			return Response(status=status.HTTP_403_FORBIDDEN)
-
-	@staticmethod
-	def me(request):
+	def me(self, request):
 		if request.method == 'GET':
 			serializer = BasicAccountSerializer(request.user)
 			return Response(serializer.data)
@@ -289,13 +262,19 @@ class AccountViewSet(viewsets.ViewSet):
 				request.user.info.save()
 				return Response(status=status.HTTP_200_OK)
 			else:
+				data = request.data.copy()
+				del data['interests']
+				del data['account']
+				del data['is_verified']
+				del data['company']
+				del data['type']
+				del data['id']
 				serializer = AccountInfoSerializer(request.user.info, data=request.data, partial=True)
 				serializer.is_valid(raise_exception=True)
 				serializer.save()
 				return Response(serializer.data)
 
-	@staticmethod
-	def change_password(request):
+	def change_password(self, request):
 		# If password or old-password not in request body
 		if not request.data['old-password'] or request.data['password']:
 			# Return error message with status code 400
@@ -314,147 +293,72 @@ class AccountViewSet(viewsets.ViewSet):
 			# If exception return with status 400
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
-	def marked_posts(self, request, pk=None):
-		if pk:
+	def marked_projects(self, request, pk=None):
+		if pk:  # Marked post from other user
 			account = get_object_or_404(self.queryset, pk=pk)
-			serializer = PostSerializer(account.marked_posts.all(), many=True)
+			serializer = ProjectSerializer(account.info.marked_projects.all(), many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
-		else:
-			serializer = PostSerializer(request.user.marked_posts.all(), many=True)
+		else:  # Marked post from me
+			serializer = ProjectSerializer(request.user.info.marked_projects.all(), many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 
-	def created_posts(self, request, pk=None):
-		if pk:
-			account = get_object_or_404(self.queryset, pk=pk)
-			if account.info.team:
-				serializer = PostSerializer(Post.objects.filter(team_id=account.info.team.id), many=True)
-				return Response(serializer.data, status=status.HTTP_200_OK)
-			else:
-				return Response([], status=status.HTTP_200_OK)
+	def add_interests(self, request):
+		"""
+		request.data:
+		interests: list of string
+		"""
+		if not request.data.get('interests'):
+			return Response(status=status.HTTP_400_BAD_REQUEST)
 
-		else:
-			serializer = PostSerializer(Post.objects.filter(team_id=request.user.info.team.id), many=True)
-			return Response(serializer.data, status=status.HTTP_200_OK)
+		for interest in request.data.get('interests'):
+			tag = ProjectTag.objects.filter(tag=interest).first()
+			if tag:
+				request.user.info.interests.add(tag)
+		return Response(status=status.HTTP_200_OK)
 
 	def two_factor_auth(self, request):
 		# Send Email
 		if request.method == 'POST':
-			token_instance = get_user_verify_token(user=request.user, only_digit=True)
+			token_instance = VerifyTokenUtils.generate_token_by_user(user=request.user, only_digit=True)
 			send_email(receiver_list=[request.user.email],
 			           subject='ICOToday - Verification Token',
 			           template_name='TwoFactorAuth',
 			           ctx={'token': token_instance.token})
 			return Response(status=status.HTTP_200_OK)
 
-		# Verify Token
-		elif request.method == 'PUT':
-			token_instance = verify_token(token=request.data.get('token'), user=request.user)
+		# Verify 2 Factor Auth Token
+		elif request.method == 'GET':
+			token_instance1 = VerifyTokenUtils.get_token_by_user(user=request.user)
+			token_instance2 = VerifyTokenUtils.get_token_by_token(token=request.data.get('token'))
 
-			if token_instance:
+			if token_instance1.id == token_instance2.id and VerifyTokenUtils.validate_token(token_instance=token_instance1):
+				VerifyTokenUtils.expire_token(token_instance=token_instance1)
 				return Response(status=status.HTTP_200_OK)
 			else:
-				return Response(status=status.HTTP_400_BAD_REQUEST)
+				return Response({'detail': 'Token Invalid'}, status=status.HTTP_400_BAD_REQUEST)
 
+	def search(self, request):
+		"""
+		request.get:
+		search: string
+		"""
+		search_token = request.GET.get('search')
+		if search_token:
+			if '@' in search_token:
+				token = search_token.split("@")[0]
+				accounts = self.queryset.filter(email__iregex=r'^' + token + r'+')
+			else:
+				queryset = AccountInfo.objects.all()
+				# Cache query in memory to improve performance
+				[q for q in queryset]
+				tokens = search_token.split()
+				accounts = queryset.filter(first_name__iregex=r'^' + tokens[0] + r'+')
+				accounts |= queryset.filter(last_name__iregex=r'^' + tokens[-1] + r'+')
 
-class TeamViewSet(viewsets.ViewSet):
-	queryset = Team.objects.all()
-	parser_classes = (MultiPartParser, FormParser, JSONParser)
-	permission_classes = (IsAuthenticatedOrReadOnly,)
-
-	def list(self, request):
-		serializer = BasicTeamSerializer(self.queryset, many=True)
-		return Response(serializer.data)
-
-	def retrieve(self, request, pk=None):
-		team = get_object_or_404(self.queryset, pk=pk)
-		serializer = TeamSerializer(team)
-		return Response(serializer.data)
-
-	def create(self, request):
-		if request.data.get('name') and request.data.get('description'):
-			team = Team.objects.create(
-				name=request.data.get('name'),
-				description=request.data.get('description')
-			)
-			request.user.team = team
-			request.use.save()
-			return Response(status=status.HTTP_201_CREATED)
+			serializer = MiniAccountInfoSerializer(accounts, many=True)
+			return Response(serializer.data)
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
-
-	def update(self, request, pk):
-		team = get_object_or_404(self.queryset, pk=pk)
-
-		if request.data.get('name'):
-			team.name = request.data.get('name')
-
-		if request.data.get('description'):
-			team.description = request.data.get('description')
-
-		team.save()
-		return Response(status=status.HTTP_200_OK)
-
-	def add_team_member(self, request, pk):
-		# IMPORTANT: Here pk is Team Pk!
-		if request.method == 'PATCH':
-			team = get_object_or_404(self.queryset, pk=pk)
-			if request.data.get('email'):
-				# Must use == not is here, otherwise type dismatch
-				is_advisor = True if request.data.get('is_advisor') == 'true' else False
-				# Create AccountInfo first
-				info = AccountInfo.objects.create(
-					avatar=request.data.get('avatar'),
-					first_name=request.data.get('first_name'),
-					last_name=request.data.get('last_name'),
-					title=request.data.get('title'),
-					description=request.data.get('description'),
-					team_id=pk,
-					is_advisor=is_advisor,
-					linkedin=request.data.get('linkedin', ''),
-					twitter=request.data.get('twitter', ''),
-					facebook=request.data.get('facebook', ''),
-					telegram=request.data.get('telegram', ''),
-				)
-				# if user email duplicate, delete the AccountInfo just created and return 400
-				try:
-					user = Account.objects.create(
-						email=request.data.get('email'),
-						info_id=info.id,
-						type=0,  # ICO Company
-					)
-				except:
-					info.delete()
-					return Response({'detail': 'User with this email already exists'}, status=status.HTTP_400_BAD_REQUEST)
-
-				# if created user, add AccountInfo to team
-				team.members.add(info)
-				# give user just created a random password
-				user.set_password(''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(16)]))
-				user.save()
-
-				user_verify_token = get_user_verify_token(user)
-
-				if is_advisor:
-					send_email(receiver_list=[user.email],
-					           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
-					           template_name='TeamAdvisorInvitation',
-					           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': team.name}
-					           )
-				else:
-					send_email(receiver_list=[user.email],
-					           subject='ICOToday - ' + user.info.full_name() + ', Your Team is Waiting You',
-					           template_name='TeamMemberInvitation',
-					           ctx={'username': user.info.full_name(), 'token': user_verify_token.token, 'team_name': team.name}
-					           )
-
-				return Response(status=status.HTTP_200_OK)
-			else:
-				return Response(status=status.HTTP_400_BAD_REQUEST)
-		# IMPORTANT: Here pk is Account Pk!
-		elif request.method == 'DELETE':
-			info = get_object_or_404(AccountInfo.objects.all(), pk=pk)
-			info.team.members.remove(info)
-			return Response(status=status.HTTP_200_OK)
 
 
 class ExpertApplicationViewSet(viewsets.ViewSet):
@@ -464,9 +368,9 @@ class ExpertApplicationViewSet(viewsets.ViewSet):
 
 	def retrieve(self, request):
 		# Only Investor Allowed
-		if request.user.type == 1:
+		if request.user.info.type == 1:
 			try:
-				serializer = ExpertApplicationSerializer(request.user.expert_application)
+				serializer = ExpertApplicationSerializer(request.user.info.expert_application)
 				return Response(serializer.data, status=status.HTTP_200_OK)
 			except ExpertApplication.DoesNotExist:
 				return Response(status=status.HTTP_200_OK)
@@ -476,18 +380,22 @@ class ExpertApplicationViewSet(viewsets.ViewSet):
 	def create(self, request):
 		if request.data.get('detail'):
 			ExpertApplication.objects.create(
-				account_id=request.user.id,
+				account_id=request.user.info.id,
 				detail=request.data.get('detail')
 			)
+			Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
+			                            receiver_id=request.user.info.id,
+			                            content='Thank you for submitting your expert application on ICOToday! We are reviewing your application.',
+			                            related='expert_app')
 			return Response(status=status.HTTP_201_CREATED)
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
 	def update(self, request):
 		try:
-			application = request.user.expert_application
+			application = request.user.info.expert_application
 		except ExpertApplication.DoesNotExist:
-			return Response(status=status.HTTP_200_OK)
+			return Response(status=status.HTTP_400_BAD_REQUEST)
 
 		if request.data.get('detail'):
 			application.detail = request.data.get('detail')

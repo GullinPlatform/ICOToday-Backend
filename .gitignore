@@ -1,80 +1,32 @@
 # Byte-compiled / optimized / DLL files
+.DS_Store
 __pycache__/
 *.py[cod]
-*$py.class
 
-# C extensions
-*.so
+ICOToday/apps/projects/migrations/*
+!ICOToday/apps/projects/migrations/__init__.py
 
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*,cover
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-\.idea/
-
-ICOToday/tmp.sqlite3
-
-ICOToday/apps/posts/migrations/*
-!ICOToday/apps/posts/migrations/__init__.py
-
-ICOToday/apps/discussions/migrations/*
-!ICOToday/apps/discussions/migrations/__init__.py
+ICOToday/apps/feeds/migrations/*
+!ICOToday/apps/feeds/migrations/__init__.py
 
 ICOToday/apps/accounts/migrations/*
 !ICOToday/apps/accounts/migrations/__init__.py
 
 ICOToday/apps/notifications/migrations/*
-!ICOToday/apps/notifications/__init__.py
+!ICOToday/apps/notifications/migrations/__init__.py
 
-env_ico/*
+ICOToday/apps/wallets/migrations/*
+!ICOToday/apps/wallets/migrations/__init__.py
 
-icoenv/*
+ICOToday/apps/companies/migrations/*
+!ICOToday/apps/companies/migrations/__init__.py
 
-.DS_Store
+ICOToday/apps/conversations/migrations/*
+!ICOToday/apps/conversations/migrations/__init__.py
+
+ICOToday/media/
+ICOToday/tmp.sqlite3
+
+env_ico/
+
+\.idea/

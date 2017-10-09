@@ -1,10 +1,19 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django.utils import timezone
 from django.db import models
 
+from ..utils.upload_filename import project_promo_upload, project_icon_upload
 
-class Post(models.Model):
+
+class Project(models.Model):
+	"""
+	AccountInfo Model
+	Relations:
+	field name | key type | origin model
+	1) rating_details ForeignKey projects.Project
+	"""
 	STATUS_CHOICES = (
 		(0, 'Verifying'),
 		(1, 'Verified'),
@@ -12,21 +21,22 @@ class Post(models.Model):
 		(3, 'Promoting'),
 		(4, 'Premium'),
 		(5, 'Closed'),
+		(6, 'Rejected'),
 	)
 
 	TYPE_CHOICES = (
 		(0, 'Pre-ICO'),
 		(1, 'ICO'),
 	)
-	creator = models.ForeignKey('accounts.Account', related_name='created_posts')
-	marked = models.ManyToManyField('accounts.Account', blank=True, related_name='marked_posts')
-	team = models.ForeignKey('accounts.Team', blank=True, related_name='posts')
+
+	marked = models.ManyToManyField('accounts.AccountInfo', blank=True, related_name='marked_projects')
+	company = models.OneToOneField('companies.Company', blank=True, related_name='project')
 
 	# Information
-	title = models.CharField(max_length=100)
+	name = models.CharField(max_length=100, unique=True)
 	description_short = models.CharField(max_length=200, null=True, blank=True)
 	description_full = models.TextField()
-	tags = models.ManyToManyField('PostTag', related_name='posts')
+	tags = models.ManyToManyField('ProjectTag', related_name='posts')
 	category = models.CharField(max_length=100)
 
 	# Time
@@ -47,8 +57,8 @@ class Post(models.Model):
 	money_raised = models.IntegerField(null=True, blank=True)
 
 	# Supplements
-	promote_image = models.ImageField(upload_to='posts/images/', null=True, blank=True)
-	logo_image = models.ImageField(upload_to='posts/images/', null=True, blank=True)
+	promote_image = models.ImageField(upload_to=project_promo_upload, null=True, blank=True)
+	logo_image = models.ImageField(upload_to=project_icon_upload, null=True, blank=True)
 	white_paper = models.CharField(max_length=100, null=True, blank=True)
 	video_link = models.CharField(max_length=100, null=True, blank=True)
 	website = models.CharField(max_length=100, null=True, blank=True)
@@ -67,56 +77,46 @@ class Post(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
 
-	# relation
-	# files
 	class Meta:
-		ordering = ['-start_datetime']
+		ordering = ['start_datetime']
 
 	def __str__(self):
-		return self.title
+		return self.name
 
 	def time_passed(self):
-		return True if self.end_date > timezone.now() else False
+		if not self.end_datetime:
+			return False
+		return True if self.end_datetime > timezone.now() else False
 
 
-class PostTag(models.Model):
+class ProjectTag(models.Model):
+	"""
+	ProjectTag Model
+	Relations:
+	field name | key type | origin model
+	1) accounts ManyToManyField accounts.AccountInfo
+	2) posts ManyToManyField projects.Project
+	"""
 	tag = models.CharField(max_length=40)
 
 	def __str__(self):
 		return self.tag if self.tag else ' '
 
 
-class RatingDetail(models.Model):
-	rater = models.ForeignKey('accounts.Account', related_name='ratings')
-	post = models.ForeignKey('Post', related_name='rating_detail')
-	detail = models.TextField()
+class ProjectRatingDetail(models.Model):
+	rater = models.ForeignKey('accounts.AccountInfo', related_name='my_rating_details')
 	score = models.IntegerField(default=0)
+	content = models.TextField()
+
+	# Relation
+	project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='rating_details')
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
 
 	def __str__(self):
-		return self.post.title + ' by ' + self.rater.email
+		return self.content[:15]
 
-
-class PromotionApplication(models.Model):
-	STATUS_CHOICES = (
-		(0, 'Processing'),
-		(1, 'Approved'),
-		(2, 'Declined'),
-	)
-
-	# Info
-	account = models.ForeignKey('accounts.Account', related_name='my_promotions')
-	team = models.ForeignKey('accounts.Team', related_name='promotions')
-	detail = models.TextField()
-	status = models.IntegerField(default=0, choices=STATUS_CHOICES)
-	response = models.TextField()
-
-	# Timestamp
-	created = models.DateTimeField(auto_now_add=True)
-	updated = models.DateTimeField(auto_now=True)
-
-	def __str__(self):
-		return self.team.name
+	class Meta:
+		ordering = ['-created']

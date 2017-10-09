@@ -20,23 +20,23 @@ import debug_toolbar
 from django.conf import settings
 
 from .apps.accounts import urls as account_urls
-from .apps.posts import urls as post_urls
-from .apps.discussions import urls as discussion_urls
+from .apps.companies import urls as company_urls
+from .apps.conversations import urls as message_urls
+from .apps.projects import urls as project_urls
+from .apps.feeds import urls as feed_urls
 from .apps.notifications import urls as notification_urls
 from .apps.wallets import urls as wallet_urls
 
 urlpatterns = [
 	url(r'^6y07cs0yq9/', admin.site.urls),
-	url(r'^account/', include(account_urls)),
-	url(r'^discussion/', include(discussion_urls)),
-	url(r'^post/', include(post_urls)),
-	url(r'^notification/', include(notification_urls)),
-	url(r'^wallet/', include(wallet_urls)),
-
+	url(r'^ac/', include(account_urls)),
+	url(r'^cp/', include(company_urls)),
+	url(r'^ms/', include(message_urls)),
+	url(r'^fd/', include(feed_urls)),
+	url(r'^nt/', include(notification_urls)),
+	url(r'^pj/', include(project_urls)),
+	url(r'^wl/', include(wallet_urls)),
 ]
 
 if settings.DEBUG:
-	# static files (images, css, javascript, etc.)
-	urlpatterns += staticfiles_urlpatterns()
-	urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 	urlpatterns += [url(r'^__debug__/', include(debug_toolbar.urls))]

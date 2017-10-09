@@ -1,6 +1,11 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django import forms
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
+
 from .models import Account, AccountInfo
+from ..wallets.models import Wallet
 
 
 class AccountCreationForm(forms.ModelForm):
@@ -25,9 +30,10 @@ class AccountCreationForm(forms.ModelForm):
 		# Save the provided password in hashed format
 		user = super(AccountCreationForm, self).save(commit=False)
 		user.set_password(self.cleaned_data["password1"])
-		info = AccountInfo.objects.create()
-		user.info = info
 		if commit:
+			wallet = Wallet.objects.create()
+			info = AccountInfo.objects.create(wallet=wallet)
+			user.info = info
 			user.save()
 		return user
 

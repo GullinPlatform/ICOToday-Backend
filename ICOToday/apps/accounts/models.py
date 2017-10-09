@@ -1,26 +1,62 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
 from django.core.mail import send_mail
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
+from ..utils.upload_filename import user_avatar_upload
+from ..wallets.models import Wallet
+
 
 class AccountInfo(models.Model):
-	# Account Info
-	avatar = models.ImageField(upload_to='avatars', default='avatars/default.jpg', null=True, blank=True)
+	"""
+	AccountInfo Model
+	Relations:
+	field name | key type | origin model
+	1) account OneToOneField accounts.Account
+	2) expert_application OneToOneField accounts.ExpertApplication
+	3) promotion_applications ForeignKey companies.PromotionApplication
+	4) messages ForeignKey conversations.Message
+	5) conversations ManyToManyField conversations.Conversation
+	6) feeds ForeignKey feeds.Feed
+	7) notifications ForeignKey notifications.Notification
+	8) sent_notifications ForeignKey notifications.Notification
+	9) marked_projects ManyToManyField projects.Project
+	10) my_rating_details ForeignKey projects.ProjectRatingDetail
+	"""
+	TYPE_CHOICES = (
+		(-1, 'Not Choose'),
+		(0, 'Company'),
+		(1, 'Investor'),
+		(2, 'Expert'),
+		(3, 'Advisor'),
+	)
+	# Account Type
+	type = models.IntegerField(choices=TYPE_CHOICES, default=-1)
 
+	# Personal Info
+	avatar = models.ImageField(upload_to=user_avatar_upload, default='avatars/default.jpg', null=True, blank=True)
 	first_name = models.CharField(max_length=40, null=True, blank=True)
 	last_name = models.CharField(max_length=40, null=True, blank=True)
-
 	title = models.CharField(max_length=40, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
 
-	team = models.ForeignKey('Team', related_name='members', null=True, blank=True)
+	# Wallet
+	wallet = models.OneToOneField('wallets.Wallet', related_name='account')
 
-	is_advisor = models.BooleanField(default=False)
-	is_expert = models.BooleanField(default=False)
+	# Is Verified
+	is_verified = models.BooleanField(default=False)
+
+	# My Company
+	company = models.ForeignKey('companies.Company', related_name='members', null=True, blank=True)
+	company_admin = models.ForeignKey('companies.Company', related_name='admins', null=True, blank=True)
+	company_pending = models.ForeignKey('companies.Company', related_name='pending_members', null=True, blank=True)
+
+	# Interested Fields
+	interests = models.ManyToManyField('projects.ProjectTag', related_name='accounts', blank=True)
 
 	# Social Media
 	linkedin = models.CharField(max_length=100, null=True, blank=True)
@@ -28,11 +64,25 @@ class AccountInfo(models.Model):
 	telegram = models.CharField(max_length=100, null=True, blank=True)
 	facebook = models.CharField(max_length=100, null=True, blank=True)
 
+	# Security
+	last_login_ip = models.GenericIPAddressField(null=True, blank=True)
+
+	# Timestamp
+	created = models.DateTimeField(auto_now_add=True)
+	updated = models.DateTimeField(auto_now=True)
+
 	def __str__(self):
-		return self.first_name + ' ' + self.last_name if self.first_name and self.last_name else str(self.id)
+		return self.full_name()
 
 	def full_name(self):
-		return self.first_name + ' ' + self.last_name if self.first_name and self.last_name else str(self.id)
+		if self.first_name and self.last_name:
+			return self.first_name + ' ' + self.last_name
+		elif self.first_name:
+			return self.first_name
+		elif self.last_name:
+			return self.last_name
+		else:
+			return str(self.id)
 
 
 class AccountManager(BaseUserManager):
@@ -45,7 +95,8 @@ class AccountManager(BaseUserManager):
 		if not extra_fields.get('email') and not extra_fields.get('phone'):
 			raise ValueError('The email/phone must be set')
 
-		info = AccountInfo.objects.create()
+		wallet = Wallet.objects.create()
+		info = AccountInfo.objects.create(wallet=wallet)
 		account = self.model(**extra_fields)
 		account.set_password(password)
 		account.info_id = info.id
@@ -64,26 +115,23 @@ class AccountManager(BaseUserManager):
 
 
 class Account(AbstractBaseUser, PermissionsMixin):
-	TYPE_CHOICES = (
-		(-1, 'Not Choose'),
-		(0, 'ICO Company'),
-		(1, 'ICO Investor'),
-	)
-
+	"""
+	Account Model
+	Relations:
+	field name | key type | origin model
+	1) verify_token OneToOneField accounts.VerifyToken
+	"""
 	# Auth
 	email = models.EmailField(unique=True, null=True, blank=True)
 	phone = models.CharField(max_length=20, unique=True, null=True, blank=True)
-	type = models.IntegerField(choices=TYPE_CHOICES, default=0)
 
 	# Info
-	info = models.OneToOneField('AccountInfo', related_name='account')
+	info = models.OneToOneField('AccountInfo', related_name='account', on_delete=models.CASCADE)
 
 	# Permission
 	# # from inherit
 	is_staff = models.BooleanField(default=False)
 	is_active = models.BooleanField(default=True)
-	# # self defined
-	is_verified = models.BooleanField(default=False)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)
@@ -120,26 +168,13 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
 
 class VerifyToken(models.Model):
-	account = models.ForeignKey('Account', related_name='verify_token')
+	account = models.OneToOneField('Account', related_name='verify_token')
 	token = models.CharField(max_length=200)
 	expire_time = models.DateTimeField(auto_now_add=True)
 
 	@property
 	def is_expired(self):
 		return (timezone.now() - timedelta(hours=5)) > self.expire_time
-
-
-class Team(models.Model):
-	# Team Info
-	name = models.CharField(max_length=50, null=True)
-	description = models.TextField(null=True, blank=True)
-
-	# Timestamp
-	created = models.DateTimeField(auto_now_add=True)
-	updated = models.DateTimeField(auto_now=True)
-
-	def __str__(self):
-		return self.name
 
 
 class ExpertApplication(models.Model):
@@ -150,7 +185,7 @@ class ExpertApplication(models.Model):
 	)
 
 	# Info
-	account = models.OneToOneField('Account', related_name='expert_application')
+	account = models.OneToOneField('AccountInfo', related_name='expert_application')
 	detail = models.TextField()
 	status = models.IntegerField(default=0, choices=STATUS_CHOICES)
 	response = models.TextField()
@@ -160,4 +195,4 @@ class ExpertApplication(models.Model):
 	updated = models.DateTimeField(auto_now=True)
 
 	def __str__(self):
-		return self.account.email
+		return self.account.full_name()

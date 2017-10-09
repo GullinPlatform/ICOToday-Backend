@@ -39,7 +39,7 @@ class CompanyAdminsInline(admin.TabularInline):
 class CompanyAdmin(admin.ModelAdmin):
 	list_display = ('name', 'created')
 	fieldsets = [
-		[None, {'fields': ['name', 'is_verified']}],
+		[None, {'fields': ['name']}],
 		['Timestamp', {'fields': ['created', 'updated']}],
 	]
 	readonly_fields = ('created', 'updated')

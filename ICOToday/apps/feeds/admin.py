@@ -10,9 +10,10 @@ class FeedAdmin(admin.ModelAdmin):
 	list_display = ('id', 'type', 'creator', 'created')
 	fieldsets = (
 		('Details', {'fields': ('content', 'reply_to', 'type', 'creator')}),
-		('Relations', {'fields': ('project', 'company', 'rate')}),
+		('Relations', {'fields': ('company',)}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	readonly_fields = ('created', 'updated')
+
 
 admin.site.register(Feed, FeedAdmin)

@@ -91,9 +91,9 @@ class CompanyViewSet(viewsets.ViewSet):
 		if request.method == 'POST':
 			# Add New Company member and sent invite email
 			if request.data.get('email'):
-				# Must use == not is here, otherwise type dismatch
-				is_advisor = True if request.data.get('is_advisor') == 'true' else False
-				# Create AccountInfo first
+				# Create Wallet First
+				wallet = Wallet.objects.create()
+				# Create AccountInfo then
 				info = AccountInfo.objects.create(
 					avatar=request.data.get('avatar'),
 					first_name=request.data.get('first_name'),
@@ -101,7 +101,8 @@ class CompanyViewSet(viewsets.ViewSet):
 					title=request.data.get('title'),
 					description=request.data.get('description'),
 					company_id=request.user.info.company.id,
-					is_advisor=is_advisor,
+					type=request.data.get('type'),
+					wallet=wallet,
 					linkedin=request.data.get('linkedin', ''),
 					twitter=request.data.get('twitter', ''),
 					facebook=request.data.get('facebook', ''),
@@ -112,10 +113,10 @@ class CompanyViewSet(viewsets.ViewSet):
 					account = Account.objects.create(
 						email=request.data.get('email'),
 						info_id=info.id,
-						type=0,  # ICO Company
 					)
-				except Error:
+				except:
 					info.delete()
+					wallet.delete()
 					return Response({'detail': 'User with this email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
 				# if created user, add AccountInfo to company
@@ -125,7 +126,7 @@ class CompanyViewSet(viewsets.ViewSet):
 				account.save()
 
 				token_instance = VerifyTokenUtils.generate_token_by_user(user=account)
-				if is_advisor:
+				if int(request.data.get('type')) == 3:
 					send_email(receiver_list=[account.email],
 					           subject='ICOToday - ' + account.info.full_name() + ', Your Team is Waiting You',
 					           template_name='TeamAdvisorInvitation',

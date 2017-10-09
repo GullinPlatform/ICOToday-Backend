@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 
-from .models import Project, ProjectTag
+from .models import Project, ProjectTag, ProjectRatingDetail
 
 
 class ProjectAdmin(admin.ModelAdmin):
@@ -25,5 +25,15 @@ class PostTagAdmin(admin.ModelAdmin):
 	list_display = ('tag',)
 
 
+class ProjectRatingDetailAdmin(admin.ModelAdmin):
+	list_display = ('rater', 'score', 'project', 'created')
+
+	fieldsets = (('Info', {'fields': ('rater', 'project')}),
+	             ('Detail', {'fields': ('score', 'content')}),
+	             ('Timestamp', {'fields': ('created', 'updated')}),)
+	readonly_fields = ('created', 'updated')
+
+
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(ProjectTag, PostTagAdmin)
+admin.site.register(ProjectRatingDetail, ProjectRatingDetailAdmin)

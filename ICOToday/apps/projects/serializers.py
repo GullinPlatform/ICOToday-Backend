@@ -3,9 +3,10 @@ from __future__ import unicode_literals
 
 from rest_framework import serializers
 
-from .models import Project, ProjectTag
+from .models import Project, ProjectTag, ProjectRatingDetail
 
 from ..companies.serializers import BasicCompanySerializer
+from ..accounts.serializers import MiniAccountInfoSerializer
 
 
 class ProjectTagSerializer(serializers.ModelSerializer):
@@ -30,7 +31,7 @@ class BasicProjectSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Project
-		fields = ['id', 'company', 'description_short', 'company',
+		fields = ['id', 'company', 'description_short', 'rating',
 		          'logo_image', 'promote_image', 'name', 'type', 'category',
 		          'status', 'tags', 'website', 'maximum_goal', 'minimum_goal', 'coin_unit', 'accept',
 		          'start_datetime', 'end_datetime', 'current', 'money_raised', 'equality_on_offer',
@@ -41,4 +42,12 @@ class BasicProjectSerializer(serializers.ModelSerializer):
 class MiniProjectSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Project
-		fields = ['id', 'company', 'description_short', 'logo_image']
+		fields = ['id', 'company', 'description_short', 'logo_image', 'rating']
+
+
+class ProjectRatingDetailSerializer(serializers.ModelSerializer):
+	rater = MiniAccountInfoSerializer()
+
+	class Meta:
+		model = ProjectRatingDetail
+		fields = '__all__'

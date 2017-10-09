@@ -56,8 +56,8 @@ class FeedViewSet(viewsets.ViewSet):
 		serializer = FeedSerializer(company.feeds.filter(reply_to=None), many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
-	def user_feeds(self, request, user_id):
-		account_info = get_object_or_404(AccountInfo.objects.all(), id=user_id)
+	def user_feeds(self, request, account_info_id):
+		account_info = get_object_or_404(AccountInfo.objects.all(), id=account_info_id)
 		serializer = FeedSerializer(account_info.feeds.filter(reply_to=None), many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -69,15 +69,18 @@ class FeedViewSet(viewsets.ViewSet):
 			serializer.save()
 
 			# Send Email
-			project = Company.objects.get(id=company_id).project
-			email_list = []
-			# TODO: email
-			for marked in project.marked.all():
-				email_list.append(marked.account.email)
-			if request.user.info in project.company.members.all():
-				send_email(email_list, 'ICOToday - Official Team Member Posted a Comment in ICO Project', 'NewComment', {id: project.id})
-			else:
-				send_email(email_list, 'ICOToday - New Comment on ICO You Subscribe to', 'NewComment', {id: project.id})
+			try:
+				project = Company.objects.get(id=company_id).project
+				email_list = []
+				# TODO: email
+				for marked in project.marked.all():
+					email_list.append(marked.account.email)
+				if request.user.info in project.company.members.all():
+					send_email(email_list, 'ICOToday - Official Team Member Posted a Comment in ICO Project', 'NewComment', {id: project.id})
+				else:
+					send_email(email_list, 'ICOToday - New Comment on ICO You Subscribe to', 'NewComment', {id: project.id})
+			except: # RelatedObjectDoesNotExist could happen
+				pass
 
 		else:
 			serializer = FeedSerializer(data=request.data, context={'creator_id': request.user.info.id})

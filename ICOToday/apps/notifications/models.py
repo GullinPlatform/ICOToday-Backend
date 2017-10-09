@@ -14,6 +14,7 @@ class Notification(models.Model):
 		('subscribe', 'Subscribe'),
 		('company', 'Company'),
 		('user', 'User'),
+		('expert_app', 'Expert application'),
 	)
 
 	receiver = models.ForeignKey('accounts.AccountInfo', related_name='notifications', on_delete=models.CASCADE, default=settings.OFFICIAL_ACCOUNT_INFO_ID)

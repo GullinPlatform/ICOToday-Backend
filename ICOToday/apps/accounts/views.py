@@ -43,17 +43,17 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		if request.data.get('referrer'):
 			try:
 				referrer = Account.objects.get(email=request.data.get('referrer'))
-				referrer.wallet.icc_amount += 5
+				referrer.info.wallet.ict_amount += 5
 				referrer.save()
 				Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
-				                            receiver_id=referrer.id,
+				                            receiver_id=referrer.info.id,
 				                            content='A friend just joined ICOToday with your referral link! 5 ICOCoins have been deposited to your wallet.',
 				                            related='wallet')
 			except Account.DoesNotExist:
 				pass
 
 		# Add Bonny to User Wallet
-		account.info.wallet.icc_amount += 5
+		account.info.wallet.ict_amount += 5
 		account.info.wallet.save()
 		Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
 		                            receiver_id=account.info.id,
@@ -102,7 +102,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			account.info.save()
 
 			# Add Bonny to User Wallet
-			account.info.wallet.icc_amount += 5
+			account.info.wallet.ict_amount += 5
 			account.info.wallet.save()
 			Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
 			                            receiver_id=account.info.id,
@@ -143,8 +143,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 				send_email(receiver_list=[request.user.email],
 				           subject='ICOToday - Email Verification',
 				           template_name='EmailVerification',
-				           ctx={'user': request.user, 'token': token_instance.token}
-				           )
+				           ctx={'user': request.user, 'token': token_instance.token})
 				return Response(status=status.HTTP_200_OK)
 			else:
 				return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -223,7 +222,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 
 
 class AccountViewSet(viewsets.ViewSet):
-	queryset = Account.objects.exclude(is_staff=1)
+	queryset = Account.objects.all()
 	parser_classes = (MultiPartParser, FormParser, JSONParser)
 	permission_classes = (IsAuthenticated,)
 
@@ -384,6 +383,10 @@ class ExpertApplicationViewSet(viewsets.ViewSet):
 				account_id=request.user.info.id,
 				detail=request.data.get('detail')
 			)
+			Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
+			                            receiver_id=request.user.info.id,
+			                            content='Thank you for submitting your expert application on ICOToday! We are reviewing your application.',
+			                            related='expert_app')
 			return Response(status=status.HTTP_201_CREATED)
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)

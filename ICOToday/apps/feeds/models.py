@@ -20,6 +20,7 @@ class Feed(models.Model):
 	reply_to = models.ForeignKey('self', related_name='replies', null=True, blank=True, on_delete=models.CASCADE)
 
 	# Relations
+	# Notice: the company field here means the feed is by a company, if this field is null, then its a normal feed (personal feed)
 	company = models.ForeignKey('companies.Company', related_name='feeds', null=True, blank=True)
 
 	# Timestamp

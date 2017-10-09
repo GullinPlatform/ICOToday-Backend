@@ -12,7 +12,7 @@ from ..companies.models import Company
 class MiniCompanySerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Company
-		fields = ['id', 'name']
+		fields = ['id', 'name', 'project']
 
 
 class AccountInfoSerializer(serializers.ModelSerializer):
@@ -24,10 +24,10 @@ class AccountInfoSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = AccountInfo
-		fields = ['id', 'account', 'type', 'avatar', 'first_name', 'last_name',
+		fields = ['id', 'account', 'type', 'avatar', 'first_name', 'last_name', 'full_name',
 		          'company', 'company_admin', 'title', 'description', 'interests', 'is_verified',
 		          'linkedin', 'twitter', 'telegram', 'facebook']
-		read_only_fields = ('type', 'is_verified', 'interests', 'id')
+		read_only_fields = ('type', 'is_verified', 'interests', 'id', 'full_name')
 
 
 class BasicAccountInfoSerializer(serializers.ModelSerializer):
@@ -39,7 +39,7 @@ class BasicAccountInfoSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = AccountInfo
 		fields = ['id', 'avatar', 'full_name', 'account', 'title', 'description', 'company',
-		          'linkedin', 'twitter', 'telegram', 'facebook']
+		          'linkedin', 'twitter', 'telegram', 'facebook', 'type']
 
 
 class MiniAccountInfoSerializer(serializers.ModelSerializer):
@@ -49,7 +49,7 @@ class MiniAccountInfoSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = AccountInfo
-		fields = ['id', 'avatar', 'full_name', 'account']
+		fields = ['id', 'avatar', 'full_name', 'account', 'title']
 
 
 class AuthAccountSerializer(serializers.ModelSerializer):

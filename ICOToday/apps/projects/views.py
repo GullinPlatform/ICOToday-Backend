@@ -10,10 +10,10 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser, FileUploadParser
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from .models import Project, ProjectTag
+from .models import Project, ProjectTag, ProjectRatingDetail
+from ..accounts.models import AccountInfo
 
-from .serializers import ProjectSerializer, ProjectTagSerializer, BasicProjectSerializer
-from ..feeds.serializers import FeedSerializer
+from .serializers import ProjectSerializer, ProjectTagSerializer, BasicProjectSerializer, ProjectRatingDetailSerializer
 
 from ..utils.send_email import send_email
 
@@ -28,15 +28,26 @@ class ProjectViewSet(viewsets.ViewSet):
 		serializer = BasicProjectSerializer(queryset, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
-	# TODO: Link URL
+	def unrated_list(self, request):
+		queryset = self.queryset.filter(rating=None)[:20]
+		serializer = BasicProjectSerializer(queryset, many=True)
+		return Response(serializer.data, status=status.HTTP_200_OK)
+
+	def user_rated_list(self, request, account_info_id):
+		account_info = get_object_or_404(AccountInfo.objects.all(), id=account_info_id)
+		queryset = self.queryset.filter(rating_details__rater=account_info)
+		serializer = BasicProjectSerializer(queryset, many=True)
+		return Response(serializer.data, status=status.HTTP_200_OK)
+
 	def statistic(self, request):
 		query = self.queryset.exclude(status=0)
 		now = timezone.now()
 		active = query.filter(start_datetime__lte=now, end_datetime__gte=now).count()
 		upcoming = query.filter(start_datetime__gte=now).count()
 		passed = query.filter(end_datetime__lte=now).count()
+		all = query.count()
 
-		return Response({'active': active, 'upcoming': upcoming, 'passed': passed})
+		return Response({'active': active, 'upcoming': upcoming, 'passed': passed, 'all': all}, status=status.HTTP_200_OK)
 
 	def close(self, request):
 		for project in self.queryset:
@@ -45,7 +56,7 @@ class ProjectViewSet(viewsets.ViewSet):
 				project.save()
 		return Response(status=status.HTTP_200_OK)
 
-	def search(self, request, p=None):
+	def search(self, request):
 		query = self.queryset.exclude(status=0)
 		# Cache query in memory to improve performance
 		[q for q in query]
@@ -68,10 +79,11 @@ class ProjectViewSet(viewsets.ViewSet):
 		# Then search by keyword
 		if request.GET.get('keyword'):
 			for project in query:
-				if request.GET.get('keyword').lower() not in project.title.lower():
+				if request.GET.get('keyword').lower() not in project.name.lower():
 					query = query.exclude(id=project.id)
 		# Then paginate
 		paginator = Paginator(query, 10)
+		p = request.GET.get('page')
 		try:
 			projects = paginator.page(p)
 		except PageNotAnInteger:
@@ -134,14 +146,6 @@ class ProjectViewSet(viewsets.ViewSet):
 		serializer = ProjectSerializer(project)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
-	def retrieve_rating_detail(self, request, id):
-		pass
-
-	# TODO:
-	# project = get_object_or_404(self.queryset, id=id)
-	# serializer = RatingDetailSerializer(project.rating_detail, many=True)
-	# return Response(serializer.data, status=status.HTTP_200_OK)
-
 	def update(self, request, id):
 		project = get_object_or_404(self.queryset, id=id)
 		serializer = ProjectSerializer(project, data=request.data, partial=True)
@@ -164,12 +168,6 @@ class ProjectViewSet(viewsets.ViewSet):
 		else:
 			return Response(status=status.HTTP_403_FORBIDDEN)
 
-	def comment_list(self, request, id):
-		project = get_object_or_404(Project.objects.all(), id=id)
-		discussions = project.discussions
-		serializer = FeedSerializer(discussions, many=True)
-		return Response(serializer.data, status=status.HTTP_200_OK)
-
 	def mark_project(self, request, id):
 		project = get_object_or_404(self.queryset, id=id)
 		if request.user.info in project.marked.all():
@@ -186,22 +184,6 @@ class ProjectViewSet(viewsets.ViewSet):
 		else:
 			return Response(status=status.HTTP_404_NOT_FOUND)
 
-	# TODO:
-	def rate(self, request, id):
-		pass
-
-	# 	# Is Expert
-	# 	if request.user.type == 3:
-	# 		project = get_object_or_404(self.queryset, id=id)
-	# 		if request.data.get('descriptions', False):
-	# 			RatingDetail.objects.create(
-	# 				rater_id=request.user.id,
-	# 				description=request.data.get('descriptions'),
-	# 				project_id=project.id
-	# 			)
-	# 	else:
-	# 		return Response(status=status.HTTP_403_FORBIDDEN)
-
 
 class ProjectTagViewSet(viewsets.ViewSet):
 	queryset = ProjectTag.objects.all()
@@ -211,3 +193,61 @@ class ProjectTagViewSet(viewsets.ViewSet):
 	def list(self, request):
 		serializer = ProjectTagSerializer(self.queryset, many=True)
 		return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProjectRatingDetailViewSet(viewsets.ViewSet):
+	parser_classes = (MultiPartParser, FormParser, JSONParser)
+	permission_classes = (IsAuthenticatedOrReadOnly,)
+
+	def list(self, request, project_id):
+		queryset = ProjectRatingDetail.objects.filter(project_id=project_id)
+		serializer = ProjectRatingDetailSerializer(queryset, many=True)
+		return Response(serializer.data, status=status.HTTP_200_OK)
+
+	def rate(self, request, project_id):
+		# Return if user is nor expert
+		if not request.user.info.type == 2:
+			return Response(status=status.HTTP_403_FORBIDDEN)
+
+		project = Project.objects.filter(id=project_id).first()
+		if not project:
+			return Response(status=status.HTTP_404_NOT_FOUND)
+
+		if request.method == 'POST':
+			count = ProjectRatingDetail.objects.filter(project_id=project_id, rater_id=request.user.info.id).count()
+			if count > 0:
+				return Response({'detail': 'user can only rate a project once'}, status=status.HTTP_400_BAD_REQUEST)
+
+			# Create project rating
+			project_rating = ProjectRatingDetail.objects.create(
+				project_id=project_id,
+				rater_id=request.user.info.id,
+				score=request.data.get('score'),
+				content=request.data.get('content'),
+			)
+
+			if project.rating:
+				count = ProjectRatingDetail.objects.filter(project_id=project_id).count()
+				project.rating = (int(project.rating) * count + int(request.data.get('score'))) / (count + 1)
+				project.save()
+			else:
+				project.rating = int(request.data.get('score'))
+				project.save()
+
+			# TODO: Notification and email here
+			serializer = ProjectRatingDetailSerializer(project_rating)
+			return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+		elif request.method == 'PUT':
+			project_rating = ProjectRatingDetail.objects.filter(project_id=project_id, rater_id=request.user.info.id).first()
+			if not project_rating:
+				return Response(status=status.HTTP_404_NOT_FOUND)
+
+			project_rating.score = request.data.get('score')
+			project_rating.content = request.data.get('content')
+			project_rating.save()
+
+			# TODO: Notification and email here
+			serializer = ProjectRatingDetailSerializer(project_rating)
+			return Response(serializer.data, status=status.HTTP_201_CREATED)
+		# No delete supported because they can review and delete to affect the score

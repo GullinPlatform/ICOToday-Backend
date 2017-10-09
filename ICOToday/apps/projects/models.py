@@ -8,6 +8,12 @@ from ..utils.upload_filename import project_promo_upload, project_icon_upload
 
 
 class Project(models.Model):
+	"""
+	AccountInfo Model
+	Relations:
+	field name | key type | origin model
+	1) rating_details ForeignKey projects.Project
+	"""
 	STATUS_CHOICES = (
 		(0, 'Verifying'),
 		(1, 'Verified'),
@@ -95,3 +101,22 @@ class ProjectTag(models.Model):
 
 	def __str__(self):
 		return self.tag if self.tag else ' '
+
+
+class ProjectRatingDetail(models.Model):
+	rater = models.ForeignKey('accounts.AccountInfo', related_name='my_rating_details')
+	score = models.IntegerField(default=0)
+	content = models.TextField()
+
+	# Relation
+	project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='rating_details')
+
+	# Timestamp
+	created = models.DateTimeField(auto_now_add=True)
+	updated = models.DateTimeField(auto_now=True)
+
+	def __str__(self):
+		return self.content[:15]
+
+	class Meta:
+		ordering = ['-created']

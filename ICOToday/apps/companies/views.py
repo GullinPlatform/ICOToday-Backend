@@ -90,7 +90,7 @@ class CompanyViewSet(viewsets.ViewSet):
 		# Add Company Member to own company
 		if request.method == 'POST':
 			# Add New Company member and sent invite email
-			if request.data.get('email'):
+			if request.data.get('type'):
 				# Create Wallet First
 				wallet = Wallet.objects.create()
 				# Create AccountInfo then
@@ -108,38 +108,40 @@ class CompanyViewSet(viewsets.ViewSet):
 					facebook=request.data.get('facebook', ''),
 					telegram=request.data.get('telegram', ''),
 				)
+
 				# if user email duplicate, delete the AccountInfo just created and return 400
-				try:
-					account = Account.objects.create(
-						email=request.data.get('email'),
-						info_id=info.id,
-					)
-				except:
-					info.delete()
-					wallet.delete()
-					return Response({'detail': 'User with this email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+				if request.data.get('email'):
+					try:
+						account = Account.objects.create(
+							email=request.data.get('email'),
+							info_id=info.id,
+						)
+					except:
+						info.delete()
+						wallet.delete()
+						return Response({'detail': 'User with this email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
-				# if created user, add AccountInfo to company
-				company.members.add(info)
-				# give user just created a random password
-				account.set_password(''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(16)]))
-				account.save()
+					# if created user, add AccountInfo to company
+					company.members.add(info)
+					# give user just created a random password
+					account.set_password(''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(16)]))
+					account.save()
 
-				token_instance = VerifyTokenUtils.generate_token_by_user(user=account)
-				if int(request.data.get('type')) == 3:
-					send_email(receiver_list=[account.email],
-					           subject='ICOToday - ' + account.info.full_name() + ', Your Team is Waiting You',
-					           template_name='TeamAdvisorInvitation',
-					           ctx={'username': account.info.full_name(), 'token': token_instance.token, 'team_name': company.name}
-					           )
-				else:
-					send_email(receiver_list=[account.email],
-					           subject='ICOToday - ' + account.info.full_name() + ', Your Team is Waiting You',
-					           template_name='TeamMemberInvitation',
-					           ctx={'username': account.info.full_name(), 'token': token_instance.token, 'team_name': company.name}
-					           )
+					token_instance = VerifyTokenUtils.generate_token_by_user(user=account)
+					if int(request.data.get('type')) == 3:
+						send_email(receiver_list=[account.email],
+						           subject='ICOToday - ' + account.info.full_name() + ', Your Team is Waiting You',
+						           template_name='TeamAdvisorInvitation',
+						           ctx={'username': account.info.full_name(), 'token': token_instance.token, 'team_name': company.name}
+						           )
+					else:
+						send_email(receiver_list=[account.email],
+						           subject='ICOToday - ' + account.info.full_name() + ', Your Team is Waiting You',
+						           template_name='TeamMemberInvitation',
+						           ctx={'username': account.info.full_name(), 'token': token_instance.token, 'team_name': company.name}
+						           )
 				# Send back new account info
-				serializer = MiniAccountInfoSerializer(account.info)
+				serializer = MiniAccountInfoSerializer(info)
 				return Response(serializer.data, status=status.HTTP_200_OK)
 			# Add Existing User as Company Member
 			elif account_info_id:

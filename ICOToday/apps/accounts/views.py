@@ -47,7 +47,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 				referrer.save()
 				Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
 				                            receiver_id=referrer.info.id,
-				                            content='A friend just joined ICOToday with your referral link! 5 ICOCoins have been deposited to your wallet.',
+				                            content='A friend just joined ICOToday with your referral link! 5 ICOTokens have been deposited to your wallet.',
 				                            related='wallet')
 			except Account.DoesNotExist:
 				pass
@@ -57,7 +57,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		account.info.wallet.save()
 		Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
 		                            receiver_id=account.info.id,
-		                            content='Welcome to ICOToday. As one of our early users, we have deposited 5 ICOCoins to your wallet.',
+		                            content='Welcome to ICOToday. As one of our early users, we have deposited 5 ICOTokens to your wallet.',
 		                            related='wallet')
 
 		# Send Verification Email
@@ -106,7 +106,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			account.info.wallet.save()
 			Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
 			                            receiver_id=account.info.id,
-			                            content='Welcome to ICOToday. As one of our early users, we have deposited 5 ICOCoins to your wallet.',
+			                            content='Welcome to ICOToday. As one of our early users, we have deposited 5 ICOTokens to your wallet.',
 			                            related='wallet')
 
 			# Use utils to set token in cookie in response
@@ -236,7 +236,7 @@ class AccountViewSet(viewsets.ViewSet):
 			return Response(status=status.HTTP_200_OK)
 
 	def set_account_type(self, request):
-		if not request.data.get('type'):
+		if request.data.get('type', None) is None:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
 		if request.data.get('type') == 0:  # Company

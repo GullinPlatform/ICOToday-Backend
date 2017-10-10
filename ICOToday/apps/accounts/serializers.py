@@ -38,7 +38,7 @@ class BasicAccountInfoSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = AccountInfo
-		fields = ['id', 'avatar', 'full_name', 'account', 'title', 'description', 'company',
+		fields = ['id', 'avatar', 'full_name', 'account', 'title', 'description', 'company', 'is_verified',
 		          'linkedin', 'twitter', 'telegram', 'facebook', 'type']
 
 
@@ -49,7 +49,7 @@ class MiniAccountInfoSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = AccountInfo
-		fields = ['id', 'avatar', 'full_name', 'account', 'title']
+		fields = ['id', 'avatar', 'full_name', 'account', 'title', 'is_verified']
 
 
 class AuthAccountSerializer(serializers.ModelSerializer):

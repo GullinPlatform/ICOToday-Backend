@@ -5,7 +5,7 @@ import random
 import string
 
 from django.shortcuts import get_object_or_404
-from django.db import Error
+from django.db import IntegrityError
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -16,7 +16,7 @@ from ..notifications.models import Notification
 from ..accounts.serializers import AccountInfo, Account, BasicAccountInfoSerializer, MiniAccountInfoSerializer
 from ..wallets.serializers import WalletSerializer, Wallet
 
-from .serializers import Company, CompanySerializer, BasicCompanySerializer, PromotionApplication, PromotionApplicationSerializer
+from .serializers import Company, CompanySerializer, BasicCompanySerializer, PromotionApplication, PromotionApplicationSerializer, SearchCompanySerializer
 
 from ..utils.send_email import send_email
 from ..utils.verify_token import VerifyTokenUtils
@@ -29,7 +29,7 @@ class CompanyViewSet(viewsets.ViewSet):
 
 	@staticmethod
 	def _is_company_admin(account_info, company):
-		if account_info.company_admin.id is company.id:
+		if account_info.company_admin.id == company.id:
 			return True
 		else:
 			return False
@@ -48,16 +48,21 @@ class CompanyViewSet(viewsets.ViewSet):
 
 		if request.data.get('name'):
 			wallet = Wallet.objects.create()
-			company = Company.objects.create(
-				name=request.data.get('name'),
-				wallet=wallet
-			)
-			request.user.info.company = company
-			request.user.info.company_admin = company  # Creator is company admin
-			request.user.info.type = 0  # Change to Company User
-			request.user.info.save()
-			serializer = BasicCompanySerializer(company)
-			return Response(serializer.data, status=status.HTTP_201_CREATED)
+			try:
+				company = Company.objects.create(
+					name=request.data.get('name'),
+					wallet=wallet
+				)
+				request.user.info.company = company
+				request.user.info.company_admin = company  # Creator is company admin
+				request.user.info.type = 0  # Change to Company User
+				request.user.info.save()
+				serializer = BasicCompanySerializer(company)
+				return Response(serializer.data, status=status.HTTP_201_CREATED)
+			except IntegrityError:
+				return Response({'detail': 'The company with that name already exists. if you believe someone else took your company, please contact us at team@icotoday.io immediately.'},
+				                status=status.HTTP_400_BAD_REQUEST)
+
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -253,7 +258,7 @@ class CompanyViewSet(viewsets.ViewSet):
 		search_token = request.GET.get('token')
 		if search_token:
 			companies = self.queryset.filter(name__iregex=r'^' + search_token + r'+')
-			serializer = BasicCompanySerializer(companies, many=True)
+			serializer = SearchCompanySerializer(companies, many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
 			return Response(status=status.HTTP_200_OK)
@@ -263,6 +268,7 @@ class CompanyViewSet(viewsets.ViewSet):
 		if not company:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 		if not self._is_company_admin(request.user.info, company):
+
 			return Response({'detail': 'Only company admin can add company members'}, status=status.HTTP_403_FORBIDDEN)
 
 		serializer = WalletSerializer(company.wallet)

@@ -5,6 +5,22 @@ from rest_framework import serializers
 
 from .models import Company, PromotionApplication
 from ..accounts.serializers import MiniAccountInfoSerializer
+from ..projects.models import Project
+
+
+class MiniProjectSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Project
+		fields = ['id', 'company', 'description_short', 'logo_image', 'rating']
+
+
+class SearchCompanySerializer(serializers.ModelSerializer):
+	project = MiniProjectSerializer
+
+	class Meta:
+		model = Company
+		fields = ['id', 'name', 'project']
+		read_only_fields = ['id']
 
 
 class BasicCompanySerializer(serializers.ModelSerializer):

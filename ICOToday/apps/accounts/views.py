@@ -360,6 +360,10 @@ class AccountViewSet(viewsets.ViewSet):
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
+	def follow(self, request):
+
+		pass
+
 
 class ExpertApplicationViewSet(viewsets.ViewSet):
 	queryset = ExpertApplication.objects.all()

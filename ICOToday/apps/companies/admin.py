@@ -4,14 +4,23 @@ from __future__ import unicode_literals
 from django.contrib import admin
 
 from ..accounts.models import AccountInfo
-from .models import Company, PromotionApplication
 from ..feeds.models import Feed
+from ..projects.models import Project
+
+from .models import Company, PromotionApplication
 
 
 class FeedInline(admin.TabularInline):
 	model = Feed
 	show_change_link = True
 	extra = 1
+
+
+class ProjectInline(admin.TabularInline):
+	model = Project
+	show_change_link = True
+	fields = ('id', 'name', 'description_short', 'type', 'status')
+	extra = 0
 
 
 class CompanyMembersInline(admin.TabularInline):
@@ -43,7 +52,7 @@ class CompanyAdmin(admin.ModelAdmin):
 		['Timestamp', {'fields': ['created', 'updated']}],
 	]
 	readonly_fields = ('created', 'updated')
-	inlines = [CompanyMembersInline, CompanyAdminsInline, FeedInline]
+	inlines = [ProjectInline, CompanyMembersInline, CompanyAdminsInline, FeedInline]
 
 
 class PromotionApplicationAdmin(admin.ModelAdmin):

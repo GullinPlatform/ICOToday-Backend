@@ -73,10 +73,10 @@ class VerifyTokenAdmin(admin.ModelAdmin):
 
 class ExpertApplicationAdmin(admin.ModelAdmin):
 	list_display = ('account', 'status', 'created')
-	fieldsets = [
-		[None, {'fields': ['account', 'detail', 'status', 'response']}],
-		['Timestamp', {'fields': ['created', 'updated']}],
-	]
+	fieldsets = (
+		(None, {'fields': ['account', 'detail', 'status', 'response']}),
+		('Timestamp', {'fields': ['created', 'updated']}),
+	)
 	list_filter = ['status', 'created', ]
 
 	readonly_fields = ('created', 'updated')

@@ -44,7 +44,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			try:
 				referrer = Account.objects.get(email=request.data.get('referrer'))
 				referrer.info.wallet.ict_amount += 5
-				referrer.save()
+				account.info.wallet.save()
 				Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
 				                            receiver_id=referrer.info.id,
 				                            content='A friend just joined ICOToday with your referral link! 5 ICOTokens have been deposited to your wallet.',

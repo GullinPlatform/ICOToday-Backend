@@ -116,5 +116,5 @@ urlpatterns = [
 	url(r'^me/set_type/$', account_set_type, name='user-set-type'),
 
 	# Expert Application
-	url(r'^me/expert_apply/$', expert_application, name='expert-application'),
+	url(r'^me/analyst_apply/$', expert_application, name='expert-application'),
 ]

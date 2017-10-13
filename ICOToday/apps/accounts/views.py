@@ -389,7 +389,7 @@ class ExpertApplicationViewSet(viewsets.ViewSet):
 			)
 			Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
 			                            receiver_id=request.user.info.id,
-			                            content='Thank you for submitting your expert application on ICOToday! We are reviewing your application.',
+			                            content='Thank you for submitting your analyst application on ICOToday! We are reviewing your application.',
 			                            related='expert_app')
 			return Response(status=status.HTTP_201_CREATED)
 		else:

@@ -36,7 +36,7 @@ class Project(models.Model):
 	name = models.CharField(max_length=100, unique=True)
 	description_short = models.CharField(max_length=200, null=True, blank=True)
 	description_full = models.TextField()
-	token_sale_plan = models.TextField()
+	token_sale_plan = models.TextField(null=True, blank=True)
 	tags = models.ManyToManyField('ProjectTag', related_name='posts')
 	category = models.CharField(max_length=100)
 

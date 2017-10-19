@@ -295,6 +295,7 @@ class CompanyViewSet(viewsets.ViewSet):
 				company_id=company.id,
 				duration=request.data.get('duration'),
 				detail=request.data.get('detail'),
+				eth_wallet_address=request.data.get('eth_wallet_address'),
 			)
 			serializer = PromotionApplicationSerializer(company.promotion_applications.first())
 			return Response(serializer.data)
@@ -309,6 +310,7 @@ class CompanyViewSet(viewsets.ViewSet):
 			promotion_applications = company.promotion_applications.first()
 			promotion_applications.duration = request.data.get('duration')
 			promotion_applications.detail = request.data.get('detail')
+			promotion_applications.eth_wallet_address = request.data.get('eth_wallet_address')
 			promotion_applications.save()
 			serializer = PromotionApplicationSerializer(promotion_applications)
 			return Response(serializer.data)

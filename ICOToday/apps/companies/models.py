@@ -43,6 +43,7 @@ class PromotionApplication(models.Model):
 	detail = models.TextField(null=True, blank=True)
 	status = models.IntegerField(default=0, choices=STATUS_CHOICES)
 	response = models.TextField(null=True, blank=True)
+	eth_wallet_address = models.TextField(null=True, blank=True)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)

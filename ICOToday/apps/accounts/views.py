@@ -10,7 +10,8 @@ from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from .serializers import Account, AccountInfo, ExpertApplication, AuthAccountSerializer, BasicAccountSerializer, MiniAccountInfoSerializer, AccountInfoSerializer, ExpertApplicationSerializer
+from .serializers import Account, AccountInfo, ExpertApplication, AuthAccountSerializer, BasicAccountSerializer, MiniAccountInfoSerializer, AccountInfoSerializer, ExpertApplicationSerializer, \
+	BasicAccountInfoSerializer
 from ..projects.serializers import ProjectTag, ProjectSerializer
 
 from ..notifications.models import Notification
@@ -223,6 +224,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 
 class AccountViewSet(viewsets.ViewSet):
 	queryset = Account.objects.all()
+	account_info_queryset = AccountInfo.objects.all()
 	parser_classes = (MultiPartParser, FormParser, JSONParser)
 	permission_classes = (IsAuthenticated,)
 
@@ -247,9 +249,14 @@ class AccountViewSet(viewsets.ViewSet):
 			request.user.info.save()
 		return Response(status=status.HTTP_200_OK)
 
-	def retrieve(self, request, pk):
-		user = get_object_or_404(self.queryset, pk=pk)
+	def retrieve(self, request, id):
+		user = get_object_or_404(self.queryset, id=id)
 		serializer = BasicAccountSerializer(user)
+		return Response(serializer.data)
+
+	def retrieve_info(self, request, account_info_id):
+		user = get_object_or_404(self.account_info_queryset, id=account_info_id)
+		serializer = AccountInfoSerializer(user)
 		return Response(serializer.data)
 
 	def me(self, request):
@@ -293,10 +300,10 @@ class AccountViewSet(viewsets.ViewSet):
 			# If exception return with status 400
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
-	def marked_projects(self, request, pk=None):
-		if pk:  # Marked post from other user
-			account = get_object_or_404(self.queryset, pk=pk)
-			serializer = ProjectSerializer(account.info.marked_projects.all(), many=True)
+	def marked_projects(self, request, id=None):
+		if id:  # Marked post from other user
+			account_info = get_object_or_404(self.account_info_queryset, id=id)
+			serializer = ProjectSerializer(account_info.marked_projects.all(), many=True)
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:  # Marked post from me
 			serializer = ProjectSerializer(request.user.info.marked_projects.all(), many=True)

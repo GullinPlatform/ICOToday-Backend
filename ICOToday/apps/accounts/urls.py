@@ -14,6 +14,10 @@ account_detail = AccountViewSet.as_view({
 	'get': 'retrieve'
 })
 
+account_info_detail = AccountViewSet.as_view({
+	'get': 'retrieve_info'
+})
+
 account_log_ip = AccountViewSet.as_view({
 	'post': 'log_ip'
 })
@@ -104,7 +108,8 @@ urlpatterns = [
 
 	# Account Detail
 	url(r'^me/$', account_me, name='me'),
-	url(r'^(?P<pk>[0-9]+)/$', account_detail, name='user-detail'),
+	url(r'^(?P<id>[0-9]+)/$', account_detail, name='user-detail'),
+	url(r'^(?P<account_info_id>[0-9]+)/info/$', account_info_detail, name='user-info-detail'),
 
 	#  Verification email
 	url(r'^invited_signup/(?P<token>[A-z0-9\-]+)/$', account_invited_register, name='user-invited-register'),

@@ -11,8 +11,8 @@ class ProjectAdmin(admin.ModelAdmin):
 
 	fieldsets = (
 		('Relation Info', {'fields': ('company', 'status')}),
-		('Details', {'fields': ('name', 'logo_image', 'promote_image', 'category', 'description_short', 'description_full')}),
-		('ICO Details', {'fields': ('type', 'coin_name', 'maximum_goal', 'minimum_goal', 'coin_unit', 'start_datetime', 'end_datetime', 'ratio', 'equality_on_offer', 'accept')}),
+		('Details', {'fields': ('name', 'logo_image', 'promote_image', 'category', 'description_short', 'description_full', 'token_sale_plan')}),
+		('ICO Details', {'fields': ('type', 'coin_name', 'initial_price', 'maximum_goal', 'minimum_goal', 'coin_unit', 'start_datetime', 'end_datetime', 'ratio', 'equality_on_offer', 'accept')}),
 		('Supplement', {'fields': ('website', 'video_link', 'white_paper')}),
 		('Media Info', {'fields': ('medium', 'twitter', 'slack', 'telegram')}),
 		('Timestamp', {'fields': ('created', 'updated')})

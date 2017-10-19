@@ -33,7 +33,7 @@ class BasicProjectSerializer(serializers.ModelSerializer):
 		model = Project
 		fields = ['id', 'company', 'description_short', 'rating',
 		          'logo_image', 'promote_image', 'name', 'type', 'category',
-		          'status', 'tags', 'website', 'maximum_goal', 'minimum_goal', 'coin_unit', 'accept',
+		          'status', 'tags', 'website', 'maximum_goal', 'minimum_goal', 'coin_unit', 'accept', 'initial_price',
 		          'start_datetime', 'end_datetime', 'current', 'money_raised', 'equality_on_offer',
 		          'medium', 'twitter', 'slack', 'telegram']
 		read_only_fields = ['created', 'updated', 'status']

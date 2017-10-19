@@ -36,6 +36,7 @@ class Project(models.Model):
 	name = models.CharField(max_length=100, unique=True)
 	description_short = models.CharField(max_length=200, null=True, blank=True)
 	description_full = models.TextField()
+	token_sale_plan = models.TextField()
 	tags = models.ManyToManyField('ProjectTag', related_name='posts')
 	category = models.CharField(max_length=100)
 
@@ -52,6 +53,7 @@ class Project(models.Model):
 	maximum_goal = models.IntegerField(null=True, blank=True)
 	minimum_goal = models.IntegerField(null=True, blank=True)
 	equality_on_offer = models.FloatField(null=True, blank=True)
+	initial_price = models.FloatField(null=True, blank=True)
 
 	current = models.IntegerField(null=True, blank=True)
 	money_raised = models.IntegerField(null=True, blank=True)

@@ -45,7 +45,7 @@ class AccountInfo(models.Model):
 	description = models.TextField(null=True, blank=True)
 
 	# Follower
-	following = models.ManyToManyField('self', related_name='follower', symmetrical=False)
+	followings = models.ManyToManyField('self', related_name='followers', symmetrical=False)
 
 	# Wallet
 	wallet = models.OneToOneField('wallets.Wallet', related_name='account')

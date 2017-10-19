@@ -360,9 +360,36 @@ class AccountViewSet(viewsets.ViewSet):
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
-	def follow(self, request):
+	def follow(self, request, account_info_id=None):
+		account_info = get_object_or_404(self.account_info_queryset, id=account_info_id)
+		request.user.info.followings.add(account_info)
+		serializer = BasicAccountInfoSerializer(account_info)
 
-		pass
+		return Response(serializer.data, status=status.HTTP_200_OK)
+
+	def followings(self, request, account_info_id=None):
+		if account_info_id:
+			account_info = get_object_or_404(self.account_info_queryset, id=account_info_id)
+			serializer = BasicAccountInfoSerializer(account_info.followings, many=True)
+			return Response(serializer.data, status=status.HTTP_200_OK)
+		else:
+			serializer = BasicAccountInfoSerializer(request.user.info.followings, many=True)
+			return Response(serializer.data, status=status.HTTP_200_OK)
+
+	def followers(self, request, account_info_id=None):
+		if account_info_id:
+			account_info = get_object_or_404(self.account_info_queryset, id=account_info_id)
+			serializer = BasicAccountInfoSerializer(account_info.followers, many=True)
+			return Response(serializer.data, status=status.HTTP_200_OK)
+		else:
+			serializer = BasicAccountInfoSerializer(request.user.info.followers, many=True)
+			return Response(serializer.data, status=status.HTTP_200_OK)
+
+	def experts_list(self, request):
+		experts = self.account_info_queryset.filter(type=2)
+		serializer = BasicAccountInfoSerializer(experts, many=True)
+		# TODO: return expert count at the same time
+		return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ExpertApplicationViewSet(viewsets.ViewSet):

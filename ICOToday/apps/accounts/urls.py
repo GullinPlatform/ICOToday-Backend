@@ -68,6 +68,22 @@ account_interests = AccountViewSet.as_view({
 	'post': 'add_interests'
 })
 
+account_follow = AccountViewSet.as_view({
+	'post': 'follow'
+})
+
+account_followers = AccountViewSet.as_view({
+	'get': 'followers',
+})
+
+account_followings = AccountViewSet.as_view({
+	'get': 'followings',
+})
+
+account_expert_list = AccountViewSet.as_view({
+	'get': 'expert_list',
+})
+
 account_set_type = AccountViewSet.as_view({
 	'put': 'set_account_type'
 })
@@ -106,14 +122,26 @@ urlpatterns = [
 
 	# Marked Project
 	url(r'^me/marked_projects/$', account_marked_projects, name='me-marked-projects'),
-	url(r'^(?P<pk>[0-9]+)/marked_projects/$', account_marked_projects, name='user-marked-projects'),
+	url(r'^(?P<id>[0-9]+)/marked_projects/$', account_marked_projects, name='user-marked-projects'),
 
 	# Search User
 	url(r'^search/$', account_search, name='user-search'),
 
+	# Get all experts
+	url(r'^analysts/$', account_expert_list, name='user-expert-list'),
+
 	# Add Interests
 	url(r'^me/interests/$', account_interests, name='user-interests'),
 	url(r'^me/set_type/$', account_set_type, name='user-set-type'),
+
+	# Add Interests
+	url(r'^me/follow/(?P<account_info_id>[A-z0-9\-]+)/$', account_follow, name='user-follow'),
+
+	url(r'^me/followings/$', account_followings, name='my-followings'),
+	url(r'^me/followers/$', account_followers, name='my-followers'),
+
+	url(r'^(?P<account_info_id>[A-z0-9\-]+)/followings/$', account_followings, name='user-followings'),
+	url(r'^(?P<account_info_id>[A-z0-9\-]+)/followers/$', account_followers, name='user-followers'),
 
 	# Expert Application
 	url(r'^me/analyst_apply/$', expert_application, name='expert-application'),

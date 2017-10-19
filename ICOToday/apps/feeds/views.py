@@ -27,15 +27,17 @@ class FeedViewSet(viewsets.ViewSet):
 		my_feeds_queryset = request.user.info.feeds.filter(reply_to=None)
 
 		marked_project_feed = []
+		following_user_feed = []
 
 		for project in request.user.info.marked_projects.all():
 			marked_project_feed = itertools.chain(marked_project_feed, project.company.feeds.all())
 
-		result_list = sorted(
-			itertools.chain(my_feeds_queryset, marked_project_feed),
-			key=attrgetter('created'),
-			reverse=True)
+		for following in request.user.info.followings.all():
+			following_user_feed = itertools.chain(marked_project_feed, following.feeds.all())
 
+		result_list = sorted(set(itertools.chain(my_feeds_queryset, marked_project_feed, following_user_feed)),
+		                     key=attrgetter('created'),
+		                     reverse=True)
 		paginator = Paginator(result_list, 10)
 
 		try:
@@ -79,7 +81,7 @@ class FeedViewSet(viewsets.ViewSet):
 					send_email(email_list, 'ICOToday - Official Team Member Posted a Comment in ICO Project', 'NewComment', {id: project.id})
 				else:
 					send_email(email_list, 'ICOToday - New Comment on ICO You Subscribe to', 'NewComment', {id: project.id})
-			except: # RelatedObjectDoesNotExist could happen
+			except:  # RelatedObjectDoesNotExist could happen
 				pass
 
 		else:

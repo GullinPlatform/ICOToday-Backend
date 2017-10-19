@@ -43,6 +43,10 @@ project_search = ProjectViewSet.as_view({
 	'get': 'search'
 })
 
+project_subscribers = ProjectViewSet.as_view({
+	'get': 'subscribers'
+})
+
 search_projects_by_tag = ProjectViewSet.as_view({
 	'get': 'search_by_tag'
 })
@@ -70,11 +74,12 @@ urlpatterns = [
 	url(r'^unrated/$', project_unrated_list, name='project_unrated_list'),
 	url(r'^rated/(?P<account_info_id>[0-9]+)/$', project_user_rated_list, name='project_user_rated_list'),
 
-	url(r'^(?P<id>[0-9]+)/$', project, name='project'),
-	url(r'^(?P<id>[0-9]+)/mark/$', project_mark, name='project_mark'),
+	url(r'^(?P<project_id>[0-9]+)/$', project, name='project'),
+	url(r'^(?P<project_id>[0-9]+)/mark/$', project_mark, name='project_mark'),
 
 	url(r'^tags/$', all_tags, name='project_tags'),
 
 	url(r'^(?P<project_id>[0-9]+)/rating/$', project_rating_detail_list, name='project-rating'),
 	url(r'^(?P<project_id>[0-9]+)/rate/$', project_rating_detail_rate, name='project-rate'),
+	url(r'^(?P<project_id>[0-9]+)/subs/$', project_subscribers, name='project-subscribers'),
 ]

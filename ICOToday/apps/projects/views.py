@@ -11,7 +11,7 @@ from rest_framework.parsers import FormParser, MultiPartParser, JSONParser, File
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .models import Project, ProjectTag, ProjectRatingDetail
-from ..accounts.models import AccountInfo
+from ..accounts.serializers import AccountInfo, BasicAccountInfoSerializer
 
 from .serializers import ProjectSerializer, ProjectTagSerializer, BasicProjectSerializer, ProjectRatingDetailSerializer
 
@@ -141,13 +141,13 @@ class ProjectViewSet(viewsets.ViewSet):
 				pass
 		return Response(status=status.HTTP_201_CREATED)
 
-	def retrieve(self, request, id):
-		project = get_object_or_404(self.queryset, id=id)
+	def retrieve(self, request, project_id):
+		project = get_object_or_404(self.queryset, id=project_id)
 		serializer = ProjectSerializer(project)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
-	def update(self, request, id):
-		project = get_object_or_404(self.queryset, id=id)
+	def update(self, request, project_id):
+		project = get_object_or_404(self.queryset, id=project_id)
 		serializer = ProjectSerializer(project, data=request.data, partial=True)
 		if serializer.is_valid():
 			project = serializer.save()
@@ -161,15 +161,15 @@ class ProjectViewSet(viewsets.ViewSet):
 		else:
 			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-	def delete(self, request, id):
-		project = get_object_or_404(self.queryset, id=id)
+	def delete(self, request, project_id):
+		project = get_object_or_404(self.queryset, id=project_id)
 		if project.id == request.user.info.company_admin.id:
 			project.delete()
 		else:
 			return Response(status=status.HTTP_403_FORBIDDEN)
 
-	def mark_project(self, request, id):
-		project = get_object_or_404(self.queryset, id=id)
+	def mark_project(self, request, project_id):
+		project = get_object_or_404(self.queryset, id=project_id)
 		if request.user.info in project.marked.all():
 			project.marked.remove(request.user.info)
 		else:
@@ -183,6 +183,12 @@ class ProjectViewSet(viewsets.ViewSet):
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
 			return Response(status=status.HTTP_404_NOT_FOUND)
+
+	def subscribers(self, request, project_id):
+		project = get_object_or_404(self.queryset, id=project_id)
+		serializer = BasicAccountInfoSerializer(project.marked, many=True)
+
+		return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ProjectTagViewSet(viewsets.ViewSet):

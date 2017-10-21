@@ -8,7 +8,7 @@ from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser, JSONParser
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 
 from .serializers import Account, AccountInfo, ExpertApplication, AuthAccountSerializer, BasicAccountSerializer, MiniAccountInfoSerializer, AccountInfoSerializer, ExpertApplicationSerializer, \
 	BasicAccountInfoSerializer
@@ -226,7 +226,7 @@ class AccountViewSet(viewsets.ViewSet):
 	queryset = Account.objects.all()
 	account_info_queryset = AccountInfo.objects.all()
 	parser_classes = (MultiPartParser, FormParser, JSONParser)
-	permission_classes = (IsAuthenticated,)
+	permission_classes = (IsAuthenticatedOrReadOnly,)
 
 	def log_ip(self, request):
 		if request.user.info.last_login_ip == request.data.get('ip'):

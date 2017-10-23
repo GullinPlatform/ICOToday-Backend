@@ -73,7 +73,8 @@ account_interests = AccountViewSet.as_view({
 })
 
 account_follow = AccountViewSet.as_view({
-	'post': 'follow'
+	'post'  : 'follow',
+	'delete': 'follow'
 })
 
 account_followers = AccountViewSet.as_view({

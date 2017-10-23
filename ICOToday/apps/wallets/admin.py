@@ -3,7 +3,16 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 
+from ..accounts.models import AccountInfo
 from .models import Wallet
+
+
+class AccountInfoInline(admin.TabularInline):
+	model = AccountInfo
+	fields = ('id', 'first_name', 'last_name', 'type', 'company')
+	readonly_fields = ('id', 'first_name', 'last_name', 'type', 'company')
+	show_change_link = True
+	extra = 0
 
 
 class WalletAdmin(admin.ModelAdmin):
@@ -14,6 +23,7 @@ class WalletAdmin(admin.ModelAdmin):
 		['Timestamp', {'fields': ['created', 'updated']}],
 	]
 	readonly_fields = ('created', 'updated', 'btc_amount', 'eth_amount', 'btc_wallet_address', 'eth_wallet_address')
+	inlines = [AccountInfoInline]
 
 
 admin.site.register(Wallet, WalletAdmin)

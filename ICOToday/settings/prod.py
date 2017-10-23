@@ -108,8 +108,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
-USE_I18N = True
-USE_L10N = True
+USE_I18N = False
+USE_L10N = False
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
@@ -136,7 +136,7 @@ REST_FRAMEWORK = {
 	'DEFAULT_AUTHENTICATION_CLASSES': [
 		'ICOToday.apps.rest_framework_jwt.authentication.JSONWebTokenAuthentication',
 	],
-	'DEFAULT_RENDERER_CLASSES': (
+	'DEFAULT_RENDERER_CLASSES'      : (
 		'rest_framework.renderers.JSONRenderer',
 	)
 }

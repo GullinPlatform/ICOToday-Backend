@@ -78,9 +78,9 @@ class AccountInfoAdmin(admin.ModelAdmin):
 
 	def is_company_admin(self, obj):
 		if obj.company_admin:
-			return mark_safe('<img src="/static/admin/img/icon-no.svg" alt="False">')
-		else:
 			return mark_safe('<img src="/static/admin/img/icon-yes.svg" alt="True">')
+		else:
+			return mark_safe('<img src="/static/admin/img/icon-no.svg" alt="False">')
 
 
 class VerifyTokenAdmin(admin.ModelAdmin):

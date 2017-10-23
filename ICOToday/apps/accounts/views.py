@@ -367,11 +367,16 @@ class AccountViewSet(viewsets.ViewSet):
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
 	def follow(self, request, account_info_id=None):
-		account_info = get_object_or_404(self.account_info_queryset, id=account_info_id)
-		request.user.info.followings.add(account_info)
-		serializer = BasicAccountInfoSerializer(account_info)
+		if request.method == 'POST':
+			account_info = get_object_or_404(self.account_info_queryset, id=account_info_id)
+			request.user.info.followings.add(account_info)
+			serializer = BasicAccountInfoSerializer(account_info)
+			return Response(serializer.data, status=status.HTTP_200_OK)
 
-		return Response(serializer.data, status=status.HTTP_200_OK)
+		elif request.method == 'DELETE':
+			account_info = get_object_or_404(self.account_info_queryset, id=account_info_id)
+			request.user.info.followings.remove(account_info)
+			return Response(status=status.HTTP_200_OK)
 
 	def followings(self, request, account_info_id=None):
 		if account_info_id:

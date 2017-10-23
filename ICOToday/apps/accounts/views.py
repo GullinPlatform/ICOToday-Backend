@@ -42,16 +42,14 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 
 		# If refer
 		if request.data.get('referrer'):
-			try:
-				referrer = Account.objects.get(email=request.data.get('referrer'))
+			referrer = Account.objects.filter(email=request.data.get('referrer')).first()
+			if referrer:
 				referrer.info.wallet.ict_amount += 5
-				account.info.wallet.save()
+				referrer.info.wallet.save()
 				Notification.objects.create(sender_id=settings.OFFICIAL_ACCOUNT_INFO_ID,
 				                            receiver_id=referrer.info.id,
 				                            content='A friend just joined ICOToday with your referral link! 5 ICOTokens have been deposited to your wallet.',
 				                            related='wallet')
-			except Account.DoesNotExist:
-				pass
 
 		# Add Bonny to User Wallet
 		account.info.wallet.ict_amount += 5
@@ -83,6 +81,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 
 		# Invited Register AKA Change Password
 		elif request.method == 'POST':
+
 			# Check form data
 			if not request.data.get('password'):
 				return Response({'detail': 'No password provided'}, status=status.HTTP_400_BAD_REQUEST)

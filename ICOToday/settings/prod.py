@@ -16,7 +16,7 @@ with open(os.path.join(BASE_DIR, 'settings/secret.txt')) as f:
 	SECRET_KEY = f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = [
 	'http://www.icotoday.io',
 	'http://icotoday.io',
@@ -24,7 +24,6 @@ ALLOWED_HOSTS = [
 	'icotoday.io',
 	'www.icotoday.io',
 	'api.icotoday.io',
-
 ]
 
 # Set auto redirect to false
@@ -87,7 +86,7 @@ ROOT_URLCONF = 'ICOToday.urls'
 # Account customization
 AUTH_USER_MODEL = 'accounts.Account'
 # TODO change to ICOToday AccountInfo ID in production mode
-OFFICIAL_ACCOUNT_INFO_ID = 1
+OFFICIAL_ACCOUNT_INFO_ID = 2
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -123,7 +122,7 @@ DATABASES = {
 		'NAME'    : 'icotoday',
 		'USER'    : 'icotoday',
 		'PASSWORD': 'ICOToday888!',
-		'HOST'    : 'icotoday.canzstryns10.us-east-2.rds.amazonaws.com',
+		'HOST'    : 'icotodaydb-cluster.cluster-canzstryns10.us-east-2.rds.amazonaws.com',
 		'PORT'    : '3306'
 	}
 }
@@ -149,7 +148,6 @@ CORS_ORIGIN_WHITELIST = (
 	'icotoday.io',
 	'www.icotoday.io',
 	'api.icotoday.io',
-
 )
 CORS_ALLOW_HEADERS = (
 	'accept',

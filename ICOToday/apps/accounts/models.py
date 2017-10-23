@@ -190,8 +190,8 @@ class ExpertApplication(models.Model):
 	# Info
 	account = models.OneToOneField('AccountInfo', related_name='expert_application')
 	detail = models.TextField()
-	resume = models.FileField(upload_to='analysts/resume/')
-	previous_rating_example = models.FileField(upload_to='analysts/previous_rating_example/')
+	resume = models.FileField(upload_to='analysts/resume/', null=True, blank=True)
+	previous_rating_example = models.FileField(upload_to='analysts/previous_rating_example/', null=True, blank=True)
 	status = models.IntegerField(default=0, choices=STATUS_CHOICES)
 	response = models.TextField()
 

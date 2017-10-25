@@ -79,13 +79,16 @@ class AccountInfo(models.Model):
 
 	def full_name(self):
 		if self.first_name and self.last_name:
-			return self.first_name + ' ' + self.last_name
+			return u'%s %s' % (self.first_name, self.last_name)
 		elif self.first_name:
-			return self.first_name
+			return u'%s' % self.first_name
 		elif self.last_name:
-			return self.last_name
+			return u'%s' % self.last_name
 		else:
-			return str(self.id)
+			return u'%s' % unicode(self.id)
+
+	class Meta:
+		ordering = ['-created']
 
 
 class AccountManager(BaseUserManager):
@@ -147,14 +150,14 @@ class Account(AbstractBaseUser, PermissionsMixin):
 	USERNAME_FIELD = 'email'
 
 	class Meta:
-		ordering = ['created']
+		ordering = ['-created']
 
 	def __str__(self):
 		return self.email
 
 	@property
 	def full_name(self):
-		return self.email if self.email else self.phone
+		return u'%s' % self.email if self.email else u'%s' % self.phone
 
 	@property
 	def is_admin(self):
@@ -201,3 +204,6 @@ class ExpertApplication(models.Model):
 
 	def __str__(self):
 		return self.account.full_name()
+
+	class Meta:
+		ordering = ['-created']

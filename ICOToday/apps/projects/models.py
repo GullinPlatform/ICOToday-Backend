@@ -118,7 +118,7 @@ class ProjectRatingDetail(models.Model):
 	updated = models.DateTimeField(auto_now=True)
 
 	def __str__(self):
-		return self.content[:15]
+		return u'%s' % self.content[:15]
 
 	class Meta:
 		ordering = ['-created']

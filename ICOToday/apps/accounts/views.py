@@ -35,9 +35,11 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		serializer.is_valid(raise_exception=True)
 		account = serializer.save()
 
-		account.info.first_name = request.data.get('first_name')
-		account.info.last_name = request.data.get('last_name')
-		account.info.last_login_ip = request.data.get('last_login_ip')
+		account.info.first_name = request.data.get('first_name', None)
+		account.info.last_name = request.data.get('last_name', None)
+		account.info.last_login_ip = request.data.get('last_login_ip', None)
+		account.info.whitelist = request.data.get('whitelist', False)
+		account.info.amount_to_invest = request.data.get('amount_to_invest', 0)
 		account.info.save()
 
 		# If refer

@@ -43,6 +43,7 @@ class AccountInfo(models.Model):
 	last_name = models.CharField(max_length=40, null=True, blank=True)
 	title = models.CharField(max_length=40, null=True, blank=True)
 	description = models.TextField(null=True, blank=True)
+	interests = models.ManyToManyField('projects.ProjectTag', related_name='accounts', blank=True)
 
 	# Follower
 	followings = models.ManyToManyField('self', related_name='followers', symmetrical=False)
@@ -50,16 +51,10 @@ class AccountInfo(models.Model):
 	# Wallet
 	wallet = models.OneToOneField('wallets.Wallet', related_name='account')
 
-	# Is Verified
-	is_verified = models.BooleanField(default=False)
-
 	# My Company
 	company = models.ForeignKey('companies.Company', related_name='members', null=True, blank=True)
 	company_admin = models.ForeignKey('companies.Company', related_name='admins', null=True, blank=True)
 	company_pending = models.ForeignKey('companies.Company', related_name='pending_members', null=True, blank=True)
-
-	# Interested Fields
-	interests = models.ManyToManyField('projects.ProjectTag', related_name='accounts', blank=True)
 
 	# Social Media
 	linkedin = models.CharField(max_length=100, null=True, blank=True)
@@ -69,6 +64,11 @@ class AccountInfo(models.Model):
 
 	# Security
 	last_login_ip = models.GenericIPAddressField(null=True, blank=True)
+	is_verified = models.BooleanField(default=False)
+
+	# Other
+	whitelist = models.BooleanField(default=True)
+	amount_to_invest = models.IntegerField(default=0)
 
 	# Timestamp
 	created = models.DateTimeField(auto_now_add=True)

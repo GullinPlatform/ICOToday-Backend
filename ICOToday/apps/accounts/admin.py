@@ -64,6 +64,7 @@ class AccountInfoAdmin(admin.ModelAdmin):
 		('Company Info', {'fields': ('company', 'company_admin', 'company_pending')}),
 		('Social Media', {'fields': ('linkedin', 'twitter', 'facebook', 'telegram')}),
 		('Security', {'fields': ('last_login_ip',)}),
+		('White List', {'fields': ('whitelist', 'amount_to_invest')}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	list_filter = ['type', 'is_verified', 'company']

@@ -128,7 +128,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
 	1) verify_token OneToOneField accounts.VerifyToken
 	"""
 	# Auth
-	email = models.EmailField(unique=True, null=True, blank=True)
+	email = models.EmailField(max_length=191, unique=True, null=True, blank=True)
 	phone = models.CharField(max_length=20, unique=True, null=True, blank=True)
 
 	# Info

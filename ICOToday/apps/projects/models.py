@@ -83,7 +83,7 @@ class Project(models.Model):
 		ordering = ['start_datetime']
 
 	def __str__(self):
-		return self.name
+		return u'%s' % self.name
 
 	def time_passed(self):
 		if not self.end_datetime:

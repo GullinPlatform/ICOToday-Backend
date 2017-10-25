@@ -48,7 +48,6 @@ class AccountAdmin(admin.ModelAdmin):
 		 ),
 	)
 	readonly_fields = ('created', 'updated', 'is_staff', 'account_info')
-	ordering = ['id']
 
 	def account_info(self, obj):
 		change_url = urlresolvers.reverse('admin:accounts_accountinfo_change', args=(obj.info.id,))

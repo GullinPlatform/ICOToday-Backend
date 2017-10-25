@@ -423,11 +423,10 @@ class ExpertApplicationViewSet(viewsets.ViewSet):
 		if request.data.get('detail'):
 			ExpertApplication.objects.create(
 				account_id=request.user.info.id,
-				detail=request.data.get('detail'),
+				detail=unicode(request.data.get('detail')),
 				resume=request.data.get('resume'),
 				previous_rating_example=request.data.get('past_rating_example'),
 			)
-			
 			if request.data.get('linkedin'):
 				request.user.info.linkedin = request.data.get('linkedin')
 				request.user.info.save()

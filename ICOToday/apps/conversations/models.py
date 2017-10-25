@@ -23,7 +23,7 @@ class Message(models.Model):
 	updated = models.DateTimeField(auto_now=True)
 
 	def __str__(self):
-		return str(self.id)
+		return unicode(self.id)
 
 	class Meta:
 		ordering = ['-created']

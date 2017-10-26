@@ -40,10 +40,9 @@ class CompanyViewSet(viewsets.ViewSet):
 		return Response(serializer.data)
 
 	def create(self, request):
-		company = request.user.info.company
-		if company:
+		if request.user.info.company:
 			return Response({'detail': 'User can only have one company'}, status=status.HTTP_403_FORBIDDEN)
-		if request.user.info.type != -1:
+		if request.user.info.type == 2 or request.user.info.type == 0:
 			return Response({'detail': 'User already set account type'}, status=status.HTTP_403_FORBIDDEN)
 
 		if request.data.get('name'):
@@ -60,9 +59,8 @@ class CompanyViewSet(viewsets.ViewSet):
 				serializer = BasicCompanySerializer(company)
 				return Response(serializer.data, status=status.HTTP_201_CREATED)
 			except IntegrityError:
-				return Response({'detail': 'The company with that name already exists. if you believe someone else took your company, please contact us at team@icotoday.io immediately.'},
+				return Response({'detail': 'The company with this name already exists. if you believe someone else took your company, please contact us at team@icotoday.io immediately.'},
 				                status=status.HTTP_400_BAD_REQUEST)
-
 		else:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -268,7 +266,6 @@ class CompanyViewSet(viewsets.ViewSet):
 		if not company:
 			return Response(status=status.HTTP_400_BAD_REQUEST)
 		if not self._is_company_admin(request.user.info, company):
-
 			return Response({'detail': 'Only company admin can add company members'}, status=status.HTTP_403_FORBIDDEN)
 
 		serializer = WalletSerializer(company.wallet)

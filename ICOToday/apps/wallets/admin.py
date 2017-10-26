@@ -26,4 +26,12 @@ class WalletAdmin(admin.ModelAdmin):
 	inlines = [AccountInfoInline]
 
 
+def token_stat():
+	total = 0
+	for wallet in Wallet.objects.all():
+		total += wallet.ict_amount
+	return u'%s' % total
+
+
+admin.site.index_title = admin.site.index_title + u'  | Total Token Sent: ' + token_stat()
 admin.site.register(Wallet, WalletAdmin)

@@ -6,7 +6,6 @@ from django.core import urlresolvers
 from django.utils.safestring import mark_safe
 from django.contrib import admin
 
-from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group as AdminGroup
 
 from .forms import AccountChangeForm, AccountCreationForm
@@ -64,6 +63,7 @@ class AccountInfoAdmin(admin.ModelAdmin):
 		('Company Info', {'fields': ('company', 'company_admin', 'company_pending')}),
 		('Social Media', {'fields': ('linkedin', 'twitter', 'facebook', 'telegram')}),
 		('Security', {'fields': ('last_login_ip',)}),
+		('White List', {'fields': ('whitelist', 'amount_to_invest')}),
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	list_filter = ['type', 'is_verified', 'company']
@@ -102,6 +102,13 @@ class ExpertApplicationAdmin(admin.ModelAdmin):
 
 	readonly_fields = ('created', 'updated')
 
+
+def account_stat():
+	return u'%s' % Account.objects.count()
+
+
+admin.site.site_header = 'ICOToday Admin Portal'
+admin.site.index_title = u'Total Account: ' + account_stat()
 
 admin.site.register(Account, AccountAdmin)
 admin.site.register(AccountInfo, AccountInfoAdmin)

@@ -55,7 +55,7 @@ class AccountAdmin(admin.ModelAdmin):
 
 
 class AccountInfoAdmin(admin.ModelAdmin):
-	list_display = ('id', 'first_name', 'last_name', 'type', 'is_verified', 'is_company_admin', 'updated', 'last_login_ip')
+	list_display = ('id', 'first_name', 'last_name', 'type', 'is_verified', 'whitelist', 'amount_to_invest', 'updated', 'last_login_ip')
 	fieldsets = (
 		('Personal Info', {'fields': ('avatar', 'first_name', 'last_name', 'type', 'title', 'description', 'interests')}),
 		('Wallet', {'fields': ('user_wallet',)}),

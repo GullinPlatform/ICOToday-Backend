@@ -4,17 +4,27 @@ from __future__ import unicode_literals
 from django.contrib import admin
 
 from ..accounts.models import AccountInfo
+from ..companies.models import Company
 from .models import Wallet
 
 
 class AccountInfoInline(admin.TabularInline):
 	model = AccountInfo
-	fields = ('id', 'first_name', 'last_name', 'type', 'company')
-	readonly_fields = ('id', 'first_name', 'last_name', 'type', 'company')
+	fields = ('id', 'first_name', 'last_name', 'type', 'is_verified')
+	readonly_fields = ('id', 'first_name', 'last_name', 'type', 'is_verified')
 	show_change_link = True
 	extra = 0
 
 
+class CompanyInline(admin.TabularInline):
+	model = Company
+	fields = ('id', 'name', 'created')
+	readonly_fields = ('id', 'name', 'created')
+	show_change_link = True
+	extra = 0
+
+
+@admin.register(Wallet)
 class WalletAdmin(admin.ModelAdmin):
 	list_display = ('id', 'account', 'company', 'ict_amount', 'created')
 	fieldsets = [
@@ -23,7 +33,7 @@ class WalletAdmin(admin.ModelAdmin):
 		['Timestamp', {'fields': ['created', 'updated']}],
 	]
 	readonly_fields = ('created', 'updated', 'btc_amount', 'eth_amount', 'btc_wallet_address', 'eth_wallet_address')
-	inlines = [AccountInfoInline]
+	inlines = [AccountInfoInline, CompanyInline]
 
 
 def token_stat():
@@ -31,7 +41,3 @@ def token_stat():
 	for wallet in Wallet.objects.all():
 		total += wallet.ict_amount
 	return u'%s' % total
-
-
-admin.site.index_title = admin.site.index_title + u'  | Total Token Sent: ' + token_stat()
-admin.site.register(Wallet, WalletAdmin)

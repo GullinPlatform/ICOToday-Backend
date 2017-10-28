@@ -6,6 +6,7 @@ from django.contrib import admin
 from .models import Feed
 
 
+@admin.register(Feed)
 class FeedAdmin(admin.ModelAdmin):
 	list_display = ('id', 'type', 'creator', 'created')
 	fieldsets = (
@@ -14,6 +15,3 @@ class FeedAdmin(admin.ModelAdmin):
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	readonly_fields = ('created', 'updated')
-
-
-admin.site.register(Feed, FeedAdmin)

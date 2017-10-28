@@ -5,6 +5,7 @@ from models import Notification
 from django.contrib import admin
 
 
+@admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
 	list_display = ['receiver', 'sender', 'read', 'created', 'related']
 	fieldsets = (
@@ -13,6 +14,3 @@ class NotificationAdmin(admin.ModelAdmin):
 		('Timestamp', {'fields': ('created', 'updated')})
 	)
 	readonly_fields = ('created', 'updated',)
-
-
-admin.site.register(Notification, NotificationAdmin)

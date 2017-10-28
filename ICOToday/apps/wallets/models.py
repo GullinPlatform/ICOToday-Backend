@@ -24,5 +24,8 @@ class Wallet(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
 
-	def __str__(self):
-		return u'%s' % self.account.full_name()
+	def __unicode__(self):
+		try:
+			return u'%s' % self.account.full_name()
+		except:
+			return u'%s' % self.company

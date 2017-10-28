@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.utils import timezone
 
 from ..rest_framework_jwt.settings import api_settings

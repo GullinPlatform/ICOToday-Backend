@@ -74,7 +74,7 @@ class AccountInfo(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
 
-	def __str__(self):
+	def __unicode__(self):
 		return self.full_name()
 
 	def full_name(self):
@@ -152,7 +152,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
 	class Meta:
 		ordering = ['-created']
 
-	def __str__(self):
+	def __unicode__(self):
 		return self.email
 
 	@property
@@ -202,7 +202,7 @@ class ExpertApplication(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
 
-	def __str__(self):
+	def __unicode__(self):
 		return self.account.full_name()
 
 	class Meta:

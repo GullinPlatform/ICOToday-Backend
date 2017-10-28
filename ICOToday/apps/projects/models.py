@@ -82,7 +82,7 @@ class Project(models.Model):
 	class Meta:
 		ordering = ['start_datetime']
 
-	def __str__(self):
+	def __unicode__(self):
 		return u'%s' % self.name
 
 	def time_passed(self):
@@ -101,7 +101,7 @@ class ProjectTag(models.Model):
 	"""
 	tag = models.CharField(max_length=40)
 
-	def __str__(self):
+	def __unicode__(self):
 		return self.tag if self.tag else ' '
 
 
@@ -117,7 +117,7 @@ class ProjectRatingDetail(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
 
-	def __str__(self):
+	def __unicode__(self):
 		return u'%s' % self.content[:15]
 
 	class Meta:

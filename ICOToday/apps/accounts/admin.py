@@ -6,10 +6,13 @@ from django.core import urlresolvers
 from django.utils.safestring import mark_safe
 from django.contrib import admin
 
-from django.contrib.auth.models import Group as AdminGroup
-
 from .forms import AccountChangeForm, AccountCreationForm
 from .models import Account, AccountInfo, VerifyToken, ExpertApplication
+
+from django.contrib.auth.models import Group as AdminGroup
+
+admin.site.site_header = 'ICOToday Admin Portal'
+admin.site.unregister(AdminGroup)
 
 
 class AccountInline(admin.TabularInline):
@@ -28,6 +31,7 @@ class AccountInfoInline(admin.TabularInline):
 	extra = 0
 
 
+@admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
 	# The forms to add and change user instances
 	form = AccountChangeForm
@@ -54,6 +58,7 @@ class AccountAdmin(admin.ModelAdmin):
 		return mark_safe('<a href="%s">%s</a>' % (change_url, account_info_instance))
 
 
+@admin.register(AccountInfo)
 class AccountInfoAdmin(admin.ModelAdmin):
 	list_display = ('id', 'first_name', 'last_name', 'type', 'is_verified', 'whitelist', 'amount_to_invest', 'updated', 'last_login_ip')
 	fieldsets = (
@@ -82,36 +87,34 @@ class AccountInfoAdmin(admin.ModelAdmin):
 			return mark_safe('<img src="/static/admin/img/icon-no.svg" alt="False">')
 
 
+@admin.register(VerifyToken)
 class VerifyTokenAdmin(admin.ModelAdmin):
 	list_display = ('account', 'is_expired')
 	fieldsets = (
-		(None, {'fields': ('account', 'token', 'expire_time', 'is_expired')}),
+		(None, {'fields': ('account_info', 'token', 'expire_time', 'is_expired')}),
 	)
 	list_filter = ['expire_time']
 	readonly_fields = ('is_expired', 'expire_time')
 
+	def account_info(self, obj):
+		change_url = urlresolvers.reverse('admin:accounts_accountinfo_change', args=(obj.account.id,))
+		account_info_instance = AccountInfo.objects.get(id=obj.account.id)
+		return mark_safe('<a href="%s">%s</a>' % (change_url, account_info_instance))
 
+
+@admin.register(ExpertApplication)
 class ExpertApplicationAdmin(admin.ModelAdmin):
 	list_display = ('account', 'status', 'created')
 	fieldsets = (
-		('Account', {'fields': ['account', 'status']}),
-		('Content', {'fields': ['detail', 'resume', 'previous_rating_example', 'response']}),
+		('Account', {'fields': ['account_info']}),
+		('Content', {'fields': ['detail', 'resume', 'previous_rating_example', 'status']}),
 		('Timestamp', {'fields': ['created', 'updated']}),
 	)
 	list_filter = ['status', 'created', ]
 
-	readonly_fields = ('created', 'updated')
+	readonly_fields = ('created', 'updated', 'account_info')
 
-
-def account_stat():
-	return u'%s' % Account.objects.count()
-
-
-admin.site.site_header = 'ICOToday Admin Portal'
-admin.site.index_title = u'Total Account: ' + account_stat()
-
-admin.site.register(Account, AccountAdmin)
-admin.site.register(AccountInfo, AccountInfoAdmin)
-admin.site.register(VerifyToken, VerifyTokenAdmin)
-admin.site.register(ExpertApplication, ExpertApplicationAdmin)
-admin.site.unregister(AdminGroup)
+	def account_info(self, obj):
+		change_url = urlresolvers.reverse('admin:accounts_accountinfo_change', args=(obj.account.id,))
+		account_info_instance = AccountInfo.objects.get(id=obj.account.id)
+		return mark_safe('<a href="%s">%s</a>' % (change_url, account_info_instance))

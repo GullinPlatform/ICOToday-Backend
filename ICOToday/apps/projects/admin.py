@@ -6,6 +6,7 @@ from django.contrib import admin
 from .models import Project, ProjectTag, ProjectRatingDetail
 
 
+@admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
 	list_display = ('id', 'name', 'status', 'start_datetime', 'end_datetime')
 
@@ -20,11 +21,13 @@ class ProjectAdmin(admin.ModelAdmin):
 	readonly_fields = ('created', 'updated')
 
 
-class PostTagAdmin(admin.ModelAdmin):
+@admin.register(ProjectTag)
+class ProjectTagAdmin(admin.ModelAdmin):
 	fieldsets = (('Tag', {'fields': ('tag',)}),)
 	list_display = ('tag',)
 
 
+@admin.register(ProjectRatingDetail)
 class ProjectRatingDetailAdmin(admin.ModelAdmin):
 	list_display = ('rater', 'score', 'project', 'created')
 
@@ -32,8 +35,3 @@ class ProjectRatingDetailAdmin(admin.ModelAdmin):
 	             ('Detail', {'fields': ('score', 'content')}),
 	             ('Timestamp', {'fields': ('created', 'updated')}),)
 	readonly_fields = ('created', 'updated')
-
-
-admin.site.register(Project, ProjectAdmin)
-admin.site.register(ProjectTag, PostTagAdmin)
-admin.site.register(ProjectRatingDetail, ProjectRatingDetailAdmin)

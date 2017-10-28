@@ -45,6 +45,7 @@ class CompanyAdminsInline(admin.TabularInline):
 	verbose_name_plural = "Company Admins"
 
 
+@admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
 	list_display = ('name', 'created')
 	fieldsets = [
@@ -55,6 +56,7 @@ class CompanyAdmin(admin.ModelAdmin):
 	inlines = [ProjectInline, CompanyMembersInline, CompanyAdminsInline, FeedInline]
 
 
+@admin.register(PromotionApplication)
 class PromotionApplicationAdmin(admin.ModelAdmin):
 	list_display = ('company', 'status', 'created')
 	fieldsets = [
@@ -64,7 +66,3 @@ class PromotionApplicationAdmin(admin.ModelAdmin):
 		['Timestamp', {'fields': ['created', 'updated']}],
 	]
 	readonly_fields = ('created', 'updated')
-
-
-admin.site.register(Company, CompanyAdmin)
-admin.site.register(PromotionApplication, PromotionApplicationAdmin)

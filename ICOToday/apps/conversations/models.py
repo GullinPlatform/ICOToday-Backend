@@ -22,7 +22,7 @@ class Message(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
 
-	def __str__(self):
+	def __unicode__(self):
 		return unicode(self.id)
 
 	class Meta:
@@ -38,5 +38,5 @@ class Conversation(models.Model):
 	"""
 	users = models.ManyToManyField('accounts.AccountInfo', related_name='conversations')
 
-	def __str__(self):
+	def __unicode__(self):
 		return 'Conversation %d' % self.id

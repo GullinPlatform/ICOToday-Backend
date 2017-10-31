@@ -205,6 +205,14 @@ class ProjectRatingDetailViewSet(viewsets.ViewSet):
 	parser_classes = (MultiPartParser, FormParser, JSONParser)
 	permission_classes = (IsAuthenticatedOrReadOnly,)
 
+	def retrieve(self, request, project_rating_detail_id):
+		detail = ProjectRatingDetail.objects.filter(id=project_rating_detail_id).first()
+		if detail:
+			serializer = ProjectRatingDetailSerializer(detail)
+			return Response(serializer.data, status=status.HTTP_200_OK)
+		else:
+			return Response(status=status.HTTP_400_BAD_REQUEST)
+
 	def list(self, request, project_id):
 		queryset = ProjectRatingDetail.objects.filter(project_id=project_id)
 		serializer = ProjectRatingDetailSerializer(queryset, many=True)

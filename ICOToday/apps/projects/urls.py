@@ -64,6 +64,10 @@ project_rating_detail_rate = ProjectRatingDetailViewSet.as_view({
 	'put' : 'rate'
 })
 
+project_rating_detail_retrieve = ProjectRatingDetailViewSet.as_view({
+	'get': 'retrieve',
+})
+
 urlpatterns = [
 	url(r'^$', project_create, name='project_create'),
 
@@ -82,4 +86,7 @@ urlpatterns = [
 	url(r'^(?P<project_id>[0-9]+)/rating/$', project_rating_detail_list, name='project-rating'),
 	url(r'^(?P<project_id>[0-9]+)/rate/$', project_rating_detail_rate, name='project-rate'),
 	url(r'^(?P<project_id>[0-9]+)/subs/$', project_subscribers, name='project-subscribers'),
+
+	url(r'^rt/(?P<project_rating_detail_id>[0-9]+)/$', project_rating_detail_retrieve, name='project_rating_detail_retrieve'),
+
 ]

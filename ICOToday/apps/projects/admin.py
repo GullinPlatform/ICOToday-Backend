@@ -29,7 +29,7 @@ class ProjectTagAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectRatingDetail)
 class ProjectRatingDetailAdmin(admin.ModelAdmin):
-	list_display = ('rater', 'score', 'project', 'created')
+	list_display = ('id', 'rater', 'score', 'project', 'created')
 
 	fieldsets = (('Info', {'fields': ('rater', 'project')}),
 	             ('Detail', {'fields': ('score', 'content', 'file')}),

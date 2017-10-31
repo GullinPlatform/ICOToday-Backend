@@ -36,8 +36,4 @@ class WalletAdmin(admin.ModelAdmin):
 	inlines = [AccountInfoInline, CompanyInline]
 
 
-def token_stat():
-	total = 0
-	for wallet in Wallet.objects.all():
-		total += wallet.ict_amount
-	return u'%s' % total
+

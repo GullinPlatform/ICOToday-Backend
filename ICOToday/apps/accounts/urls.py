@@ -99,6 +99,10 @@ expert_application = ExpertApplicationViewSet.as_view({
 	'put' : 'update',
 })
 
+account_stat = AccountRegisterViewSet.as_view({
+	'get': 'stat',
+})
+
 urlpatterns = [
 	# Login Signup and Stay Login
 	url(r'^login/$', obtain_jwt_token),
@@ -151,4 +155,8 @@ urlpatterns = [
 
 	# Expert Application
 	url(r'^me/analyst_apply/$', expert_application, name='expert-application'),
+
+	# Stat
+	url(r'^stat/$', account_stat, name='account_stat'),
+
 ]

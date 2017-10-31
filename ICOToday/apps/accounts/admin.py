@@ -11,7 +11,6 @@ from .models import Account, AccountInfo, VerifyToken, ExpertApplication
 
 from django.contrib.auth.models import Group as AdminGroup
 
-admin.site.site_header = 'ICOToday Admin Portal'
 admin.site.unregister(AdminGroup)
 
 

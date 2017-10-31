@@ -222,6 +222,10 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		response.delete_cookie('icotodaytoken')
 		return response
 
+	def stat(self, request):
+		count = Account.objects.count()
+		return Response({'count': count})
+
 
 class AccountViewSet(viewsets.ViewSet):
 	queryset = Account.objects.all()

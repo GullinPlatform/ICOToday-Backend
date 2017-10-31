@@ -230,6 +230,7 @@ class ProjectRatingDetailViewSet(viewsets.ViewSet):
 				rater_id=request.user.info.id,
 				score=request.data.get('score'),
 				content=request.data.get('content'),
+				file=request.data.get('file')
 			)
 
 			if project.rating:

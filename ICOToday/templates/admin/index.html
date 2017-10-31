@@ -1,0 +1,28 @@
+{% extends "admin/index.html" %}
+{% load static %}
+
+{% block sidebar %}
+    {{ block.super }}
+    <div class="widget">
+        <h2>Static Data</h2>
+        <h3>Total Tokens Sent</h3>
+        <p id="total_token">12345</p>
+        <h3>Total Accounts</h3>
+        <p id="total_accounts">12345</p>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: "/ac/stat/"
+            }).done(function (res) {
+                $("#total_accounts").replaceWith(res.count)
+            });
+
+            $.ajax({
+                url: "/wl/stat/"
+            }).done(function (res) {
+                $("#total_token").replaceWith(res.count)
+            })
+        })
+    </script>
+{% endblock %}

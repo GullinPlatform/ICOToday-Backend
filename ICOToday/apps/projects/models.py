@@ -109,6 +109,7 @@ class ProjectRatingDetail(models.Model):
 	rater = models.ForeignKey('accounts.AccountInfo', related_name='my_rating_details')
 	score = models.IntegerField(default=0)
 	content = models.TextField()
+	file = models.FileField(upload_to='project_ratings/')
 
 	# Relation
 	project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='rating_details')

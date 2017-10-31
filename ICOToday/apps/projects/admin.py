@@ -32,6 +32,6 @@ class ProjectRatingDetailAdmin(admin.ModelAdmin):
 	list_display = ('rater', 'score', 'project', 'created')
 
 	fieldsets = (('Info', {'fields': ('rater', 'project')}),
-	             ('Detail', {'fields': ('score', 'content')}),
+	             ('Detail', {'fields': ('score', 'content', 'file')}),
 	             ('Timestamp', {'fields': ('created', 'updated')}),)
 	readonly_fields = ('created', 'updated')

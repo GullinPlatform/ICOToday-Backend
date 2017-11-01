@@ -3,14 +3,20 @@
 
 {% block content_title %}<h1></h1>{% endblock %}
 
+{% block extrahead %}{{ block.super }}
+    <script type="text/javascript" src="/static/admin/js/core.js"></script>
+    <script type="text/javascript" src="/static/admin/js/vendor/jquery/jquery.js"></script>
+    <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+{% endblock %}
+
 {% block sidebar %}
     {{ block.super }}
     <div class="widget">
         <h2>Static Data</h2>
         <h3>Total Tokens Sent</h3>
-        <p id="total_token">12345</p>
+        <p id="total_token">Loading...</p>
         <h3>Total Accounts</h3>
-        <p id="total_accounts">12345</p>
+        <p id="total_accounts">Loading...</p>
     </div>
     <script>
         (function ($) {
@@ -18,13 +24,13 @@
                 $.ajax({
                     url: "/ac/stat/"
                 }).done(function (res) {
-                    $("#total_accounts").replaceWith(res.count)
+                    $("#total_accounts").text(res.count)
                 });
 
                 $.ajax({
                     url: "/wl/stat/"
                 }).done(function (res) {
-                    $("#total_token").replaceWith(res.count)
+                    $("#total_token").text(res.count)
                 })
             })
         })(django.jQuery);

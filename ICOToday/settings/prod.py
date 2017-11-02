@@ -107,8 +107,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
-USE_I18N = False
-USE_L10N = False
+USE_I18N = True
+USE_L10N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
@@ -122,7 +122,7 @@ DATABASES = {
 		'NAME'    : 'icotoday',
 		'USER'    : 'icotoday',
 		'PASSWORD': 'ICOToday888!',
-		'HOST'    : 'icotodaydb-cluster.cluster-canzstryns10.us-east-2.rds.amazonaws.com',
+		'HOST'    : 'icotodaydb10232110-cluster.cluster-canzstryns10.us-east-2.rds.amazonaws.com',
 		'PORT'    : '3306'
 	}
 }

@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import check_password
+from django.contrib.gis.geoip2 import GeoIP2
 from django.conf import settings
 
 from rest_framework import viewsets, status
@@ -20,6 +21,7 @@ from ..utils.send_email import send_email
 from ..utils.verify_token import VerifyTokenUtils
 from ..utils.google_recaptcha import recaptcha_verify
 from ..utils.return_auth_token import return_auth_token
+from ..utils.get_client_ip import get_client_ip
 
 
 class AccountRegisterViewSet(viewsets.ViewSet):
@@ -30,6 +32,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		# Validate Google reCAPTCHA
 		# if not recaptcha_verify(request):
 		# 	return Response(status=status.HTTP_400_BAD_REQUEST)
+		ip = get_client_ip(request)
 
 		serializer = AuthAccountSerializer(data=request.data)
 		serializer.is_valid(raise_exception=True)
@@ -37,7 +40,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 
 		account.info.first_name = request.data.get('first_name', None)
 		account.info.last_name = request.data.get('last_name', None)
-		account.info.last_login_ip = request.data.get('last_login_ip', None)
+		account.info.last_login_ip = ip
 		account.info.whitelist = request.data.get('whitelist', False)
 		account.info.amount_to_invest = request.data.get('amount_to_invest', 0)
 		account.info.save()
@@ -66,7 +69,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 		send_email(receiver_list=[account.email],
 		           subject='ICOToday - Email Verification',
 		           template_name='EmailVerification',
-		           ctx={'user': account, 'token': user_verify_token.token})
+		           ctx={'username': account.info.full_name(), 'token': user_verify_token.token})
 
 		# Use utils to set token in cookie in response
 		return return_auth_token(account)
@@ -98,9 +101,15 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 			# Expire token
 			VerifyTokenUtils.expire_token(token_instance=token_instance)
 			account = token_instance.account
+
+			# Set account password
 			account.set_password(request.data.get('password'))
 			account.save()
+
+			# Update user info
+			ip = get_client_ip(request)
 			account.info.is_verified = True
+			account.info.last_login_ip = ip
 			account.info.save()
 
 			# Add Bonny to User Wallet
@@ -145,7 +154,7 @@ class AccountRegisterViewSet(viewsets.ViewSet):
 				send_email(receiver_list=[request.user.email],
 				           subject='ICOToday - Email Verification',
 				           template_name='EmailVerification',
-				           ctx={'user': request.user, 'token': token_instance.token})
+				           ctx={'user': request.user.info.full_name(), 'token': token_instance.token})
 				return Response(status=status.HTTP_200_OK)
 			else:
 				return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -234,13 +243,21 @@ class AccountViewSet(viewsets.ViewSet):
 	permission_classes = (IsAuthenticatedOrReadOnly,)
 
 	def log_ip(self, request):
-		if request.user.info.last_login_ip == request.data.get('ip'):
-			return Response(status=status.HTTP_200_OK)
-		else:
-			request.user.info.last_login_ip = request.data.get('ip')
+		ip = get_client_ip(request)
+		if ip != request.user.info.last_login_ip:
+			request.user.info.last_login_ip = ip
 			request.user.info.save()
-			# TODO: send warning email
-			return Response(status=status.HTTP_200_OK)
+			g = GeoIP2()
+			city = g.city(ip)
+			location = city.get('city') + ' ' + city.get('country_name')
+
+			send_email([request.user.email],
+			           'ICOToday - Login from different IP',
+			           'DifferentIP',
+			           {'username': request.user.info.full_name(),
+			            'ip'      : ip,
+			            'location': location})
+		return Response(status=status.HTTP_200_OK)
 
 	def set_account_type(self, request):
 		if request.data.get('type', None) is None:

@@ -210,3 +210,6 @@ EMAIL_BACKEND = 'django_ses.SESBackend'
 AWS_SES_REGION_NAME = 'us-east-1'
 AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
 AWS_SES_AUTO_THROTTLE = 0.5  # (default; safety factor applied to rate limit)
+
+# ----- GEOIP -----
+GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')

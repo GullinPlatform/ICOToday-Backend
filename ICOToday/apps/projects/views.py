@@ -152,11 +152,12 @@ class ProjectViewSet(viewsets.ViewSet):
 		if serializer.is_valid():
 			project = serializer.save()
 
-			# Bulk send update emails
-			email_list = []
+			# Send update emails
 			for marked in project.marked.all():
-				email_list.append(marked.account.email)
-			send_email(email_list, 'ICOToday - Official Update on ICO Project You Subscribe to', 'ProjectUpdate', {id: project.id})
+				send_email([marked.account.email],
+				           'ICOToday - Update on ' + project.name,
+				           'ProjectUpdate',
+				           {'username': marked.full_name(), 'project_name': project.name, 'project_id': project.id})
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		else:
 			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

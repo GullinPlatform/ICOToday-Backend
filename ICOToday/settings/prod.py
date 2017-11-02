@@ -7,7 +7,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# TODO
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
@@ -24,7 +23,6 @@ ALLOWED_HOSTS = [
 	'icotoday.io',
 	'www.icotoday.io',
 	'api.icotoday.io',
-
 ]
 
 # Set auto redirect to false
@@ -149,8 +147,8 @@ CORS_ORIGIN_WHITELIST = (
 	'icotoday.io',
 	'www.icotoday.io',
 	'api.icotoday.io',
-
 )
+
 CORS_ALLOW_HEADERS = (
 	'accept',
 	'accept-encoding',
@@ -197,8 +195,8 @@ JWT_AUTH = {
 }
 
 # ------ AWS Credentials ------
-AWS_ACCESS_KEY_ID = 'AKIAJOZXNV5BDLRRO7LQ'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY_ID = open(os.path.join(BASE_DIR, 'settings/aws_access_key_id')).read()
+AWS_SECRET_ACCESS_KEY = open(os.path.join(BASE_DIR, 'settings/aws_secret_access_key')).read()
 
 # ------ AWS S3 ------
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'

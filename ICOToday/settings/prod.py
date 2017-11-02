@@ -15,7 +15,7 @@ with open(os.path.join(BASE_DIR, 'settings/secret.txt')) as f:
 	SECRET_KEY = f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = [
 	'http://www.icotoday.io',
 	'http://icotoday.io',
@@ -85,7 +85,7 @@ ROOT_URLCONF = 'ICOToday.urls'
 # Account customization
 AUTH_USER_MODEL = 'accounts.Account'
 # TODO change to ICOToday AccountInfo ID in production mode
-OFFICIAL_ACCOUNT_INFO_ID = 1
+OFFICIAL_ACCOUNT_INFO_ID = 2
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -106,8 +106,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
-USE_I18N = False
-USE_L10N = False
+USE_I18N = True
+USE_L10N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
@@ -121,7 +121,7 @@ DATABASES = {
 		'NAME'    : 'icotoday',
 		'USER'    : 'icotoday',
 		'PASSWORD': 'ICOToday888!',
-		'HOST'    : 'icotoday.canzstryns10.us-east-2.rds.amazonaws.com',
+		'HOST'    : 'icotodaydb10232110-cluster.cluster-canzstryns10.us-east-2.rds.amazonaws.com',
 		'PORT'    : '3306'
 	}
 }

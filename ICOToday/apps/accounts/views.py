@@ -249,7 +249,7 @@ class AccountViewSet(viewsets.ViewSet):
 			request.user.info.save()
 			g = GeoIP2()
 			city = g.city(ip)
-			location = city.get('city') + ' ' + city.get('country_name')
+			location = city.get('city') + ', ' + city.get('country_name')
 
 			send_email([request.user.email],
 			           'ICOToday - Login from different IP',

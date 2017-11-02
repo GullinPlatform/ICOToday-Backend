@@ -2,6 +2,8 @@
 .DS_Store
 __pycache__/
 *.py[cod]
+env_ico/
+\.idea/
 
 ICOToday/apps/projects/migrations/*
 !ICOToday/apps/projects/migrations/__init__.py
@@ -27,6 +29,8 @@ ICOToday/apps/conversations/migrations/*
 ICOToday/media/
 ICOToday/tmp.sqlite3
 
-env_ico/
-
-\.idea/
+/ICOToday/settings/aws_access_key_id
+/ICOToday/settings/aws_secret_access_key
+/ICOToday/settings/jwtRS256.key
+/ICOToday/settings/jwtRS256.key.pub
+/ICOToday/settings/secret.txt

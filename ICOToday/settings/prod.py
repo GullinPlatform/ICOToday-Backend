@@ -7,7 +7,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# TODO
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
@@ -149,6 +148,7 @@ CORS_ORIGIN_WHITELIST = (
 	'www.icotoday.io',
 	'api.icotoday.io',
 )
+
 CORS_ALLOW_HEADERS = (
 	'accept',
 	'accept-encoding',
@@ -195,8 +195,8 @@ JWT_AUTH = {
 }
 
 # ------ AWS Credentials ------
-AWS_ACCESS_KEY_ID = 'AKIAJOZXNV5BDLRRO7LQ'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY_ID = open(os.path.join(BASE_DIR, 'settings/aws_access_key_id')).read()
+AWS_SECRET_ACCESS_KEY = open(os.path.join(BASE_DIR, 'settings/aws_secret_access_key')).read()
 
 # ------ AWS S3 ------
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
@@ -208,3 +208,6 @@ EMAIL_BACKEND = 'django_ses.SESBackend'
 AWS_SES_REGION_NAME = 'us-east-1'
 AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
 AWS_SES_AUTO_THROTTLE = 0.5  # (default; safety factor applied to rate limit)
+
+# ----- GEOIP -----
+GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')

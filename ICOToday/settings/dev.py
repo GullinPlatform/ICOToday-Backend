@@ -10,7 +10,7 @@ DEBUG = True
 INSTALLED_APPS += ('debug_toolbar',)
 MIDDLEWARE += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
 DEBUG_TOOLBAR_CONFIG = {
-    'INTERCEPT_REDIRECTS': False,
+	'INTERCEPT_REDIRECTS': False,
 }
 # Set secret to 42
 
@@ -19,10 +19,10 @@ SECRET = '42'
 ALLOWED_HOSTS = '*'
 # Set database to local sqlite
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'tmp.sqlite3'),
-    }
+	'default': {
+		'ENGINE': 'django.db.backends.sqlite3',
+		'NAME'  : os.path.join(BASE_DIR, 'tmp.sqlite3'),
+	}
 }
 
 INTERNAL_IPS = ['127.0.0.1']
@@ -32,13 +32,15 @@ JWT_AUTH['JWT_VERIFY_EXPIRATION'] = False
 
 # ----- Cross Origin Header -----
 CORS_ORIGIN_WHITELIST = (
-    'localhost:4000',
-    '127.0.0.1:4000',
-    'localhost:4004',
-    '127.0.0.1:4004'
+	'localhost:4000',
+	'127.0.0.1:4000',
+	'localhost:4004',
+	'127.0.0.1:4004'
 )
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
 
 OFFICIAL_ACCOUNT_INFO_ID = 1
+
+GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')
